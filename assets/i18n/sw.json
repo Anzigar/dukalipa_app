@@ -1,0 +1,56 @@
+{
+  "appName": "Dukalipa",
+  "shopManagement": "Usimamizi wa Duka",
+  
+  "auth": {
+    "login": "Ingia",
+    "signup": "Jisajili",
+    "email": "Barua pepe",
+    "password": "Nywila",
+    "forgotPassword": "Umesahau Nywila?"
+  },
+  
+  "home": {
+    "summary": "Muhtasari"
+  },
+  
+  "inventory": {
+    "title": "Bidhaa",
+    "products": "Bidhaa",
+    "addProduct": "Ongeza Bidhaa"
+  },
+  
+  "sales": {
+    "title": "Mauzo",
+    "addSale": "Ongeza Mauzo"
+  },
+  
+  "expenses": {
+    "title": "Matumizi",
+    "addExpense": "Ongeza Matumizi"
+  },
+  
+  "notifications": {
+    "title": "Arifa",
+    "markAllAsRead": "Weka Zote Zimesomwa",
+    "noNotifications": "Hakuna Arifa",
+    "delete": "Futa Arifa",
+    "deleteConfirmation": "Una uhakika unataka kufuta arifa hii?"
+  },
+  
+  "settings": {
+    "title": "Mipangilio",
+    "theme": "Mandhari",
+    "language": "Lugha"
+  },
+  
+  "common": {
+    "search": "Tafuta",
+    "all": "Zote",
+    "retry": "Jaribu Tena",
+    "refresh": "Onyesha Upya",
+    "cancel": "Ghairi",
+    "delete": "Futa",
+    "save": "Hifadhi"
+  }
+}

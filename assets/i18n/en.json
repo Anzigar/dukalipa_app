@@ -1,0 +1,56 @@
+{
+  "appName": "Dukalipa",
+  "shopManagement": "Shop Management",
+  
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?"
+  },
+  
+  "home": {
+    "summary": "Summary"
+  },
+  
+  "inventory": {
+    "title": "Inventory",
+    "products": "Products",
+    "addProduct": "Add Product"
+  },
+  
+  "sales": {
+    "title": "Sales",
+    "addSale": "Add Sale"
+  },
+  
+  "expenses": {
+    "title": "Expenses",
+    "addExpense": "Add Expense"
+  },
+  
+  "notifications": {
+    "title": "Notifications",
+    "markAllAsRead": "Mark All as Read",
+    "noNotifications": "No Notifications",
+    "delete": "Delete Notification",
+    "deleteConfirmation": "Are you sure you want to delete this notification?"
+  },
+  
+  "settings": {
+    "title": "Settings",
+    "theme": "Theme",
+    "language": "Language"
+  },
+  
+  "common": {
+    "search": "Search",
+    "all": "All",
+    "retry": "Try Again",
+    "refresh": "Refresh",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "save": "Save"
+  }
+}
