@@ -8,8 +8,8 @@ import 'package:lucide_icons/lucide_icons.dart'; // Changed from phosphor_flutte
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../models/expense_model.dart';
-import '../repositories/expenses_repository.dart';
+import '../../../../data/services/expenses_service.dart';
+import '../providers/expenses_provider.dart';
 import '../../../common/widgets/custom_button.dart';
 import '../../../common/widgets/custom_text_field.dart';
 
@@ -28,7 +28,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   
   File? _receiptImage;
   DateTime _selectedDate = DateTime.now();
-  String _selectedCategory = ExpenseCategories.other;
+  String _selectedCategory = 'Other';
   bool _isLoading = false;
   
   @override
@@ -93,20 +93,21 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       });
       
       try {
-        final repository = context.read<ExpensesRepository>();
+        final provider = context.read<ExpensesProvider>();
         
-        await repository.addExpense(
-          amount: double.parse(_amountController.text),
-          description: _descriptionController.text,
+        final success = await provider.createExpense(
           category: _selectedCategory,
+          title: _descriptionController.text,
+          description: _descriptionController.text,
+          amount: double.parse(_amountController.text),
           date: _selectedDate,
           paymentMethod: _paymentMethodController.text.isNotEmpty 
               ? _paymentMethodController.text 
-              : null,
-          receiptImage: _receiptImage,
+              : 'Cash',
+          createdBy: 'admin', // TODO: Get from auth service
         );
         
-        if (mounted) {
+        if (success && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Expense added successfully'),

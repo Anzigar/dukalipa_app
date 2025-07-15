@@ -1,5 +1,4 @@
-
-import '../../../../core/network/api_client.dart';
+import 'package:dio/dio.dart';
 import '../models/notification_model.dart';
 
 abstract class NotificationRepository {
@@ -10,15 +9,23 @@ abstract class NotificationRepository {
 }
 
 class NotificationRepositoryImpl implements NotificationRepository {
-  final ApiClient _apiClient;
+  late final Dio _dio;
 
-  NotificationRepositoryImpl(this._apiClient);
+  NotificationRepositoryImpl() {
+    _dio = Dio(BaseOptions(
+      baseUrl: 'http://127.0.0.1:8000/api/v1',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ));
+  }
 
   @override
   Future<List<NotificationModel>> getNotifications() async {
     try {
-      final response = await _apiClient.get('/notifications');
-      final List<dynamic> data = response['notifications'];
+      final response = await _dio.get('/notifications');
+      final List<dynamic> data = response.data['notifications'];
       return data.map((item) => NotificationModel.fromJson(item)).toList();
     } catch (e) {
       throw _handleError(e);
@@ -28,7 +35,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
   @override
   Future<void> markAsRead(String id) async {
     try {
-      await _apiClient.put(
+      await _dio.post(
         '/notifications/$id/read',
         data: {'is_read': true},
       );
@@ -40,7 +47,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
   @override
   Future<void> markAllAsRead() async {
     try {
-      await _apiClient.put('/notifications/read-all');
+      await _dio.post('/notifications/read-all');
     } catch (e) {
       throw _handleError(e);
     }
@@ -49,31 +56,33 @@ class NotificationRepositoryImpl implements NotificationRepository {
   @override
   Future<void> deleteNotification(String id) async {
     try {
-      await _apiClient.delete('/notifications/$id');
+      await _dio.delete('/notifications/$id');
     } catch (e) {
       throw _handleError(e);
     }
   }
 
-  Exception _handleError(dynamic error) {
-    // Handle common network errors
-    if (error.toString().contains('timeout')) {
-      return Exception('Network timeout. Please check your internet connection.');
+  Exception _handleError(dynamic e) {
+    if (e is DioException) {
+      switch (e.type) {
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.receiveTimeout:
+        case DioExceptionType.connectionError:
+          return Exception('Network error. Please check your internet connection.');
+        case DioExceptionType.badResponse:
+          final statusCode = e.response?.statusCode;
+          if (statusCode == 404) {
+            return Exception('Notification not found.');
+          }
+          if (statusCode == 401 || statusCode == 403) {
+            return Exception('Authentication error. Please login again.');
+          }
+          return Exception('Server error: ${e.response?.statusMessage}');
+        default:
+          return Exception('An error occurred: ${e.message}');
+      }
     }
     
-    if (error.toString().contains('401') || error.toString().contains('unauthorized')) {
-      return Exception('Authentication error. Please log in again.');
-    }
-    
-    if (error.toString().contains('403') || error.toString().contains('forbidden')) {
-      return Exception('You don\'t have permission to access this resource.');
-    }
-    
-    if (error.toString().contains('404') || error.toString().contains('not found')) {
-      return Exception('The requested notification was not found.');
-    }
-    
-    // Generic error handling
-    return Exception('Failed to complete notification operation: ${error.toString()}');
+    return Exception('An error occurred: ${e.toString()}');
   }
 }

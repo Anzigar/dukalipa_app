@@ -6,12 +6,12 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/network/api_client.dart';
-import '../models/return_model.dart';
-import '../repositories/return_repository.dart';
+import '../../../../data/services/returns_service.dart';
+import '../providers/returns_provider.dart';
 import '../../../common/widgets/custom_search_bar.dart';
-import '../../../common/widgets/loading_widget.dart';
+import '../../../common/widgets/shimmer_loading.dart';
 import '../../../common/widgets/empty_state.dart';
+import '../../../../core/di/service_locator.dart';
 
 class ReturnsScreen extends StatefulWidget {
   const ReturnsScreen({Key? key}) : super(key: key);
@@ -29,26 +29,25 @@ class _ReturnsScreenState extends State<ReturnsScreen> {
   String? _selectedStatus;
   DateTime? _startDate;
   DateTime? _endDate;
-  late ReturnRepository _repository;
+  late ReturnsProvider _provider;
   
   @override
   void initState() {
     super.initState();
     // We need to delay the initialization until after the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initRepository();
+      _initProvider();
       _fetchReturns();
     });
   }
   
-  void _initRepository() {
+  void _initProvider() {
     try {
-      // Try to get the repository from the provider first
-      _repository = Provider.of<ReturnRepository>(context, listen: false);
+      // Try to get the provider from the context first
+      _provider = Provider.of<ReturnsProvider>(context, listen: false);
     } catch (e) {
-      // If provider not found, create a local instance with default API client
-      final apiClient = ApiClient();
-      _repository = ReturnRepositoryImpl(apiClient);
+      // If provider not found, create a local instance
+      _provider = locator<ReturnsProvider>();
     }
   }
   
@@ -65,17 +64,19 @@ class _ReturnsScreenState extends State<ReturnsScreen> {
     });
     
     try {
-      final returns = await _repository.getReturns(
-        search: _searchController.text,
+      // Use the provider to load returns
+      await _provider.loadReturns(
+        refresh: true,
         status: _selectedStatus,
-        startDate: _startDate,
-        endDate: _endDate,
+        customerName: _searchController.text.isNotEmpty ? _searchController.text : null,
       );
       
       if (mounted) {
         setState(() {
-          _returns = returns;
+          _returns = _provider.returns;
           _isLoading = false;
+          _hasError = _provider.error != null;
+          _errorMessage = _provider.error;
         });
       }
     } catch (e) {
@@ -144,7 +145,7 @@ class _ReturnsScreenState extends State<ReturnsScreen> {
   
   // Calculate total amount of returns
   double get _totalReturnsAmount => 
-      _returns.fold(0, (total, returnItem) => total + returnItem.amount);
+      _returns.fold(0, (total, returnItem) => total + returnItem.totalAmount);
   
   @override
   Widget build(BuildContext context) {
@@ -383,7 +384,10 @@ class _ReturnsScreenState extends State<ReturnsScreen> {
     final l10n = AppLocalizations.of(context);
     
     if (_isLoading) {
-      return const Center(child: LoadingWidget());
+      return ListView.builder(
+        itemCount: 8,
+        itemBuilder: (context, index) => const TransactionCardShimmer(),
+      );
     }
     
     if (_hasError) {
@@ -434,7 +438,7 @@ class _ReturnsScreenState extends State<ReturnsScreen> {
     // Group returns by date
     final groupedReturns = <String, List<ReturnModel>>{};
     for (final returnItem in _returns) {
-      final key = returnItem.monthYear;
+      final key = DateFormat('MMMM yyyy').format(returnItem.dateTime);
       if (groupedReturns.containsKey(key)) {
         groupedReturns[key]!.add(returnItem);
       } else {
@@ -451,7 +455,7 @@ class _ReturnsScreenState extends State<ReturnsScreen> {
           final monthYear = groupedReturns.keys.elementAt(index);
           final returns = groupedReturns[monthYear]!;
           final totalForMonth = returns.fold<double>(
-            0, (sum, returnItem) => sum + returnItem.amount
+            0, (sum, returnItem) => sum + returnItem.totalAmount
           );
           
           return Column(
@@ -550,7 +554,7 @@ class ReturnCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'Order #${returnData.orderId.split('-').last}',
+                    'Order #${returnData.originalSaleId.split('-').last}',
                     style: TextStyle(
                       color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
                       fontSize: 14,
@@ -561,26 +565,24 @@ class ReturnCard extends StatelessWidget {
               const SizedBox(height: 8),
               
               // Customer info
-              if (returnData.customerName != null) ...[
-                Row(
-                  children: [
-                    const Icon(
-                      LucideIcons.user,
-                      size: 16,
-                      color: AppTheme.mkbhdLightGrey,
+              Row(
+                children: [
+                  const Icon(
+                    LucideIcons.user,
+                    size: 16,
+                    color: AppTheme.mkbhdLightGrey,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    returnData.customerName,
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
+                      fontSize: 14,
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      returnData.customerName!,
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-              ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
               
               // Return reason
               Row(
@@ -649,16 +651,15 @@ class ReturnCard extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          if (returnData.items.first.reason != null)
-                            Text(
-                              returnData.items.first.reason!,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: isDarkMode 
-                                    ? Colors.grey.shade400 
-                                    : Colors.grey.shade700,
-                              ),
-                              maxLines: 1,
+                          Text(
+                            returnData.items.first.reason,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDarkMode 
+                                  ? Colors.grey.shade400 
+                                  : Colors.grey.shade700,
+                            ),
+                            maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                         ],
@@ -708,7 +709,7 @@ class ReturnCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        returnData.formattedAmount,
+                        'TSh ${NumberFormat('#,###').format(returnData.totalAmount)}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -730,7 +731,7 @@ class ReturnCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        returnData.formattedDate,
+                        DateFormat('dd MMM yyyy').format(returnData.dateTime),
                         style: TextStyle(
                           fontSize: 14,
                           color: isDarkMode 
@@ -742,43 +743,6 @@ class ReturnCard extends StatelessWidget {
                   ),
                 ],
               ),
-              
-              // Refunded indicator if applicable
-              if (returnData.isRefunded)
-                Container(
-                  margin: const EdgeInsets.only(top: 12),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.green.withOpacity(0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        LucideIcons.checkCircle,
-                        size: 14,
-                        color: Colors.green,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Refunded: ${NumberFormat('#,###').format(returnData.refundAmount)} TSh',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
             ],
           ),
         ),

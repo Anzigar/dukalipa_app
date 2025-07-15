@@ -4,11 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/network/api_client.dart';
 import '../models/installment_model.dart';
 import '../repositories/installment_repository.dart';
 import '../repositories/installment_repository_impl.dart' as impl;
-import '../../../common/widgets/loading_widget.dart';
+import '../../../common/widgets/shimmer_loading.dart';
 
 class InstallmentDetailsScreen extends StatefulWidget {
   final String installmentId;
@@ -43,9 +42,8 @@ class _InstallmentDetailsScreenState extends State<InstallmentDetailsScreen> {
       // Try to get the repository from the provider first
       _repository = Provider.of<InstallmentRepository>(context, listen: false);
     } catch (e) {
-      // If provider not found, create a local instance with default API client
-      final apiClient = ApiClient();
-      _repository = impl.InstallmentRepositoryImpl(apiClient);
+      // If provider not found, create a local instance
+      _repository = impl.InstallmentRepositoryImpl();
     }
   }
   
@@ -100,7 +98,7 @@ class _InstallmentDetailsScreenState extends State<InstallmentDetailsScreen> {
   
   Widget _buildContent() {
     if (_isLoading) {
-      return const Center(child: LoadingWidget());
+      return const TransactionCardShimmer();
     }
     
     if (_hasError) {

@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../common/widgets/custom_button.dart';
 import '../../../common/widgets/custom_text_field.dart';
 import '../models/product_group_model.dart';
@@ -93,7 +93,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           content: const Text('Please select at least one category'),
           backgroundColor: Theme.of(context).colorScheme.error,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
       );
       return;
@@ -126,7 +126,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             content: Text('${widget.group != null ? 'Updated' : 'Created'} group successfully'),
             backgroundColor: Theme.of(context).colorScheme.primary,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
           ),
         );
         Navigator.of(context).pop(savedGroup);
@@ -138,7 +138,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             content: Text('Failed to ${widget.group != null ? 'update' : 'create'} group: ${e.toString()}'),
             backgroundColor: Theme.of(context).colorScheme.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
           ),
         );
       }
@@ -149,16 +149,14 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
         decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
           border: Border.all(
-            color: colorScheme.outlineVariant.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
             width: 1,
           ),
         ),
@@ -166,49 +164,52 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           children: [
             // Handle bar
             Container(
-              margin: const EdgeInsets.only(top: 12),
-              height: 4,
-              width: 40,
+              margin: EdgeInsets.only(top: 12.h),
+              height: 4.h,
+              width: 40.w,
               decoration: BoxDecoration(
-                color: colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(2.r),
               ),
             ),
             
             // Header
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.w),
               child: Row(
                 children: [
                   Icon(
                     Icons.folder_outlined,
-                    color: colorScheme.primary,
-                    size: 24,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 24.sp,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Text(
                     widget.group != null ? 'Edit Group' : 'Create Group',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 20.sp,
                       fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: Icon(Icons.close, color: colorScheme.onSurfaceVariant),
+                    icon: Icon(
+                      Icons.close,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
             ),
             
-            const Divider(height: 1),
+            Divider(height: 1.h, color: Theme.of(context).colorScheme.outline.withOpacity(0.3)),
             
             // Form content
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16.w),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -250,34 +251,43 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                         children: [
                           Icon(
                             Icons.category_outlined,
-                            color: colorScheme.primary,
-                            size: 20,
+                            color: Theme.of(context).colorScheme.primary,
+                            size: 20.sp,
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8.w),
                           Text(
                             'Categories*',
                             style: TextStyle(
                               fontWeight: FontWeight.w500,
-                              fontSize: 14,
-                              color: colorScheme.onSurface,
+                              fontSize: 14.sp,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                        spacing: 8.w,
+                        runSpacing: 8.h,
                         children: _availableCategories.map((category) {
                           final isSelected = _selectedCategories.contains(category);
                           return FilterChip(
                             label: Text(category),
                             selected: isSelected,
-                            selectedColor: colorScheme.primary.withOpacity(0.2),
-                            checkmarkColor: colorScheme.primary,
+                            selectedColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                            checkmarkColor: Theme.of(context).colorScheme.primary,
+                            backgroundColor: Theme.of(context).colorScheme.surface,
                             labelStyle: TextStyle(
-                              color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                              color: isSelected 
+                                  ? Theme.of(context).colorScheme.primary 
+                                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                               fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                              fontSize: 13.sp,
+                            ),
+                            side: BorderSide(
+                              color: isSelected 
+                                  ? Theme.of(context).colorScheme.primary 
+                                  : Theme.of(context).colorScheme.outline.withOpacity(0.5),
                             ),
                             onSelected: (selected) {
                               setState(() {

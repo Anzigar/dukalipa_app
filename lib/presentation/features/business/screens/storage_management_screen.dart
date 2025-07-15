@@ -13,6 +13,7 @@ class _StorageManagementScreenState extends State<StorageManagementScreen> with 
   bool _isLoading = false;
   late TabController _tabController;
   final List<StorageLocation> _storageLocations = [];
+  Set<String> _selectedView = {'locations'}; // For segmented button
   
   @override
   void initState() {
@@ -81,28 +82,56 @@ class _StorageManagementScreenState extends State<StorageManagementScreen> with 
         title: const Text('Storage Management'),
         elevation: 0,
         backgroundColor: Colors.transparent,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppTheme.mkbhdRed,
-          unselectedLabelColor: AppTheme.mkbhdLightGrey,
-          indicatorColor: AppTheme.mkbhdRed,
-          indicatorWeight: 3,
-          indicatorSize: TabBarIndicatorSize.tab,
-          tabs: const [
-            Tab(text: 'Locations'),
-            Tab(text: 'Inventory'),
-            Tab(text: 'Transfers'),
-          ],
-        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
+          : Column(
               children: [
-                _buildLocationsTab(),
-                _buildInventoryTab(),
-                _buildTransfersTab(),
+                // Material 3 Segmented Button replacing TabBar
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment<String>(
+                        value: 'locations',
+                        label: Text('Locations'),
+                        icon: Icon(Icons.location_on_outlined),
+                      ),
+                      ButtonSegment<String>(
+                        value: 'inventory',
+                        label: Text('Inventory'),
+                        icon: Icon(Icons.inventory_2_outlined),
+                      ),
+                      ButtonSegment<String>(
+                        value: 'transfers',
+                        label: Text('Transfers'),
+                        icon: Icon(Icons.swap_horiz_rounded),
+                      ),
+                    ],
+                    selected: _selectedView,
+                    onSelectionChanged: (Set<String> newSelection) {
+                      setState(() {
+                        _selectedView = newSelection;
+                      });
+                    },
+                    style: SegmentedButton.styleFrom(
+                      backgroundColor: Theme.of(context).cardColor,
+                      foregroundColor: AppTheme.mkbhdLightGrey,
+                      selectedBackgroundColor: AppTheme.mkbhdRed.withOpacity(0.1),
+                      selectedForegroundColor: AppTheme.mkbhdRed,
+                      side: BorderSide(color: AppTheme.mkbhdLightGrey.withOpacity(0.2)),
+                    ),
+                  ),
+                ),
+                
+                // Content based on selection
+                Expanded(
+                  child: _selectedView.contains('locations')
+                      ? _buildLocationsTab()
+                      : _selectedView.contains('inventory')
+                          ? _buildInventoryTab()
+                          : _buildTransfersTab(),
+                ),
               ],
             ),
       floatingActionButton: FloatingActionButton.extended(

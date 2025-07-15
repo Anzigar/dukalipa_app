@@ -2,11 +2,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:lottie/lottie.dart';
 
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/services/app_initialization_service.dart';
+import '../../../common/widgets/shimmer_loading.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,37 +16,36 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  late Timer _timer;
-  late AnimationController _animationController;
+class _SplashScreenState extends State<SplashScreen> {
   bool _isNavigating = false;
 
   @override
   void initState() {
     super.initState();
     
-    // Set up animation controller for the Lottie animation
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 5),
-    );
-    
-    // Play the animation
-    _animationController.forward();
-    
-    // Set a 5-second timer before navigating to the next screen
-    _timer = Timer(const Duration(seconds: 5), () {
-      if (mounted && !_isNavigating) {
-        _navigateToNextScreen();
-      }
-    });
+    // Initialize app and check authentication status
+    _initializeApp();
   }
 
-  @override
-  void dispose() {
-    _timer.cancel();
-    _animationController.dispose();
-    super.dispose();
+  Future<void> _initializeApp() async {
+    try {
+      // Initialize the app and check for existing sessions
+      await AppInitializationService.initialize(context);
+      
+      // Wait minimum 3 seconds for smooth UX
+      await Future.delayed(const Duration(seconds: 3));
+      
+      if (mounted && !_isNavigating) {
+        await _navigateToNextScreen();
+      }
+    } catch (e) {
+      debugPrint('App initialization error: $e');
+      // Wait minimum time and navigate to login as fallback
+      await Future.delayed(const Duration(seconds: 3));
+      if (mounted && !_isNavigating) {
+        _navigateToLogin();
+      }
+    }
   }
 
   Future<void> _navigateToNextScreen() async {
@@ -58,19 +58,26 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     try {
       final authProvider = context.read<AuthProvider>();
-      final bool isLoggedIn = authProvider.isLoggedIn;
-
-      if (isLoggedIn) {
-        context.go('/home');
+      
+      // Check if user is authenticated (session restored during initialization)
+      if (authProvider.isAuthenticated && authProvider.userProfile != null) {
+        // User has valid session, go to home
+        if (mounted) {
+          context.go('/home');
+        }
       } else {
-        context.go('/login');
+        // No valid session, go to login
+        _navigateToLogin();
       }
     } catch (e) {
       debugPrint('Error during navigation: $e');
-      // If AuthProvider isn't available, go to login as a fallback
-      if (mounted) {
-        context.go('/login');
-      }
+      _navigateToLogin();
+    }
+  }
+
+  void _navigateToLogin() {
+    if (mounted) {
+      context.go('/login');
     }
   }
 
@@ -89,32 +96,36 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // App logo
-              Container(
-                width: size.width * 0.3,
-                height: size.width * 0.3,
-                decoration: BoxDecoration(
-                  color: AppTheme.mkbhdRed,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Center(
-                  child: Text(
-                    'D',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 60,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Montserrat',
+              // App logo with shimmer effect
+              ShimmerLoading(
+                child: Container(
+                  width: size.width * 0.3,
+                  height: size.width * 0.3,
+                  decoration: BoxDecoration(
+                    color: AppTheme.mkbhdRed,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'D',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 60,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Montserrat',
+                      ),
                     ),
                   ),
                 ),
               ),
               const SizedBox(height: 24),
-              // App Name
-              Text(
-                appName,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+              // App Name with shimmer effect
+              ShimmerLoading(
+                child: Text(
+                  appName,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -126,35 +137,44 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 ),
               ),
               const SizedBox(height: 48),
-              // Lottie animation from assets/animations folder
+              // Shimmer loading animation
               SizedBox(
-                width: 100,
-                height: 100,
-                child: Lottie.asset(
-                  'assets/animations/loader2.json',
-                  controller: _animationController,
-                  fit: BoxFit.contain,
-                  onLoaded: (composition) {
-                    // Adjust animation controller duration to match the composition
-                    _animationController.duration = composition.duration;
-                    _animationController.forward();
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    debugPrint('Lottie error: $error');
-                    // Fallback to a basic loading indicator if Lottie fails
-                    return const CircularProgressIndicator(
-                      color: AppTheme.mkbhdRed,
-                    );
-                  },
+                width: 120,
+                height: 120,
+                child: ShimmerLoading(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(60),
+                    ),
+                    child: Center(
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: AppTheme.mkbhdRed.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(40),
+                        ),
+                        child: const Icon(
+                          Icons.store,
+                          color: AppTheme.mkbhdRed,
+                          size: 40,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
-              // Loading text
-              Text(
-                'Loading...',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: isDark ? Colors.white70 : Colors.grey.shade700,
+              // Shimmer loading text
+              ShimmerLoading(
+                child: Container(
+                  width: 100,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
             ],

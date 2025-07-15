@@ -4,7 +4,7 @@ class AppConstants {
   static const String appVersion = '1.0.0';
   
   // API endpoints
-  static const String baseUrl = "https://api.dukalipa.com/api/v1"; // Update with your actual API URL
+  static const String baseUrl = "http://127.0.0.1:8000"; // Updated to match the OpenAPI documentation
   static const String refreshTokenEndpoint = "/auth/refresh-token";
   
   // Shared preferences keys

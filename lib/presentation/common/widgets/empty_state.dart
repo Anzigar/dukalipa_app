@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/theme/app_theme.dart';
+
 
 class EmptyState extends StatelessWidget {
   final IconData icon;
@@ -25,7 +27,6 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color airbnbRed = Color(0xFFFF385C);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Center(
@@ -44,7 +45,7 @@ class EmptyState extends StatelessWidget {
               child: Icon(
                 icon,
                 size: iconSize ?? 60,
-                color: airbnbRed,
+                color: AppTheme.mkbhdRed,
               ),
             ),
             const SizedBox(height: 24),
@@ -74,7 +75,7 @@ class EmptyState extends StatelessWidget {
                   onButtonPressed!();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: airbnbRed,
+                  backgroundColor: AppTheme.mkbhdRed,
                   foregroundColor: Colors.white,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 32, vertical: 16),

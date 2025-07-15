@@ -1,4 +1,4 @@
-name: lumina
+name: dukalipa_app
 description: A shop management application.
 publish_to: 'none'
 version: 1.0.0+1
@@ -32,7 +32,8 @@ dependencies:
   
   # Storage
   shared_preferences: ^2.5.3
-  
+  flutter_secure_storage: ^9.0.0
+
   # Dependency Injection
   get_it: ^7.6.0
   
@@ -46,6 +47,9 @@ dependencies:
 
   # Charts
   fl_chart: ^0.66.0
+
+  # JSON Serialization
+  json_annotation: ^4.8.1
 
   # Icons
   lucide_icons: ^0.257.0
@@ -69,6 +73,7 @@ dev_dependencies:
   flutter_lints: ^2.0.2
   mockito: ^5.4.2
   build_runner: ^2.4.6
+  json_serializable: ^6.7.1
 
 flutter:
   uses-material-design: true

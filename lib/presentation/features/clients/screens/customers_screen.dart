@@ -1,3 +1,4 @@
+import 'package:dukalipa_app/presentation/common/widgets/loading_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -5,11 +6,10 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/network/api_client.dart';
 import '../models/customer_model.dart';
 import '../repositories/customer_repository.dart';
-import '../../../common/widgets/custom_search_bar.dart';
-import '../../../common/widgets/loading_widget.dart';
+import '../../../common/widgets/material3_search_bar.dart';
+import '../../../common/widgets/shimmer_loading.dart';
 import '../../../common/widgets/empty_state.dart';
 
 class CustomersScreen extends StatefulWidget {
@@ -43,9 +43,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
       // Try to get the repository from the provider first
       _repository = Provider.of<CustomerRepository>(context, listen: false);
     } catch (e) {
-      // If provider not found, create a local instance with default API client
-      final apiClient = ApiClient();
-      _repository = CustomerRepositoryImpl(apiClient);
+      // If provider not found, create a local instance
+      _repository = CustomerRepositoryImpl();
     }
   }
   
@@ -187,13 +186,13 @@ class _CustomersScreenState extends State<CustomersScreen> {
               ),
             ),
           
-          // Search bar
+          // Material 3 Search bar
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: CustomSearchBar(
+            child: Material3SearchBar(
               controller: _searchController,
+              onChanged: (query) => _onSearch(query),
               hintText: 'Search customers',
-              onSearch: _onSearch,
             ),
           ),
           
@@ -272,7 +271,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
   
   Widget _buildCustomersList() {
     if (_isLoading) {
-      return const Center(child: LoadingWidget());
+      return ListView.builder(
+        itemCount: 8,
+        itemBuilder: (context, index) => const TransactionCardShimmer(),
+      );
     }
     
     if (_hasError) {

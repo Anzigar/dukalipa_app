@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/product_model.dart';
 
 class InventorySummaryWidget extends StatelessWidget {
@@ -14,117 +15,167 @@ class InventorySummaryWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final summary = _calculateInventorySummary();
+    final theme = Theme.of(context);
     
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: colorScheme.primary.withOpacity(0.2),
-          width: 1,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: colorScheme.outline.withOpacity(0.12),
+            width: 1,
+          ),
         ),
-        // No boxShadow - completely removed
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _buildSummaryItem(
-                  'Total Products', 
-                  '${summary['totalProducts']}',
-                  Icons.inventory_2_outlined,
-                ),
-              ),
-              Expanded(
-                child: _buildSummaryItem(
-                  'Low Stock', 
-                  '${summary['lowStockCount']}',
-                  Icons.warning_outlined,
-                ),
-              ),
-              Expanded(
-                child: _buildSummaryItem(
-                  'Out of Stock', 
-                  '${summary['outOfStockCount']}',
-                  Icons.remove_shopping_cart_outlined,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Divider(
-            color: colorScheme.onPrimaryContainer.withOpacity(0.2), 
-            height: 1,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Icon(
-                Icons.trending_up_outlined,
-                color: colorScheme.onPrimaryContainer,
-                size: 18,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Total Inventory Value:',
-                style: TextStyle(
-                  color: colorScheme.onPrimaryContainer,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const Spacer(),
-              Flexible(
-                child: Text(
-                  'TSh ${summary['totalValue'].toStringAsFixed(0)}',
-                  style: TextStyle(
-                    color: colorScheme.onPrimaryContainer,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+              // Header
+              Row(
+                children: [
+                  Icon(
+                    Icons.inventory_2_rounded,
+                    size: 24,
+                    color: colorScheme.primary,
                   ),
-                  overflow: TextOverflow.ellipsis,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Inventory Overview',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 20),
+              
+              // Total Value - Primary stat
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(12),
                 ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Total Inventory Value',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'TSh ${NumberFormat('#,###').format(summary['totalValue'])}',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        color: colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Stats Row
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      context,
+                      label: 'Total Products',
+                      value: '${summary['totalProducts']}',
+                      icon: Icons.apps_rounded,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStatCard(
+                      context,
+                      label: 'Low Stock',
+                      value: '${summary['lowStockCount']}',
+                      icon: Icons.warning_amber_rounded,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStatCard(
+                      context,
+                      label: 'Out of Stock',
+                      value: '${summary['outOfStockCount']}',
+                      icon: Icons.remove_circle_outline_rounded,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildSummaryItem(String title, String value, IconData icon) {
-    return Column(
-      children: [
-        Icon(
-          icon,
-          color: colorScheme.onPrimaryContainer,
-          size: 24,
+  Widget _buildStatCard(
+    BuildContext context, {
+    required String label,
+    required String value,
+    required IconData icon,
+  }) {
+    final theme = Theme.of(context);
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: colorScheme.outline.withOpacity(0.08),
+          width: 1,
         ),
-        const SizedBox(height: 6),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: colorScheme.onPrimaryContainer,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: colorScheme.primary,
+              ),
+              const Spacer(),
+              Text(
+                value,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 11,
-            color: colorScheme.onPrimaryContainer.withOpacity(0.8),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -132,7 +183,14 @@ class InventorySummaryWidget extends StatelessWidget {
     int totalProducts = products.length;
     int lowStockCount = products.where((p) => p.isLowStock).length;
     int outOfStockCount = products.where((p) => p.isOutOfStock).length;
-    double totalValue = products.fold(0, (sum, product) => sum + product.inventoryValue);
+    
+    // Fix: Calculate total inventory value properly for all product types
+    double totalValue = products.fold(0.0, (sum, product) {
+      // Handle products with or without serial numbers
+      // Use quantity * cost price for accessories and other non-serialized items
+      double productValue = product.quantity * product.costPrice;
+      return sum + productValue;
+    });
     
     return {
       'totalProducts': totalProducts,

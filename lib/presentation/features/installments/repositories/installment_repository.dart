@@ -1,5 +1,5 @@
 import 'package:uuid/uuid.dart';
-import '../../../../core/network/api_client.dart';
+import 'package:dio/dio.dart';
 import '../models/installment_model.dart';
 import '../../clients/models/client_model.dart';
 import '../models/installment_payment_model.dart';
@@ -68,10 +68,14 @@ abstract class InstallmentRepository {
 }
 
 class InstallmentRepositoryImpl implements InstallmentRepository {
-  final ApiClient _apiClient;
+  final Dio _dio;
   final Uuid _uuid = const Uuid();
 
-  InstallmentRepositoryImpl(this._apiClient);
+  InstallmentRepositoryImpl() : _dio = Dio(BaseOptions(
+    baseUrl: 'http://127.0.0.1:8000/api/v1',
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 3),
+  ));
   
   @override
   Future<List<InstallmentModel>> getInstallments({
@@ -99,8 +103,8 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
         queryParams['end_date'] = formatDateForApi(endDate);
       }
       
-      final response = await _apiClient.get('/installments', queryParameters: queryParams);
-      final List<dynamic> data = response['data'] ?? [];
+      final response = await _dio.get('/installments', queryParameters: queryParams);
+      final List<dynamic> data = response.data['data'] ?? [];
       
       return data.map((item) => InstallmentModel.fromJson(item)).toList();
     } catch (e) {
@@ -111,8 +115,8 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
   @override
   Future<InstallmentModel> getInstallmentById(String id) async {
     try {
-      final response = await _apiClient.get('/installments/$id');
-      return InstallmentModel.fromJson(response['data']);
+      final response = await _dio.get('/installments/$id');
+      return InstallmentModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -159,8 +163,8 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
         'notes': notes,
       };
       
-      final response = await _apiClient.post('/installments', data: data);
-      return InstallmentModel.fromJson(response['data']);
+      final response = await _dio.post('/installments', data: data);
+      return InstallmentModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -180,12 +184,12 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
         'note': note,
       };
       
-      final response = await _apiClient.post(
+      final response = await _dio.post(
         '/installments/$installmentId/payments',
         data: data,
       );
       
-      return InstallmentModel.fromJson(response['data']);
+      return InstallmentModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -209,8 +213,8 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
         if (dueDate != null) 'due_date': dueDate.toIso8601String(),
       };
       
-      final response = await _apiClient.patch('/installments/$id', data: data);
-      return InstallmentModel.fromJson(response['data']);
+      final response = await _dio.patch('/installments/$id', data: data);
+      return InstallmentModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -219,8 +223,8 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
   @override
   Future<List<InstallmentPaymentModel>> getInstallmentPayments(String installmentId) async {
     try {
-      final response = await _apiClient.get('/installments/$installmentId/payments');
-      final List<dynamic> data = response['data'] ?? [];
+      final response = await _dio.get('/installments/$installmentId/payments');
+      final List<dynamic> data = response.data['data'] ?? [];
       
       return data.map((item) => InstallmentPaymentModel.fromJson(item)).toList();
     } catch (e) {
@@ -246,12 +250,12 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
         'notes': notes,
       };
       
-      final response = await _apiClient.post(
+      final response = await _dio.post(
         '/installments/$installmentId/payments',
         data: data,
       );
       
-      return InstallmentPaymentModel.fromJson(response['data']);
+      return InstallmentPaymentModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -264,8 +268,8 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
         'status': status,
       };
       
-      final response = await _apiClient.patch('/installments/$id', data: data);
-      return InstallmentModel.fromJson(response['data']);
+      final response = await _dio.patch('/installments/$id', data: data);
+      return InstallmentModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -274,7 +278,7 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
   @override
   Future<void> deleteInstallment(String id) async {
     try {
-      await _apiClient.delete('/installments/$id');
+      await _dio.delete('/installments/$id');
     } catch (e) {
       throw _handleError(e);
     }
@@ -286,6 +290,9 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
   }
   
   Exception _handleError(dynamic error) {
+    if (error is DioException) {
+      return Exception('Failed to process installment operation: ${error.message}');
+    }
     if (error is Exception) {
       return Exception('Failed to process installment operation: ${error.toString()}');
     }

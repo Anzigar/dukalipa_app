@@ -1,6 +1,6 @@
 import 'dart:io';
-import '../../../../core/network/api_client.dart';
 import '../models/product_model.dart';
+import '../../../../data/services/inventory_service.dart';
 
 abstract class InventoryRepository {
   Future<List<ProductModel>> getProducts({
@@ -8,21 +8,24 @@ abstract class InventoryRepository {
     String? category,
     String? supplier,
     int? page,
-    int? pageSize
+    int? pageSize,
   });
-  Future<ProductModel> getProductById(String id);
+
+  Future<ProductModel> getProductById(String productId);
   Future<ProductModel> createProduct(ProductModel product, {File? imageFile});
   Future<ProductModel> updateProduct(ProductModel product, {File? imageFile});
-  Future<void> deleteProduct(String id);
+  Future<void> deleteProduct(String productId);
   Future<List<String>> getCategories();
   Future<List<String>> getSuppliers();
   Future<int> getLowStockCount();
+  Future<ProductModel?> getProductByBarcode(String barcode);
 }
 
 class InventoryRepositoryImpl implements InventoryRepository {
-  final ApiClient _apiClient;
+  final InventoryService _inventoryService;
 
-  InventoryRepositoryImpl(this._apiClient);
+  InventoryRepositoryImpl() 
+      : _inventoryService = InventoryService();
 
   @override
   Future<List<ProductModel>> getProducts({
@@ -30,290 +33,92 @@ class InventoryRepositoryImpl implements InventoryRepository {
     String? category,
     String? supplier,
     int? page,
-    int? pageSize
+    int? pageSize,
   }) async {
     try {
-      final response = await _apiClient.get(
-        '/products',
-        queryParameters: {
-          if (search != null && search.isNotEmpty) 'search': search,
-          if (category != null && category.isNotEmpty) 'category': category,
-          if (supplier != null && supplier.isNotEmpty) 'supplier': supplier,
-          if (page != null) 'page': page,
-          if (pageSize != null) 'page_size': pageSize,
-        },
-      );
-
-      // Handle missing data gracefully
-      if (response == null) {
-        return _getFallbackProducts();
-      }
-
-      final data = response['data'];
-      
-      // If data is not a list or is null, return fallback data
-      if (data == null || data is! List) {
-        return _getFallbackProducts();
-      }
-
-      // Convert each item to a ProductModel, handling any conversion errors
-      return List<ProductModel>.from(
-        data.map((item) {
-          try {
-            return ProductModel.fromJson(item);
-          } catch (e) {
-            // If any individual item fails to parse, return a default product
-            return _createDefaultProduct();
-          }
-        }),
+      return await _inventoryService.getProducts(
+        search: search,
+        category: category,
+        supplier: supplier,
+        page: page,
+        pageSize: pageSize,
       );
     } catch (e) {
-      // Log the error silently
-      print('Error fetching products: $e');
-      
-      // Return fallback data instead of throwing an error
-      return _getFallbackProducts();
+      throw Exception('Failed to get products: ${e.toString()}');
     }
   }
 
-  List<ProductModel> _getFallbackProducts() {
-    // Return some fallback products to prevent UI errors
-    return [
-      _createDefaultProduct(
-        id: '1', 
-        name: 'Sample Product 1',
-        quantity: 15,
-        sellingPrice: 25000,
-      ),
-      _createDefaultProduct(
-        id: '2', 
-        name: 'Sample Product 2',
-        quantity: 5,
-        sellingPrice: 35000,
-        category: 'Electronics',
-      ),
-      _createDefaultProduct(
-        id: '3', 
-        name: 'Sample Product 3',
-        quantity: 0,
-        sellingPrice: 18000,
-        category: 'Clothing',
-      ),
-    ];
-  }
-
-  ProductModel _createDefaultProduct({
-    String id = 'default_id',
-    String name = 'Sample Product',
-    int quantity = 10,
-    double sellingPrice = 20000,
-    double costPrice = 15000,
-    String? category,
-    String? supplier,
-  }) {
-    return ProductModel(
-      id: id,
-      name: name,
-      description: 'Sample product description',
-      barcode: null,
-      sellingPrice: sellingPrice,
-      costPrice: costPrice,
-      quantity: quantity,
-      lowStockThreshold: 5,
-      category: category,
-      supplier: supplier,
-      imageUrl: null,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
-  }
-
   @override
-  Future<ProductModel> getProductById(String id) async {
+  Future<ProductModel> getProductById(String productId) async {
     try {
-      final response = await _apiClient.get('/products/$id');
-      return ProductModel.fromJson(response);
+      return await _inventoryService.getProductById(productId);
     } catch (e) {
-      // Return a default product rather than throwing an error
-      return _createDefaultProduct(
-        id: id,
-        name: 'Product $id',
-        quantity: 10,
-        sellingPrice: 25000,
-        costPrice: 18000,
-        category: 'General',
-      );
+      throw Exception('Failed to get product: ${e.toString()}');
     }
   }
 
   @override
   Future<ProductModel> createProduct(ProductModel product, {File? imageFile}) async {
     try {
-      // Handle image upload if provided
-      Map<String, dynamic> productData = product.toJson();
-      
-      if (imageFile != null) {
-        // In a real implementation, we would upload the image first
-        // and then add the URL to the product data
-        // For now, we'll just simulate this
-        productData['imageUrl'] = 'https://example.com/images/${DateTime.now().millisecondsSinceEpoch}.jpg';
-      }
-      
-      final response = await _apiClient.post(
-        '/products',
-        data: productData,
-      );
-      
-      return ProductModel.fromJson(response);
+      return await _inventoryService.createProduct(product.toJson());
     } catch (e) {
-      // Instead of throwing, return the product as if it was created
-      // In a real app, you might want to show an error message instead
-      return product.copyWith(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
+      throw Exception('Failed to create product: ${e.toString()}');
     }
   }
 
   @override
   Future<ProductModel> updateProduct(ProductModel product, {File? imageFile}) async {
     try {
-      // Handle image upload if provided
-      Map<String, dynamic> productData = product.toJson();
-      
-      if (imageFile != null) {
-        // In a real implementation, we would upload the image first
-        productData['imageUrl'] = 'https://example.com/images/${DateTime.now().millisecondsSinceEpoch}.jpg';
-      }
-      
-      final response = await _apiClient.put(
-        '/products/${product.id}',
-        data: productData,
-      );
-      
-      return ProductModel.fromJson(response);
+      return await _inventoryService.updateProduct(product.id, product.toJson());
     } catch (e) {
-      // Return the updated product even if the API call fails
-      return product.copyWith(
-        updatedAt: DateTime.now(),
-      );
+      throw Exception('Failed to update product: ${e.toString()}');
     }
   }
 
   @override
-  Future<void> deleteProduct(String id) async {
+  Future<void> deleteProduct(String productId) async {
     try {
-      await _apiClient.delete('/products/$id');
+      await _inventoryService.deleteProduct(productId);
     } catch (e) {
-      // Silently handle the error
-      // In a real app, you might want to show an error message
+      throw Exception('Failed to delete product: ${e.toString()}');
     }
   }
 
   @override
   Future<List<String>> getCategories() async {
     try {
-      final response = await _apiClient.get('/categories');
-      
-      if (response == null || !response.containsKey('data') || response['data'] == null) {
-        return _getDefaultCategories();
-      }
-      
-      final List<dynamic> data = response['data'];
-      return data.map((item) => item['name'] as String).toList();
+      return await _inventoryService.getCategories();
     } catch (e) {
-      // Return default categories instead of throwing
-      return _getDefaultCategories();
+      throw Exception('Failed to get categories: ${e.toString()}');
     }
-  }
-
-  List<String> _getDefaultCategories() {
-    return [
-      'Electronics',
-      'Clothing',
-      'Food',
-      'Beverages',
-      'Stationery',
-      'Household',
-      'Health & Beauty',
-      'Other'
-    ];
   }
 
   @override
   Future<List<String>> getSuppliers() async {
     try {
-      final response = await _apiClient.get('/suppliers');
-      
-      if (response == null || !response.containsKey('data') || response['data'] == null) {
-        return _getDefaultSuppliers();
-      }
-      
-      final List<dynamic> data = response['data'];
-      return data.map((item) => item['name'] as String).toList();
+      return await _inventoryService.getSuppliers();
     } catch (e) {
-      // Return default suppliers instead of throwing
-      return _getDefaultSuppliers();
+      throw Exception('Failed to get suppliers: ${e.toString()}');
     }
-  }
-
-  List<String> _getDefaultSuppliers() {
-    return [
-      'Local Supplier',
-      'International Distributor',
-      'Wholesale Market',
-      'Direct Factory',
-      'Online Store',
-      'Self-produced'
-    ];
   }
 
   @override
   Future<int> getLowStockCount() async {
     try {
-      final response = await _apiClient.get('/products/low-stock');
-      return response['count'] ?? 0;
+      final lowStockProducts = await _inventoryService.getLowStockProducts();
+      return lowStockProducts.length;
     } catch (e) {
-      // Default value if API fails
-      return 5;
+      throw Exception('Failed to get low stock count: ${e.toString()}');
     }
   }
-}
 
-// Extension to add a copyWith method to ProductModel if it doesn't already exist
-extension ProductModelExtension on ProductModel {
-  ProductModel copyWith({
-    String? id,
-    String? name,
-    String? description,
-    String? barcode,
-    double? sellingPrice,
-    double? costPrice,
-    int? quantity,
-    int? lowStockThreshold,
-    String? category,
-    String? supplier,
-    String? imageUrl,
-    Map<String, dynamic>? metadata,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) {
-    return ProductModel(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      description: description ?? this.description,
-      barcode: barcode ?? this.barcode,
-      sellingPrice: sellingPrice ?? this.sellingPrice,
-      costPrice: costPrice ?? this.costPrice,
-      quantity: quantity ?? this.quantity,
-      lowStockThreshold: lowStockThreshold ?? this.lowStockThreshold,
-      category: category ?? this.category,
-      supplier: supplier ?? this.supplier,
-      imageUrl: imageUrl ?? this.imageUrl,
-      metadata: metadata ?? this.metadata,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
+  @override
+  Future<ProductModel?> getProductByBarcode(String barcode) async {
+    try {
+      return await _inventoryService.getProductByBarcode(barcode);
+    } catch (e) {
+      // Return null if product not found or API fails
+      return null;
+    }
   }
 }

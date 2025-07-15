@@ -7,7 +7,7 @@ import '../../../../core/providers/notification_provider.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../models/notification_model.dart';
 import '../../../common/widgets/empty_state.dart';
-import '../../../common/widgets/loading_widget.dart';
+import '../../../common/widgets/shimmer_loading.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -52,7 +52,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final l10n = AppLocalizations.of(context)!;
     
     if (provider.isLoading) {
-      return const Center(child: LoadingWidget());
+      return ListView.builder(
+        itemCount: 6,
+        itemBuilder: (context, index) => const TransactionCardShimmer(),
+      );
     }
     
     if (provider.error != null) {
@@ -111,7 +114,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 child: Text(
                   dateGroup,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Colors.grey[600],
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                     fontWeight: FontWeight.w500,
                   ),
                 ),

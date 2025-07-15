@@ -1,25 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lumina/presentation/features/inventory/models/product_model.dart';
 import 'package:provider/provider.dart';
-import '../../presentation/features/inventory/screens/product_details_screen.dart';
+import '../../presentation/features/suppliers/screens/supplier_detail_screen.dart';
 import '../providers/auth_provider.dart';
-import '../../presentation/features/splash/screens/splash_screen.dart';
 import '../../presentation/features/auth/screens/login_screen.dart';
 import '../../presentation/features/auth/screens/signup_screen.dart';
+import '../../presentation/features/barcode/screens/barcode_history_screen.dart';
+import '../../presentation/features/barcode/screens/barcode_scanner_screen.dart';
+import '../../presentation/features/business/screens/business_analytics_screen.dart';
+import '../../presentation/features/business/screens/business_hub_screen.dart';
+import '../../presentation/features/business/screens/damaged_products_screen.dart';
+import '../../presentation/features/business/screens/deleted_items_screen.dart';
+import '../../presentation/features/business/screens/storage_management_screen.dart';
 import '../../presentation/features/home/screens/home_screen.dart';
-import '../../presentation/features/sales/screens/sales_screen.dart';
+import '../../presentation/features/inventory/models/product_model.dart';
+import '../../presentation/features/inventory/screens/add_product_screen.dart';
+import '../../presentation/features/inventory/screens/inventory_screen.dart';
+import '../../presentation/features/inventory/screens/product_details_screen.dart';
+import '../../presentation/features/notifications/screens/notifications_screen.dart';
+import '../../presentation/features/profile/screens/edit_profile_screen.dart';
+import '../../presentation/features/profile/screens/profile_screen.dart';
+import '../../presentation/features/profile/screens/change_password_screen.dart';
+import '../../presentation/features/profile/screens/language_screen.dart';
+import '../../presentation/features/profile/screens/help_screen.dart';
+import '../../presentation/features/profile/screens/privacy_screen.dart';
+import '../../presentation/features/profile/screens/terms_screen.dart';
+import '../../presentation/features/settings/screens/settings_screen.dart';
 import '../../presentation/features/sales/screens/add_sale_screen.dart';
 import '../../presentation/features/sales/screens/sale_detail_screen.dart';
-import '../../presentation/features/inventory/screens/inventory_screen_updated.dart';
-import '../../presentation/features/inventory/screens/add_product_screen.dart';
-import '../../presentation/features/profile/screens/profile_screen.dart';
-import '../../presentation/features/suppliers/screens/supplier_detail_screen.dart';
-import '../../presentation/features/settings/screens/settings_screen.dart';
-import '../../presentation/features/notifications/screens/notifications_screen.dart';
-import '../../presentation/features/barcode/screens/barcode_scanner_screen.dart';
-import '../../presentation/features/barcode/screens/barcode_history_screen.dart';
-
+import '../../presentation/features/sales/screens/sales_screen.dart';
+import '../../presentation/features/splash/screens/splash_screen.dart';
 // Define a router class to consolidate app routing logic
 class AppRouter {
   static GoRouter get router => _router;
@@ -65,8 +75,15 @@ class AppRouter {
         path: '/inventory/:id',
         builder: (context, state) {
           final productId = state.pathParameters['id']!;
-          // Use the correct class name if ProductDetailScreen is not defined.
-          return ProductDetailsScreen(productId: productId); // <-- update to actual class name
+          return ProductDetailsScreen(productId: productId);
+        },
+      ),
+      
+      GoRoute(
+        path: '/inventory/product/:productId',
+        builder: (context, state) {
+          final productId = state.pathParameters['productId']!;
+          return ProductDetailsScreen(productId: productId);
         },
       ),
       
@@ -130,6 +147,97 @@ class AppRouter {
         builder: (context, state) => const ProfileScreen(),
       ),
       
+      GoRoute(
+        path: '/profile/edit',
+        builder: (context, state) => const EditProfileScreen(),
+      ),
+      
+      GoRoute(
+        path: '/profile/change-password',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to ChangePasswordScreen');
+          return const ChangePasswordScreen();
+        },
+      ),
+      
+      GoRoute(
+        path: '/profile/language',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to LanguageScreen');
+          return const LanguageScreen();
+        },
+      ),
+      
+      GoRoute(
+        path: '/profile/help',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to HelpScreen');
+          return const HelpScreen();
+        },
+      ),
+      
+      GoRoute(
+        path: '/profile/privacy',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to PrivacyScreen');
+          return const PrivacyScreen();
+        },
+      ),
+      
+      GoRoute(
+        path: '/profile/terms',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to TermsScreen');
+          return const TermsScreen();
+        },
+      ),
+      
+      // Business Management routes - MAKE SURE THESE ARE INCLUDED
+      GoRoute(
+        path: '/business/hub',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to BusinessHubScreen');
+          return const BusinessHubScreen();
+        },
+      ),
+      
+      GoRoute(
+        path: '/business/analytics',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to BusinessAnalyticsScreen');
+          return const BusinessAnalyticsScreen();
+        },
+      ),
+      
+      GoRoute(
+        path: '/business/storage',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to StorageManagementScreen');
+          return const StorageManagementScreen();
+        },
+      ),
+      
+      GoRoute(
+        path: '/business/damaged',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to DamagedProductsScreen');
+          return const DamagedProductsScreen();
+        },
+      ),
+      
+      GoRoute(
+        path: '/business/deleted',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to DeletedItemsScreen');
+          return const DeletedItemsScreen();
+        },
+      ),
+      
+      GoRoute(
+        path: '/business/more',
+        builder: (context, state) => const BusinessHubScreen(), // Default to hub for now
+      ),
+      
       // Settings
       GoRoute(
         path: '/settings',
@@ -180,32 +288,55 @@ class AppRouter {
       return null;
     },
     
-    // Error page for routes that don't exist
-    errorBuilder: (context, state) => Scaffold(
-      appBar: AppBar(
-        title: const Text('Page Not Found'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Oops! The page you are looking for does not exist.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () => GoRouter.of(context).go('/home'),
-              child: const Text('Go to Home'),
-            ),
-          ],
+    // Enhanced error builder with more debugging info
+    errorBuilder: (context, state) {
+      debugPrint('❌ Router Error: ${state.error}');
+      debugPrint('❌ Attempted path: ${state.matchedLocation}');
+      debugPrint('❌ Full location: ${state.uri}');
+      
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Page Not Found'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.go('/home'),
+          ),
         ),
-      ),
-    ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Colors.grey,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Page Not Found',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Path: ${state.matchedLocation}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => context.go('/home'),
+                child: const Text('Go to Home'),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
   );
 }
   

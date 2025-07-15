@@ -6,14 +6,26 @@ import '../utils/app_constants.dart';
 import '../network/dio_interceptors.dart';
 import '../network/api_client.dart';
 import '../../data/services/local_storage_service.dart';
+import '../../data/services/inventory_service.dart';
 import '../../presentation/features/auth/repositories/auth_repository.dart';
 import '../../presentation/features/inventory/repositories/inventory_repository.dart';
+import '../../presentation/features/home/repositories/analytics_repository.dart';
 import '../../presentation/features/sales/repositories/sales_repository.dart';
-import '../../presentation/features/expenses/repositories/expenses_repository.dart';
 import '../../presentation/features/notifications/repositories/notification_repository.dart';
 import '../../presentation/features/installments/repositories/installment_repository.dart';
 import '../../presentation/features/installments/repositories/installment_repository_impl.dart' as installment_impl;
 import '../../presentation/features/clients/repositories/client_repository.dart';
+import '../../presentation/features/clients/repositories/client_repository_impl.dart';
+import '../../data/services/product_service.dart';
+import '../../data/services/analytics_service.dart';
+import '../../data/services/sales_service.dart';
+import '../../data/services/returns_service.dart';
+import '../../data/services/deleted_sales_service.dart';
+import '../../data/services/damaged_products_service.dart';
+import '../../data/services/expenses_service.dart';
+import '../../presentation/features/damaged/providers/damaged_products_provider.dart';
+import '../../presentation/features/returns/providers/returns_provider.dart';
+import '../../presentation/features/expenses/providers/expenses_provider.dart';
 
 final GetIt locator = GetIt.instance;
 
@@ -44,35 +56,88 @@ Future<void> setupServiceLocator() async {
   dio.interceptors.add(LoggingInterceptor());
   dio.interceptors.add(AuthInterceptor(locator<LocalStorageService>()));
   
-  // Register ApiClient without dio parameter to match our mock implementation
-  locator.registerLazySingleton<ApiClient>(() => ApiClient());
+  // Register Dio instance
+  locator.registerSingleton<Dio>(dio);
+  
+  // Register ApiClient with proper Dio instance
+  locator.registerLazySingleton<ApiClient>(() => ApiClient(
+    baseUrl: AppConstants.baseUrl,
+  ));
+  
+  // Data Services
+  locator.registerLazySingleton<InventoryService>(
+    () => InventoryService()
+  );
+  
+  locator.registerLazySingleton<ProductService>(
+    () => ProductService()
+  );
+  
+  locator.registerLazySingleton<AnalyticsService>(
+    () => AnalyticsService()
+  );
+  
+  locator.registerLazySingleton<SalesService>(
+    () => SalesService()
+  );
+  
+  locator.registerLazySingleton<ReturnsService>(
+    () => ReturnsService()
+  );
+  
+  locator.registerLazySingleton<DeletedSalesService>(
+    () => DeletedSalesService()
+  );
+  
+  locator.registerLazySingleton<DamagedProductsService>(
+    () => DamagedProductsService()
+  );
+  
+  locator.registerLazySingleton<ExpensesService>(
+    () => ExpensesService()
+  );
   
   // Repositories
   locator.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(locator<ApiClient>(), locator<LocalStorageService>())
+    () => AuthRepositoryImpl(locator<LocalStorageService>())
   );
   
+  // Use the new inventory repository implementation
   locator.registerLazySingleton<InventoryRepository>(
-    () => InventoryRepositoryImpl(locator<ApiClient>())
+    () => InventoryRepositoryImpl()
+  );
+
+  // Register analytics repository
+  locator.registerLazySingleton<AnalyticsRepository>(
+    () => AnalyticsRepositoryImpl()
   );
   
   locator.registerLazySingleton<SalesRepository>(
-    () => SalesRepositoryImpl(locator<ApiClient>())
-  );
-  
-  locator.registerLazySingleton<ExpensesRepository>(
-    () => ExpensesRepositoryImpl(locator<ApiClient>())
+    () => SalesRepositoryImpl()
   );
   
   locator.registerLazySingleton<NotificationRepository>(
-    () => NotificationRepositoryImpl(locator<ApiClient>())
+    () => NotificationRepositoryImpl()
   );
 
   locator.registerLazySingleton<InstallmentRepository>(
-    () => installment_impl.InstallmentRepositoryImpl(locator<ApiClient>())
+    () => installment_impl.InstallmentRepositoryImpl()
   );
 
   locator.registerLazySingleton<ClientRepository>(
-    () => ClientRepositoryImpl(locator<ApiClient>())
+    () => ClientRepositoryImpl()
+  );
+
+  // Providers
+  locator.registerLazySingleton<DamagedProductsProvider>(
+    () => DamagedProductsProvider(locator<DamagedProductsService>())
+  );
+
+  locator.registerLazySingleton<ReturnsProvider>(
+    () => ReturnsProvider(locator<ReturnsService>())
+  );
+
+  locator.registerLazySingleton<ExpensesProvider>(
+    () => ExpensesProvider(locator<ExpensesService>())
   );
 }

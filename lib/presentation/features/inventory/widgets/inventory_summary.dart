@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/theme/app_theme.dart';
-
 class InventorySummary extends StatelessWidget {
   final int totalProducts;
   final int lowStockCount;
@@ -20,29 +18,30 @@ class InventorySummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currencyFormat = NumberFormat.currency(symbol: 'TSh ', decimalDigits: 0);
+    final colorScheme = Theme.of(context).colorScheme;
     
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Inventory Summary',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppTheme.mkbhdRed,
+              color: colorScheme.primary,
             ),
           ),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: colorScheme.shadow.withOpacity(0.05),
                   blurRadius: 10,
                   spreadRadius: 0,
                   offset: const Offset(0, 2),
@@ -54,18 +53,20 @@ class InventorySummary extends StatelessWidget {
                 Row(
                   children: [
                     _buildSummaryCard(
+                      context: context,
                       icon: Icons.inventory_2_outlined,
                       label: 'Total Products',
                       value: totalProducts.toString(),
-                      color: AppTheme.mkbhdRed,
+                      color: colorScheme.primary,
                       flex: 1,
                     ),
                     const SizedBox(width: 8),
                     _buildSummaryCard(
+                      context: context,
                       icon: Icons.attach_money,
                       label: 'Total Value',
                       value: currencyFormat.format(totalValue),
-                      color: Colors.green,
+                      color: colorScheme.tertiary,
                       flex: 2,
                     ),
                   ],
@@ -74,18 +75,20 @@ class InventorySummary extends StatelessWidget {
                 Row(
                   children: [
                     _buildSummaryCard(
+                      context: context,
                       icon: Icons.warning_amber_outlined,
                       label: 'Low Stock',
                       value: lowStockCount.toString(),
-                      color: Colors.orange,
+                      color: colorScheme.secondary,
                       flex: 1,
                     ),
                     const SizedBox(width: 8),
                     _buildSummaryCard(
+                      context: context,
                       icon: Icons.remove_shopping_cart,
                       label: 'Out of Stock',
                       value: outOfStockCount.toString(),
-                      color: Colors.red,
+                      color: colorScheme.error,
                       flex: 1,
                     ),
                   ],
@@ -100,6 +103,7 @@ class InventorySummary extends StatelessWidget {
   }
 
   Widget _buildSummaryCard({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required String value,
@@ -130,7 +134,7 @@ class InventorySummary extends StatelessWidget {
                     label,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[700],
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                       fontWeight: FontWeight.w500,
                     ),
                   ),

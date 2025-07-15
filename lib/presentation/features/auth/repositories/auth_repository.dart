@@ -1,5 +1,5 @@
 
-import '../../../../core/network/api_client.dart';
+import 'package:dio/dio.dart';
 import '../../../../data/services/local_storage_service.dart';
 import '../../profile/models/user_profile.dart';
 import '../models/user_model.dart';
@@ -18,15 +18,19 @@ abstract class AuthRepository {
 }
 
 class AuthRepositoryImpl implements AuthRepository {
-  final ApiClient _apiClient;
+  final Dio _dio;
   final LocalStorageService _storageService;
   
-  AuthRepositoryImpl(this._apiClient, this._storageService);
+  AuthRepositoryImpl(this._storageService) : _dio = Dio(BaseOptions(
+    baseUrl: 'http://127.0.0.1:8000/api/v1',
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 3),
+  ));
   
   @override
   Future<String> login({required String email, required String password}) async {
     try {
-      final response = await _apiClient.post(
+      final response = await _dio.post(
         '/auth/login',
         data: {
           'email': email,
@@ -34,8 +38,8 @@ class AuthRepositoryImpl implements AuthRepository {
         },
       );
       
-      final token = response['token'];
-      final userData = response['user'];
+      final token = response.data['token'];
+      final userData = response.data['user'];
       
       // Store token
       await _storageService.setToken(token);
@@ -59,7 +63,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String shopName,
   }) async {
     try {
-      final response = await _apiClient.post(
+      final response = await _dio.post(
         '/auth/register',
         data: {
           'name': name,
@@ -69,8 +73,8 @@ class AuthRepositoryImpl implements AuthRepository {
         },
       );
       
-      final token = response['token'];
-      final userData = response['user'];
+      final token = response.data['token'];
+      final userData = response.data['user'];
       
       // Store token
       await _storageService.setToken(token);
@@ -89,7 +93,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     try {
-      await _apiClient.post('/auth/logout');
+      await _dio.post('/auth/logout');
     } catch (e) {
       // Continue with logout even if API call fails
     } finally {
@@ -113,8 +117,8 @@ class AuthRepositoryImpl implements AuthRepository {
         return null;
       }
       
-      final response = await _apiClient.get('/auth/me');
-      final userModel = UserModel.fromJson(response);
+      final response = await _dio.get('/auth/me');
+      final userModel = UserModel.fromJson(response.data);
       final newProfile = _convertToUserProfile(userModel);
       
       // Cache the profile
@@ -145,6 +149,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
   
   String _handleError(dynamic error) {
+    if (error is DioException) {
+      return 'Authentication failed: ${error.message}';
+    }
     if (error is Exception) {
       return 'An unexpected error occurred';
     }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
-import 'package:lumina/core/theme/airbnb_colors.dart';
+import 'package:dukalipa_app/core/theme/dukalipa_colors.dart';
 
 class SimpleSalesChart extends StatefulWidget {
   final double width;

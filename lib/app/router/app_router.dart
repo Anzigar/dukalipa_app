@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lumina/core/constants/shop_types.dart';
-import 'package:lumina/presentation/features/inventory/screens/inventory_screen_updated.dart';
+import 'package:dukalipa_app/core/constants/shop_types.dart';
+import 'package:dukalipa_app/presentation/features/inventory/screens/inventory_screen.dart';
 
 // Import all required screens
 import '../../presentation/features/splash/screens/splash_screen.dart';
@@ -125,6 +125,13 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) {
         final id = state.pathParameters['id']!;
         return ProductDetailScreen(productId: id);
+      },
+    ),
+    GoRoute(
+      path: '/inventory/product/:productId',
+      builder: (context, state) {
+        final productId = state.pathParameters['productId']!;
+        return ProductDetailScreen(productId: productId);
       },
     ),
     

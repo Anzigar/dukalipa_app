@@ -1,21 +1,26 @@
 import 'dart:async';
 
-import '../../../../core/network/api_client.dart';
+import 'package:dio/dio.dart';
 import '../models/sale_model.dart';
-import '../models/sale_item_model.dart';
 import 'sales_repository.dart';
 
 class SalesRepositoryImpl implements SalesRepository {
-  final ApiClient _apiClient;
+  final Dio _dio;
 
-  SalesRepositoryImpl(this._apiClient);
+  SalesRepositoryImpl() : _dio = Dio(BaseOptions(
+    baseUrl: 'http://127.0.0.1:8000/api/v1',
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 3),
+  ));
 
   @override
   Future<List<SaleModel>> getSales({
     String? search,
+    String? status,
     DateTime? startDate,
     DateTime? endDate,
-    String? status,
+    int? page,
+    int? pageSize,
   }) async {
     try {
       final queryParams = <String, dynamic>{};
@@ -36,8 +41,16 @@ class SalesRepositoryImpl implements SalesRepository {
         queryParams['status'] = status;
       }
 
-      final response = await _apiClient.get('/sales', queryParameters: queryParams);
-      final List<dynamic> salesJson = response['data'] ?? [];
+      if (page != null) {
+        queryParams['page'] = page;
+      }
+
+      if (pageSize != null) {
+        queryParams['pageSize'] = pageSize;
+      }
+
+      final response = await _dio.get('/sales', queryParameters: queryParams);
+      final List<dynamic> salesJson = response.data['data'] ?? [];
       return salesJson.map((json) => SaleModel.fromJson(json)).toList();
     } catch (e) {
       throw _handleError(e);
@@ -45,74 +58,69 @@ class SalesRepositoryImpl implements SalesRepository {
   }
 
   @override
-  Future<SaleModel> getSaleById(String id) async {
+  Future<SaleModel?> getSaleById(String saleId) async {
     try {
-      final response = await _apiClient.get('/sales/$id');
-      return SaleModel.fromJson(response['data']);
+      final response = await _dio.get('/sales/$saleId');
+      return SaleModel.fromJson(response.data['data']);
+    } catch (e) {
+      // Return null if sale not found instead of throwing
+      return null;
+    }
+  }
+
+  @override
+  Future<SaleModel> createSale(SaleModel sale) async {
+    try {
+      final data = sale.toJson();
+      final response = await _dio.post('/sales', data: data);
+      return SaleModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
   }
 
   @override
-  Future<SaleModel> createSale({
-    required List<SaleItemModel> items,
-    String? customerName,
-    String? customerPhone,
-    double discount = 0,
-    String? paymentMethod,
-    String? note,
-  }) async {
+  Future<SaleModel> updateSale(SaleModel sale) async {
     try {
-      final data = {
-        'items': items.map((item) => item.toJson()).toList(),
-        'discount': discount,
-      };
-      
-      if (customerName != null) data['customerName'] = customerName;
-      if (customerPhone != null) data['customerPhone'] = customerPhone;
-      if (paymentMethod != null) data['paymentMethod'] = paymentMethod;
-      if (note != null) data['note'] = note;
-      
-      final response = await _apiClient.post('/sales', data: data);
-      return SaleModel.fromJson(response['data']);
+      final data = sale.toJson();
+      final response = await _dio.patch('/sales/${sale.id}', data: data);
+      return SaleModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
   }
 
   @override
-  Future<SaleModel> updateSale({
-    required String id,
-    String? status,
-    String? paymentMethod,
-    String? note,
-  }) async {
+  Future<void> deleteSale(String saleId) async {
     try {
-      final data = <String, dynamic>{};
-      
-      if (status != null) data['status'] = status;
-      if (paymentMethod != null) data['paymentMethod'] = paymentMethod;
-      if (note != null) data['note'] = note;
-      
-      final response = await _apiClient.patch('/sales/$id', data: data);
-      return SaleModel.fromJson(response['data']);
+      await _dio.delete('/sales/$saleId');
     } catch (e) {
       throw _handleError(e);
     }
   }
 
   @override
-  Future<void> deleteSale(String id) async {
+  Future<double> getTotalRevenue({DateTime? startDate, DateTime? endDate}) async {
     try {
-      await _apiClient.delete('/sales/$id');
+      final stats = await getSalesStats(startDate: startDate, endDate: endDate);
+      return stats['totalRevenue'] as double;
     } catch (e) {
       throw _handleError(e);
     }
   }
 
   @override
-  Future<Map<String, dynamic>> getSalesStatistics({
+  Future<int> getSalesCount({DateTime? startDate, DateTime? endDate}) async {
+    try {
+      final stats = await getSalesStats(startDate: startDate, endDate: endDate);
+      return stats['totalSales'] as int;
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getSalesStats({
     DateTime? startDate,
     DateTime? endDate,
   }) async {
@@ -127,24 +135,25 @@ class SalesRepositoryImpl implements SalesRepository {
         queryParams['endDate'] = formatDateForApi(endDate);
       }
       
-      final response = await _apiClient.get('/sales/statistics', queryParameters: queryParams);
-      return response;
+      final response = await _dio.get('/sales/statistics', queryParameters: queryParams);
+      return response.data['data'] ?? <String, dynamic>{};
     } catch (e) {
       throw _handleError(e);
     }
   }
 
-  // Helper function to handle errors
-  Exception _handleError(dynamic error) {
-    if (error is TimeoutException) {
-      return Exception('Connection timed out. Please check your internet connection and try again.');
-    }
-    // Add more specific error handling as needed
-    return Exception('Failed to perform operation: ${error.toString()}');
-  }
-
-  // Helper function to format date for API
+  // Helper methods
   String formatDateForApi(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  Exception _handleError(dynamic error) {
+    if (error is DioException) {
+      return Exception('Failed to process sales operation: ${error.message}');
+    }
+    if (error is Exception) {
+      return Exception('Failed to process sales operation: ${error.toString()}');
+    }
+    return Exception('Failed to process sales operation: $error');
   }
 }

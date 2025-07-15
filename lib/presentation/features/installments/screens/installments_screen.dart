@@ -5,14 +5,13 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/network/api_client.dart';
 import '../models/installment_model.dart';
 import '../repositories/installment_repository.dart';
 import '../repositories/installment_repository_impl.dart' as impl;
 import '../../../common/widgets/custom_search_bar.dart';
-import '../../../common/widgets/loading_widget.dart';
 import '../../../common/widgets/empty_state.dart';
 import '../../../common/widgets/custom_button.dart';
+import '../../../common/widgets/shimmer_loading.dart';
 
 class InstallmentsScreen extends StatefulWidget {
   const InstallmentsScreen({Key? key}) : super(key: key);
@@ -46,8 +45,7 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
     try {
       _repository = Provider.of<InstallmentRepository>(context, listen: false);
     } catch (e) {
-      final apiClient = ApiClient();
-      _repository = impl.InstallmentRepositoryImpl(apiClient);
+      _repository = impl.InstallmentRepositoryImpl();
     }
   }
 
@@ -516,7 +514,10 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
 
   Widget _buildInstallmentsList() {
     if (_isLoading) {
-      return const Center(child: LoadingWidget());
+      return ListView.builder(
+        itemCount: 8,
+        itemBuilder: (context, index) => const TransactionCardShimmer(),
+      );
     }
 
     if (_hasError) {

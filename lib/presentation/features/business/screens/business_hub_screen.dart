@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_theme.dart';
-
 class BusinessHubScreen extends StatelessWidget {
   const BusinessHubScreen({super.key});
 
@@ -115,7 +113,7 @@ class BusinessHubScreen extends StatelessWidget {
       crossAxisCount: 2,
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
-      childAspectRatio: 1.3,
+      childAspectRatio: 1.1,
       children: [
         _FeatureCard(
           title: 'Inventory',
@@ -168,7 +166,7 @@ class BusinessHubScreen extends StatelessWidget {
       crossAxisCount: 2,
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
-      childAspectRatio: 1.3,
+      childAspectRatio: 1.1,
       children: [
         _FeatureCard(
           title: 'Sales Analytics',
@@ -214,7 +212,7 @@ class _BusinessOverview extends StatelessWidget {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: AppTheme.mkbhdLightGrey.withOpacity(0.08),
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.12),
           width: 1,
         ),
       ),
@@ -229,8 +227,8 @@ class _BusinessOverview extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppTheme.mkbhdRed.withOpacity(0.8),
-                      AppTheme.mkbhdRed,
+                      Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                      Theme.of(context).colorScheme.primary,
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -249,22 +247,22 @@ class _BusinessOverview extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Dukalipa Shop',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 20,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       'Electronics & Accessories',
                       style: TextStyle(
-                        color: AppTheme.mkbhdLightGrey,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                         fontSize: 14,
                       ),
                     ),
@@ -273,7 +271,7 @@ class _BusinessOverview extends StatelessWidget {
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.mkbhdRed.withOpacity(0.1),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
@@ -281,7 +279,7 @@ class _BusinessOverview extends StatelessWidget {
                     // Navigate to shop settings
                   },
                   icon: const Icon(Icons.settings_outlined),
-                  color: AppTheme.mkbhdRed,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ],
@@ -292,7 +290,7 @@ class _BusinessOverview extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.mkbhdLightGrey.withOpacity(0.05),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
@@ -308,7 +306,7 @@ class _BusinessOverview extends StatelessWidget {
                 Container(
                   width: 1,
                   height: 40,
-                  color: AppTheme.mkbhdLightGrey.withOpacity(0.2),
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
                 ),
                 Expanded(
                   child: _StatItem(
@@ -321,7 +319,7 @@ class _BusinessOverview extends StatelessWidget {
                 Container(
                   width: 1,
                   height: 40,
-                  color: AppTheme.mkbhdLightGrey.withOpacity(0.2),
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
                 ),
                 Expanded(
                   child: _StatItem(
@@ -376,14 +374,14 @@ class _StatItem extends StatelessWidget {
                 Icon(
                   icon,
                   size: 14,
-                  color: AppTheme.mkbhdLightGrey,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                 ),
                 const SizedBox(width: 4),
                 Flexible(
                   child: Text(
                     label,
                     style: TextStyle(
-                      color: AppTheme.mkbhdLightGrey,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                       fontSize: 12,
                     ),
                     textAlign: TextAlign.center,
@@ -425,7 +423,7 @@ class _InsightCard extends StatelessWidget {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppTheme.mkbhdLightGrey.withOpacity(0.08),
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.12),
           width: 1,
         ),
       ),
@@ -483,7 +481,7 @@ class _InsightCard extends StatelessWidget {
           Text(
             title,
             style: TextStyle(
-              color: AppTheme.mkbhdLightGrey,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               fontSize: 14,
             ),
           ),
@@ -518,14 +516,14 @@ class _FeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardColor = color ?? AppTheme.mkbhdRed;
+    final cardColor = color ?? Theme.of(context).colorScheme.primary;
     
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppTheme.mkbhdLightGrey.withOpacity(0.08),
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.12),
           width: 1,
         ),
       ),
@@ -538,7 +536,7 @@ class _FeatureCard extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -552,6 +550,7 @@ class _FeatureCard extends StatelessWidget {
                     size: 26,
                   ),
                 ),
+                const SizedBox(height: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -566,7 +565,7 @@ class _FeatureCard extends StatelessWidget {
                     Text(
                       description,
                       style: TextStyle(
-                        color: AppTheme.mkbhdLightGrey,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                         fontSize: 13,
                       ),
                     ),

@@ -1,5 +1,5 @@
 import 'dart:async';
-import '../../../../core/network/api_client.dart';
+import 'package:dio/dio.dart';
 import '../models/customer_model.dart';
 
 abstract class CustomerRepository {
@@ -21,9 +21,17 @@ abstract class CustomerRepository {
 }
 
 class CustomerRepositoryImpl implements CustomerRepository {
-  final ApiClient _apiClient;
+  late final Dio _dio;
   
-  CustomerRepositoryImpl(this._apiClient);
+  CustomerRepositoryImpl() {
+    _dio = Dio(BaseOptions(
+      baseUrl: 'http://127.0.0.1:8000/api/v1',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ));
+  }
   
   @override
   Future<List<CustomerModel>> getCustomers({
@@ -46,9 +54,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
         queryParams['end_date'] = _formatDateForApi(endDate);
       }
       
-      final response = await _apiClient.get('/customers', queryParameters: queryParams);
+      final response = await _dio.get('/customers', queryParameters: queryParams);
       
-      final List<dynamic> data = response['data'] ?? [];
+      final List<dynamic> data = response.data['data'] ?? [];
       return data.map((json) => CustomerModel.fromJson(json)).toList();
     } catch (e) {
       throw _handleError(e);
@@ -58,8 +66,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
   @override
   Future<CustomerModel> getCustomerById(String id) async {
     try {
-      final response = await _apiClient.get('/customers/$id');
-      return CustomerModel.fromJson(response['data']);
+      final response = await _dio.get('/customers/$id');
+      return CustomerModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -68,7 +76,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
   @override
   Future<CustomerModel> createCustomer(CustomerModel customer) async {
     try {
-      final response = await _apiClient.post(
+      final response = await _dio.post(
         '/customers',
         data: {
           'name': customer.name,
@@ -78,7 +86,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
         },
       );
       
-      return CustomerModel.fromJson(response['data']);
+      return CustomerModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -87,7 +95,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
   @override
   Future<CustomerModel> updateCustomer(CustomerModel customer) async {
     try {
-      final response = await _apiClient.put(
+      final response = await _dio.put(
         '/customers/${customer.id}',
         data: {
           'name': customer.name,
@@ -97,7 +105,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
         },
       );
       
-      return CustomerModel.fromJson(response['data']);
+      return CustomerModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -106,7 +114,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
   @override
   Future<void> deleteCustomer(String id) async {
     try {
-      await _apiClient.delete('/customers/$id');
+      await _dio.delete('/customers/$id');
     } catch (e) {
       throw _handleError(e);
     }
@@ -119,9 +127,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
     }
     
     try {
-      final response = await _apiClient.get('/customers', queryParameters: {'search': query});
+      final response = await _dio.get('/customers', queryParameters: {'search': query});
       
-      final List<dynamic> data = response['data'] ?? [];
+      final List<dynamic> data = response.data['data'] ?? [];
       return data.map((json) => CustomerModel.fromJson(json)).toList();
     } catch (e) {
       throw _handleError(e);
@@ -133,16 +141,24 @@ class CustomerRepositoryImpl implements CustomerRepository {
   }
   
   Exception _handleError(dynamic e) {
-    if (e.toString().contains('No connection')) {
-      return Exception('Network error. Please check your internet connection.');
-    }
-    
-    if (e.toString().contains('404')) {
-      return Exception('Customer not found.');
-    }
-    
-    if (e.toString().contains('401') || e.toString().contains('403')) {
-      return Exception('Authentication error. Please login again.');
+    if (e is DioException) {
+      switch (e.type) {
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.receiveTimeout:
+        case DioExceptionType.connectionError:
+          return Exception('Network error. Please check your internet connection.');
+        case DioExceptionType.badResponse:
+          final statusCode = e.response?.statusCode;
+          if (statusCode == 404) {
+            return Exception('Customer not found.');
+          }
+          if (statusCode == 401 || statusCode == 403) {
+            return Exception('Authentication error. Please login again.');
+          }
+          return Exception('Server error: ${e.response?.statusMessage}');
+        default:
+          return Exception('An error occurred: ${e.message}');
+      }
     }
     
     return Exception('An error occurred: ${e.toString()}');

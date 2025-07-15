@@ -5,11 +5,12 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart'; 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../models/expense_model.dart';
-import '../repositories/expenses_repository.dart';
+import '../../../../data/services/expenses_service.dart';
+import '../providers/expenses_provider.dart';
 import '../../../common/widgets/custom_search_bar.dart';
-import '../../../common/widgets/loading_widget.dart';
+import '../../../common/widgets/shimmer_loading.dart';
 import '../../../common/widgets/empty_state.dart';
+import '../../../../core/di/service_locator.dart';
 
 class ExpensesScreen extends StatefulWidget {
   const ExpensesScreen({super.key});
@@ -24,15 +25,29 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
   List<ExpenseModel> _expenses = [];
   bool _isLoading = true;
   bool _hasError = false;
-  String? _errorMessage;
   String? _selectedCategory;
   DateTime? _startDate;
   DateTime? _endDate;
   
+  late ExpensesProvider _provider;
+  
   @override
   void initState() {
     super.initState();
-    _fetchExpenses();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initProvider();
+      _fetchExpenses();
+    });
+  }
+  
+  void _initProvider() {
+    try {
+      // Try to get the provider from the context first
+      _provider = Provider.of<ExpensesProvider>(context, listen: false);
+    } catch (e) {
+      // If provider not found, create a local instance
+      _provider = locator<ExpensesProvider>();
+    }
   }
   
   @override
@@ -49,9 +64,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
     });
     
     try {
-      final repository = context.read<ExpensesRepository>();
-      final expenses = await repository.getExpenses(
-        search: _searchController.text,
+      // Use the provider to load expenses
+      await _provider.loadExpenses(
+        refresh: true,
         category: _selectedCategory,
         startDate: _startDate,
         endDate: _endDate,
@@ -59,8 +74,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
       
       if (mounted) {
         setState(() {
-          _expenses = expenses;
+          _expenses = _provider.expenses;
           _isLoading = false;
+          _hasError = _provider.error != null;
         });
       }
     } catch (e) {
@@ -68,14 +84,20 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
         setState(() {
           _isLoading = false;
           _hasError = true;
-          _errorMessage = e.toString();
         });
       }
     }
   }
   
   void _onSearch(String query) {
-    _fetchExpenses();
+    if (query.isEmpty) {
+      _fetchExpenses();
+    } else {
+      _provider.searchExpenses(query);
+      setState(() {
+        _expenses = _provider.expenses;
+      });
+    }
   }
   
   void _onCategorySelected(String? category) {
@@ -307,12 +329,22 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: AppTheme.mkbhdRed,
+        foregroundColor: Colors.white,
+        onPressed: () => context.push('/expenses/add'),
+        icon: const Icon(LucideIcons.plus),
+        label: Text(l10n.addExpense),
+      ),
     );
   }
   
   Widget _buildExpensesList(AppLocalizations l10n) {
     if (_isLoading) {
-      return const Center(child: LoadingWidget());
+      return ListView.builder(
+        itemCount: 8,
+        itemBuilder: (context, index) => const ExpenseCardShimmer(),
+      );
     }
     
     if (_hasError) {
@@ -477,7 +509,7 @@ class ExpenseCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      expense.description,
+                      expense.description ?? expense.title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),

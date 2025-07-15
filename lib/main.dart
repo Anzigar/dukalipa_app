@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:lumina/app/router/app_router.dart';
 import 'package:provider/provider.dart';
+import 'app/router/app_router.dart'; // This exports the core router
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -15,9 +16,47 @@ import 'core/localization/app_localizations.dart';
 import 'core/utils/app_constants.dart';
 import 'presentation/features/auth/repositories/auth_repository.dart';
 import 'presentation/features/notifications/repositories/notification_repository.dart';
+import 'presentation/features/inventory/repositories/inventory_repository.dart';
+import 'presentation/features/inventory/providers/inventory_provider.dart';
+import 'presentation/features/home/repositories/analytics_repository.dart';
+import 'presentation/features/home/providers/analytics_provider.dart';
+import 'presentation/features/damaged/providers/damaged_products_provider.dart';
+import 'presentation/features/returns/providers/returns_provider.dart';
+import 'presentation/features/expenses/providers/expenses_provider.dart';
 
 // Add Airbnb color constant
-const Color airbnbRed = Color(0xFFFF385C);
+const Color airbnbRed = AppTheme.mkbhdLightRed;
+
+/// Widget to update system UI overlay style based on theme
+class SystemUIController extends StatelessWidget {
+  final Widget child;
+  final bool isDarkMode;
+
+  const SystemUIController({
+    Key? key,
+    required this.child,
+    required this.isDarkMode,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // Update system UI overlay style based on theme
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor: isDarkMode 
+            ? AppTheme.metaDarkBackground 
+            : AppTheme.metaLightBackground,
+        systemNavigationBarIconBrightness: isDarkMode 
+            ? Brightness.light 
+            : Brightness.dark,
+      ),
+    );
+    
+    return child;
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,16 +66,6 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  
-  // Set system UI overlay style for MKBHD-inspired look
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: AppTheme.mkbhdDarkGrey,
-      systemNavigationBarIconBrightness: Brightness.light,
-    ),
-  );
   
   // Initialize service locator
   await setupServiceLocator();
@@ -67,118 +96,62 @@ class MyApp extends StatelessWidget {
             ChangeNotifierProvider(
               create: (_) => NotificationProvider(locator<NotificationRepository>()),
             ),
+            // Add inventory provider
+            ChangeNotifierProvider(
+              create: (_) => InventoryProvider(locator<InventoryRepository>()),
+            ),
+            // Add analytics provider
+            ChangeNotifierProvider(
+              create: (_) => AnalyticsProvider(locator<AnalyticsRepository>()),
+            ),
+            // Add damaged products provider
+            ChangeNotifierProvider(
+              create: (_) => locator<DamagedProductsProvider>(),
+            ),
+            // Add returns provider
+            ChangeNotifierProvider(
+              create: (_) => locator<ReturnsProvider>(),
+            ),
+            // Add expenses provider
+            ChangeNotifierProvider(
+              create: (_) => locator<ExpensesProvider>(),
+            ),
           ],
           child: Consumer2<ThemeProvider, LanguageProvider>(
             builder: (context, themeProvider, languageProvider, _) {
-              return MaterialApp.router( 
-                title: AppConstants.appName,
-                debugShowCheckedModeBanner: false,
-                theme: ThemeData(
-                  useMaterial3: true,
-                  brightness: Brightness.light,
-                  scaffoldBackgroundColor: Colors.white,
-                  primaryColor: airbnbRed,
-                  colorScheme: const ColorScheme.light(
-                    primary: airbnbRed,
-                    secondary: airbnbRed,
-                  ),
-                  appBarTheme: const AppBarTheme(
-                    backgroundColor: Colors.white,
-                    elevation: 0,
-                    iconTheme: IconThemeData(color: Colors.black87),
-                    titleTextStyle: TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
+              final isDarkMode = themeProvider.themeMode == ThemeMode.dark ||
+                  (themeProvider.themeMode == ThemeMode.system &&
+                      MediaQuery.platformBrightnessOf(context) == Brightness.dark);
+
+              return SystemUIController(
+                isDarkMode: isDarkMode,
+                child: MaterialApp.router( 
+                  title: AppConstants.appName,
+                  debugShowCheckedModeBanner: false,
+                  routerConfig: AppRouter.router, // Use AppRouter.router for routing configuration
+                  theme: AppTheme.getLightTheme().copyWith(
+                    textTheme: AppTheme.getLightTheme().textTheme.apply(
+                      fontFamily: 'Montserrat',
+                    ),
+                    pageTransitionsTheme: const PageTransitionsTheme(
+                      builders: {
+                        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+                        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+                      },
                     ),
                   ),
-                  floatingActionButtonTheme: const FloatingActionButtonThemeData(
-                    backgroundColor: airbnbRed,
-                    foregroundColor: Colors.white,
-                    elevation: 4,
-                  ),
-                  inputDecorationTheme: const InputDecorationTheme(
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(32)),
-                      borderSide: BorderSide.none,
+                  darkTheme: AppTheme.getDarkTheme().copyWith(
+                    textTheme: AppTheme.getDarkTheme().textTheme.apply(
+                      fontFamily: 'Montserrat',
+                    ),
+                    pageTransitionsTheme: const PageTransitionsTheme(
+                      builders: {
+                        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+                        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+                      },
                     ),
                   ),
-                  cardTheme: CardThemeData(
-                    color: Colors.white,
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    shadowColor: Colors.black.withOpacity(0.05),
-                  ),
-                  bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-                    backgroundColor: Colors.white,
-                    selectedItemColor: airbnbRed,
-                    unselectedItemColor: Colors.black54,
-                    showUnselectedLabels: true,
-                    type: BottomNavigationBarType.fixed,
-                  ),
-                  pageTransitionsTheme: const PageTransitionsTheme(
-                    builders: {
-                      TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-                      TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-                    },
-                  ),
-                  splashColor: airbnbRed.withOpacity(0.08),
-                  highlightColor: airbnbRed.withOpacity(0.04),
-                  dividerColor: Colors.grey.shade200,
-                  iconTheme: const IconThemeData(color: airbnbRed),
-                  textTheme: ThemeData.light().textTheme.apply(
-                        fontFamily: 'Montserrat',
-                        bodyColor: Colors.black87,
-                        displayColor: Colors.black87,
-                      ),
-                ),
-                darkTheme: ThemeData.dark().copyWith(
-                  primaryColor: airbnbRed,
-                  colorScheme: const ColorScheme.dark(
-                    primary: airbnbRed,
-                    secondary: airbnbRed,
-                  ),
-                  floatingActionButtonTheme: const FloatingActionButtonThemeData(
-                    backgroundColor: airbnbRed,
-                    foregroundColor: Colors.white,
-                  ),
-                  bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-                    backgroundColor: Colors.black,
-                    selectedItemColor: airbnbRed,
-                    unselectedItemColor: Colors.white70,
-                  ),
-                  cardTheme: CardThemeData(
-                    color: Colors.grey[900],
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    shadowColor: Colors.black.withOpacity(0.1),
-                  ),
-                  inputDecorationTheme: InputDecorationTheme(
-                    filled: true,
-                    fillColor: Colors.grey[900],
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(32)),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  dividerColor: Colors.grey.shade800,
-                  iconTheme: const IconThemeData(color: airbnbRed),
-                  textTheme: ThemeData.dark().textTheme.apply(
-                        fontFamily: 'Montserrat',
-                        bodyColor: Colors.white,
-                        displayColor: Colors.white,
-                      ),
-                ),
-                themeMode: themeProvider.themeMode,
-                routerConfig: appRouter,
+                  themeMode: themeProvider.themeMode,
                 locale: languageProvider.locale,
                 supportedLocales: const [
                   Locale('en', ''),
@@ -214,11 +187,20 @@ class MyApp extends StatelessWidget {
                     return ErrorWidget(errorDetails.exception);
                   };
                   
-                  return childWidget;
+                  // Initialize ScreenUtil for responsive design
+                  return ScreenUtilInit(
+                    designSize: const Size(375, 812), // iPhone 12 design size
+                    minTextAdapt: true,
+                    splitScreenMode: true,
+                    builder: (context, child) {
+                      return childWidget;
+                    },
+                  );
                 },
-              );
-            },
-          ),
+              ),
+            );
+          },
+        ),
         );
       },
     );

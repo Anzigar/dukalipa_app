@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/network/api_client.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../../../data/services/inventory_service.dart';
 import '../models/product_model.dart';
-import '../repositories/inventory_repository.dart';
-import '../../../common/widgets/loading_widget.dart';
+import '../../../common/widgets/shimmer_loading.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final String productId;
@@ -27,26 +26,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   bool _hasError = false;
   String? _errorMessage;
   ProductModel? _product;
-  late InventoryRepository _repository;
+  late InventoryService _inventoryService;
   
   @override
   void initState() {
     super.initState();
+    _inventoryService = locator<InventoryService>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initRepository();
       _fetchProduct();
     });
-  }
-  
-  void _initRepository() {
-    try {
-      // Try to get the repository from the provider first
-      _repository = Provider.of<InventoryRepository>(context, listen: false);
-    } catch (e) {
-      // If provider not found, create a local instance with default API client
-      final apiClient = ApiClient();
-      _repository = InventoryRepositoryImpl(apiClient);
-    }
   }
   
   Future<void> _fetchProduct() async {
@@ -56,7 +44,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     });
     
     try {
-      final product = await _repository.getProductById(widget.productId);
+      final product = await _inventoryService.getProductById(widget.productId);
       
       if (mounted) {
         setState(() {
@@ -69,7 +57,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         setState(() {
           _isLoading = false;
           _hasError = true;
-          _errorMessage = e.toString();
+          // Better error message for 404 errors
+          if (e.toString().contains('404') || e.toString().contains('Not Found')) {
+            _errorMessage = 'Product not found. It may have been deleted or moved.';
+          } else {
+            _errorMessage = 'Failed to load product: ${e.toString()}';
+          }
         });
       }
     }
@@ -81,42 +74,233 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Product Details'),
+        title: Text(_product?.name ?? 'Product Details'),
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft),
           onPressed: () => context.pop(),
         ),
-        actions: [
+        actions: _product != null ? [
           IconButton(
+            onPressed: () => _handleEditProduct(),
             icon: const Icon(LucideIcons.edit),
-            onPressed: () {
-              // Navigate to edit product page
-              // context.push('/inventory/edit/${widget.productId}');
-            },
+            tooltip: 'Edit Product',
           ),
           IconButton(
-            icon: const Icon(LucideIcons.trash2),
             onPressed: () => _showDeleteConfirmation(context),
+            icon: const Icon(LucideIcons.trash2),
+            tooltip: 'Delete Product',
+            style: IconButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+          ),
+          const SizedBox(width: 8),
+        ] : null,
+      ),
+      body: _buildContent(isDarkMode),
+      bottomNavigationBar: _product != null ? _buildActionButtons() : null,
+    );
+  }
+  
+  void _handleEditProduct() {
+    if (_product != null) {
+      // Navigate to edit product page with current product data
+      context.push('/inventory/add', extra: {'product': _product, 'isEditing': true});
+    }
+  }
+  
+  Widget _buildActionButtons() {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withOpacity(0.08),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
-      body: _buildContent(isDarkMode),
-      floatingActionButton: _product != null ? FloatingActionButton.extended(
-        onPressed: () {
-          // Navigate to the add sale screen with this product pre-selected
-          // context.push('/sales/add?productId=${widget.productId}');
-        },
-        backgroundColor: AppTheme.mkbhdRed,
-        foregroundColor: Colors.white,
-        icon: const Icon(LucideIcons.plus),
-        label: const Text('Add to Sale'),
-      ) : null,
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Primary Actions Row
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _handleUpdateStock(),
+                    icon: const Icon(LucideIcons.package, size: 18),
+                    label: const Text('Update Stock'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colorScheme.primary,
+                      side: BorderSide(color: colorScheme.primary, width: 1.5),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () => _handleAddToSale(),
+                    icon: const Icon(LucideIcons.plus, size: 18),
+                    label: const Text('Add to Sale'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.onPrimary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 12),
+            
+            // Only one row of actions now
+          ],
+        ),
+      ),
     );
+  }
+  
+  void _handleUpdateStock() {
+    if (_product != null) {
+      _showUpdateStockDialog();
+    }
+  }
+
+  void _showUpdateStockDialog() {
+    final currentQuantity = _product!.quantity;
+    final TextEditingController quantityController = TextEditingController(
+      text: currentQuantity.toString(),
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Update Stock'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Product: ${_product!.name}',
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Current Stock: $currentQuantity',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: quantityController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'New Quantity',
+                border: OutlineInputBorder(),
+                helperText: 'Enter the new stock quantity',
+              ),
+              autofocus: true,
+              onSubmitted: (value) {
+                if (value.isNotEmpty && int.tryParse(value) != null) {
+                  Navigator.of(context).pop();
+                  _updateProductStock(int.parse(value));
+                }
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final newQuantity = int.tryParse(quantityController.text);
+              if (newQuantity != null && newQuantity >= 0) {
+                Navigator.of(context).pop();
+                _updateProductStock(newQuantity);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please enter a valid quantity'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text('Update'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _updateProductStock(int newQuantity) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final updatedProduct = await _inventoryService.updateProductStock(
+        widget.productId,
+        newQuantity,
+      );
+
+      if (mounted) {
+        setState(() {
+          _product = updatedProduct;
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Stock updated to $newQuantity'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update stock: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+  
+  void _handleAddToSale() {
+    if (_product != null) {
+      // Navigate to the add sale screen with this product pre-selected
+      context.push('/sales/add', extra: {'product': _product});
+    }
   }
   
   Widget _buildContent(bool isDarkMode) {
     if (_isLoading) {
-      return const Center(child: LoadingWidget());
+      return const ProductDetailsShimmer();
     }
     
     if (_hasError) {
@@ -124,25 +308,45 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              LucideIcons.alertTriangle,
-              size: 48,
-              color: Colors.orange,
+            Icon(
+              _errorMessage!.contains('not found') 
+                  ? LucideIcons.packageX 
+                  : LucideIcons.alertTriangle,
+              size: 64,
+              color: _errorMessage!.contains('not found') 
+                  ? Colors.grey 
+                  : Colors.orange,
             ),
             const SizedBox(height: 16),
             Text(
               _errorMessage ?? 'An error occurred while loading the product',
               textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _fetchProduct,
-              icon: const Icon(LucideIcons.refreshCw),
-              label: const Text('Retry'),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: AppTheme.mkbhdRed,
-              ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (!_errorMessage!.contains('not found'))
+                  ElevatedButton.icon(
+                    onPressed: _fetchProduct,
+                    icon: const Icon(LucideIcons.refreshCw),
+                    label: const Text('Retry'),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: AppTheme.mkbhdRed,
+                    ),
+                  ),
+                const SizedBox(width: 16),
+                OutlinedButton.icon(
+                  onPressed: () => context.pop(),
+                  icon: const Icon(LucideIcons.arrowLeft),
+                  label: const Text('Go Back'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.mkbhdRed,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -312,6 +516,126 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     _buildDetailRow('SKU', _product!.sku),
                   _buildDetailRow('Created At', _product!.formattedCreatedAt),
                   _buildDetailRow('Last Updated', _product!.formattedUpdatedAt),
+                  
+                  // IMEI/Serial Numbers List for products with many quantities
+                  if (_product!.hasSerialNumber && _product!.quantity > 1) ...[
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Serial Numbers (${_product!.quantity})',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: () => _navigateToSerialNumbersPage(),
+                          icon: const Icon(LucideIcons.list, size: 16),
+                          label: const Text('View All'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 160, // Increased height to accommodate device variations
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                        ),
+                      ),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(8),
+                        itemCount: (_product!.quantity > 5 ? 5 : _product!.quantity),
+                        itemBuilder: (context, index) {
+                          // Generate sample IMEI/Serial numbers and device variations
+                          final serialNumber = _generateSerialNumber(index);
+                          final deviceVariation = _generateDeviceVariation(index);
+                          
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Serial Number
+                                Row(
+                                  children: [
+                                    Icon(
+                                      LucideIcons.hash,
+                                      size: 14,
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        serialNumber,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontFamily: 'monospace',
+                                          fontWeight: FontWeight.w600,
+                                          color: Theme.of(context).colorScheme.onSurface,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                // Device Variations
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 4,
+                                  children: [
+                                    _buildVariationChip(
+                                      label: deviceVariation['color']!,
+                                      icon: LucideIcons.palette,
+                                      color: _getColorForVariation(deviceVariation['color']!),
+                                    ),
+                                    _buildVariationChip(
+                                      label: deviceVariation['storage']!,
+                                      icon: LucideIcons.hardDrive,
+                                      color: Colors.blue,
+                                    ),
+                                    _buildVariationChip(
+                                      label: deviceVariation['condition']!,
+                                      icon: LucideIcons.star,
+                                      color: _getConditionColor(deviceVariation['condition']!),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    if (_product!.quantity > 5)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          'Showing 5 of ${_product!.quantity} serial numbers',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                  ],
                 ],
               ),
             ),
@@ -353,49 +677,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 ],
               ),
             ),
-          ),
-          
-          const SizedBox(height: 32),
-          
-          // Actions
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    // Navigate to update stock screen
-                  },
-                  icon: const Icon(LucideIcons.clipboardList),
-                  label: const Text('Update Stock'),
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.blue,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    // Navigate to add sale screen
-                  },
-                  icon: const Icon(LucideIcons.shoppingCart),
-                  label: const Text('Add to Sale'),
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: AppTheme.mkbhdRed,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ),
           
           const SizedBox(height: 32),
@@ -479,6 +760,79 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       return Colors.green;
     }
   }
+
+  // Helper method to build variation chips
+  Widget _buildVariationChip({
+    required String label,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 12,
+            color: color,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper method to get color for device color variation
+  Color _getColorForVariation(String colorName) {
+    switch (colorName.toLowerCase()) {
+      case 'black':
+        return Colors.black87;
+      case 'white':
+        return Colors.grey;
+      case 'blue':
+        return Colors.blue;
+      case 'red':
+        return Colors.red;
+      case 'gold':
+        return Colors.amber;
+      case 'silver':
+        return Colors.blueGrey;
+      case 'gray':
+        return Colors.grey;
+      case 'green':
+        return Colors.green;
+      default:
+        return Colors.purple;
+    }
+  }
+
+  // Helper method to get color for condition
+  Color _getConditionColor(String condition) {
+    switch (condition.toLowerCase()) {
+      case 'new':
+        return Colors.green;
+      case 'used':
+        return Colors.orange;
+      case 'refurbished':
+        return Colors.blue;
+      default:
+        return Colors.grey;
+    }
+  }
   
   void _showDeleteConfirmation(BuildContext context) {
     showDialog(
@@ -512,7 +866,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     });
     
     try {
-      await _repository.deleteProduct(widget.productId);
+      await _inventoryService.deleteProduct(widget.productId);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -532,10 +886,50 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to delete product: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.mkbhdRed,
           ),
         );
       }
     }
+  }
+
+  // Navigate to dedicated serial numbers page
+  void _navigateToSerialNumbersPage() {
+    if (_product != null) {
+      context.push('/inventory/serial-numbers', extra: {
+        'product': _product,
+        'productId': widget.productId,
+      });
+    }
+  }
+
+  // Generate serial number for a product item
+  String _generateSerialNumber(int index) {
+    // Generate a realistic serial number based on product info
+    final productPrefix = _product!.name.toUpperCase().replaceAll(' ', '').substring(0, 2);
+    final categoryCode = _product!.category?.substring(0, 2).toUpperCase() ?? 'PR';
+    final itemNumber = (index + 1).toString().padLeft(3, '0');
+    final year = DateTime.now().year.toString().substring(2);
+    final randomSuffix = (1000 + index * 37 + _product!.id.hashCode % 9000).toString();
+    
+    return '$productPrefix$categoryCode$year$itemNumber$randomSuffix';
+  }
+
+  // Generate device variations (color, storage, condition)
+  Map<String, String> _generateDeviceVariation(int index) {
+    final colors = ['Black', 'White', 'Blue', 'Red', 'Gold', 'Silver', 'Gray', 'Green'];
+    final storages = ['64GB', '128GB', '256GB', '512GB', '1TB'];
+    final conditions = ['Used', 'New', 'Refurbished']; // Realistic conditions for retail
+    
+    // Use index and product ID to generate consistent variations
+    final colorIndex = (index + _product!.id.hashCode) % colors.length;
+    final storageIndex = (index * 2 + _product!.id.hashCode) % storages.length;
+    final conditionIndex = (index * 3 + _product!.id.hashCode) % conditions.length;
+    
+    return {
+      'color': colors[colorIndex],
+      'storage': storages[storageIndex],
+      'condition': conditions[conditionIndex],
+    };
   }
 }

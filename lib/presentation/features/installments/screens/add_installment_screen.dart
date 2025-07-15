@@ -1,5 +1,6 @@
-import 'package:lumina/presentation/common/widgets/custom_button.dart';
-import 'package:lumina/presentation/common/widgets/custom_text_field.dart';
+import 'package:dukalipa_app/presentation/common/widgets/custom_button.dart';
+import 'package:dukalipa_app/presentation/common/widgets/custom_text_field.dart';
+import 'package:dukalipa_app/presentation/common/widgets/custom_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -7,14 +8,13 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/localization/app_localizations.dart';
 import '../repositories/installment_repository.dart'; 
 import '../repositories/installment_repository_impl.dart' as impl;
-import '../../../../core/network/api_client.dart';
 import '../../clients/models/client_model.dart';
 import '../../inventory/models/product_model.dart';
 import '../../inventory/repositories/inventory_repository.dart';
 import '../../clients/repositories/client_repository.dart';
+import '../../clients/repositories/client_repository_impl.dart' as client_impl;
 
 class AddInstallmentScreen extends StatefulWidget {
   const AddInstallmentScreen({Key? key}) : super(key: key);
@@ -67,11 +67,10 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
       _clientRepository = Provider.of<ClientRepository>(context, listen: false);
       _inventoryRepository = Provider.of<InventoryRepository>(context, listen: false);
     } catch (e) {
-      // If providers not available, create local instances with default API client
-      final apiClient = ApiClient();
-      _installmentRepository = impl.InstallmentRepositoryImpl(apiClient);
-      _clientRepository = ClientRepositoryImpl(apiClient);
-      _inventoryRepository = InventoryRepositoryImpl(apiClient);
+      // If providers not available, create local instances
+      _installmentRepository = impl.InstallmentRepositoryImpl();
+      _clientRepository = client_impl.ClientRepositoryImpl();
+      _inventoryRepository = InventoryRepositoryImpl();
     }
   }
 
@@ -115,8 +114,9 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
           _searchResults = [];
           _isSearchingClients = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error searching clients: ${e.toString()}')),
+        CustomSnackBar.showError(
+          context: context,
+          message: 'Error searching clients: ${e.toString()}',
         );
       }
     }
@@ -160,8 +160,9 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
           _productSearchResults = [];
           _isSearchingProducts = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error searching products: ${e.toString()}')),
+        CustomSnackBar.showError(
+          context: context,
+          message: 'Error searching products: ${e.toString()}',
         );
       }
     }
@@ -172,8 +173,9 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
     final existingIndex = _selectedProducts.indexWhere((p) => p.id == product.id);
     
     if (existingIndex >= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Product already added')),
+      CustomSnackBar.showWarning(
+        context: context,
+        message: 'Product already added',
       );
       return;
     }
@@ -296,8 +298,9 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
     }
     
     if (_selectedProducts.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add at least one product')),
+      CustomSnackBar.showError(
+        context: context,
+        message: 'Please add at least one product',
       );
       return;
     }
@@ -306,15 +309,17 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
     final downPayment = double.tryParse(_downPaymentController.text) ?? 0;
     
     if (downPayment <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Down payment must be greater than zero')),
+      CustomSnackBar.showError(
+        context: context,
+        message: 'Down payment must be greater than zero',
       );
       return;
     }
     
     if (downPayment >= totalAmount) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Down payment cannot be equal to or greater than total amount')),
+      CustomSnackBar.showError(
+        context: context,
+        message: 'Down payment cannot be equal to or greater than total amount',
       );
       return;
     }
@@ -340,16 +345,18 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
       );
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Installment created successfully')),
+        CustomSnackBar.showSuccess(
+          context: context,
+          message: 'Installment created successfully',
         );
         // Navigate back to installments list
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create installment: ${e.toString()}')),
+        CustomSnackBar.showError(
+          context: context,
+          message: 'Failed to create installment: ${e.toString()}',
         );
       }
     } finally {
@@ -362,10 +369,7 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+  Widget build(BuildContext context) {    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Installment Plan'),

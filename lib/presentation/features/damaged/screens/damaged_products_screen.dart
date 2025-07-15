@@ -5,12 +5,12 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/network/api_client.dart';
-import '../models/damaged_product_model.dart';
-import '../repositories/damaged_product_repository.dart';
+import '../../../../data/services/damaged_products_service.dart';
+import '../providers/damaged_products_provider.dart';
 import '../../../common/widgets/custom_search_bar.dart';
-import '../../../common/widgets/loading_widget.dart';
+import '../../../common/widgets/shimmer_loading.dart';
 import '../../../common/widgets/empty_state.dart';
+import '../../../../core/di/service_locator.dart';
 
 class DamagedProductsScreen extends StatefulWidget {
   const DamagedProductsScreen({super.key});
@@ -27,25 +27,24 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
   String? _errorMessage;
   DateTime? _startDate;
   DateTime? _endDate;
-  late DamagedProductRepository _repository;
+  late DamagedProductsProvider _provider;
   
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initRepository();
+      _initProvider();
       _fetchDamagedProducts();
     });
   }
   
-  void _initRepository() {
+  void _initProvider() {
     try {
-      // Try to get the repository from the provider first
-      _repository = Provider.of<DamagedProductRepository>(context, listen: false);
+      // Try to get the provider from the context first
+      _provider = Provider.of<DamagedProductsProvider>(context, listen: false);
     } catch (e) {
-      // If provider not found, create a local instance with default API client
-      final apiClient = ApiClient();
-      _repository = DamagedProductRepositoryImpl(apiClient);
+      // If provider not found, create a local instance
+      _provider = locator<DamagedProductsProvider>();
     }
   }
   
@@ -62,16 +61,15 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
     });
     
     try {
-      final damagedProducts = await _repository.getDamagedProducts(
-        search: _searchController.text,
-        startDate: _startDate,
-        endDate: _endDate,
-      );
+      // Use the provider to load damaged products
+      await _provider.loadDamagedProducts(refresh: true);
       
       if (mounted) {
         setState(() {
-          _damagedProducts = damagedProducts;
+          _damagedProducts = _provider.damagedProducts;
           _isLoading = false;
+          _hasError = _provider.error != null;
+          _errorMessage = _provider.error;
         });
       }
     } catch (e) {
@@ -86,7 +84,14 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
   }
   
   void _onSearch(String query) {
-    _fetchDamagedProducts();
+    if (query.isEmpty) {
+      _fetchDamagedProducts();
+    } else {
+      _provider.searchDamagedProducts(query);
+      setState(() {
+        _damagedProducts = _provider.damagedProducts;
+      });
+    }
   }
   
   Future<void> _showDateRangeDialog() async {
@@ -132,7 +137,7 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
   }
   
   double get _totalLoss => 
-    _damagedProducts.fold(0, (total, product) => total + product.totalLoss);
+    _damagedProducts.fold(0, (total, product) => total + product.estimatedLoss);
   
   @override
   Widget build(BuildContext context) {
@@ -272,7 +277,10 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
   
   Widget _buildDamagedProductsList() {
     if (_isLoading) {
-      return const Center(child: LoadingWidget());
+      return ListView.builder(
+        itemCount: 8,
+        itemBuilder: (context, index) => const TransactionCardShimmer(),
+      );
     }
     
     if (_hasError) {
@@ -373,11 +381,11 @@ class DamagedProductCard extends StatelessWidget {
                   color: Colors.red.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: product.imageUrl != null
+                child: product.images.isNotEmpty
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
-                          product.imageUrl!,
+                          product.images.first,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => const Icon(
                             LucideIcons.packageX,
@@ -416,7 +424,7 @@ class DamagedProductCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Reported: ${product.formattedReportedDate}',
+                      'Reported: ${DateFormat('MMM d, yyyy').format(product.dateDiscovered)}',
                       style: TextStyle(
                         fontSize: 12,
                         color: isDarkMode 
@@ -432,7 +440,7 @@ class DamagedProductCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    product.formattedTotalLoss,
+                    'TSh ${NumberFormat('#,###').format(product.estimatedLoss)}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,

@@ -40,7 +40,7 @@ class _SignupScreenState extends State<SignupScreen> {
     if (_formKey.currentState!.validate()) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       
-      final success = await authProvider.signup(
+      final success = await authProvider.signUp(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
@@ -52,8 +52,8 @@ class _SignupScreenState extends State<SignupScreen> {
         context.go('/login');
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authProvider.error ?? 'Signup failed'),
+          const SnackBar(
+            content: Text('Signup failed'),
             backgroundColor: Colors.red,
           ),
         );

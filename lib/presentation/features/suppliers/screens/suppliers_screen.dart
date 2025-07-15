@@ -5,12 +5,11 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/network/api_client.dart';
 import '../models/supplier_model.dart';
 import '../repositories/supplier_repository.dart';
-import '../../../common/widgets/custom_search_bar.dart';
-import '../../../common/widgets/loading_widget.dart';
+import '../../../common/widgets/material3_search_bar.dart';
 import '../../../common/widgets/empty_state.dart';
+import '../../../common/widgets/shimmer_loading.dart';
 
 class SuppliersScreen extends StatefulWidget {
   const SuppliersScreen({super.key});
@@ -43,9 +42,8 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
       // Try to get the repository from the provider first
       _repository = Provider.of<SupplierRepository>(context, listen: false);
     } catch (e) {
-      // If provider not found, create a local instance with default API client
-      final apiClient = ApiClient();
-      _repository = SupplierRepositoryImpl(apiClient);
+      // If provider not found, create a local instance
+      _repository = SupplierRepositoryImpl();
     }
   }
   
@@ -187,13 +185,13 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
               ),
             ),
           
-          // Search bar
+          // Material 3 Search bar
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: CustomSearchBar(
+            child: Material3SearchBar(
               controller: _searchController,
+              onChanged: (query) => _onSearch(query),
               hintText: 'Search suppliers',
-              onSearch: _onSearch,
             ),
           ),
           
@@ -272,7 +270,10 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
   
   Widget _buildSuppliersList() {
     if (_isLoading) {
-      return const Center(child: LoadingWidget());
+      return ListView.builder(
+        itemCount: 8,
+        itemBuilder: (context, index) => const TransactionCardShimmer(),
+      );
     }
     
     if (_hasError) {

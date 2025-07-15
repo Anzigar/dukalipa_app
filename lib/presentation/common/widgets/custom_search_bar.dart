@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/theme/app_theme.dart';
+
 class CustomSearchBar extends StatefulWidget {
   final TextEditingController controller;
   final String hintText;
@@ -78,7 +80,6 @@ class _CustomSearchBarState extends State<CustomSearchBar> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    const Color airbnbRed = Color(0xFFFF385C);
     
     return Hero(
       tag: 'searchBar',
@@ -151,7 +152,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> with SingleTickerProv
               enabledBorder: InputBorder.none,
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(widget.borderRadius),
-                borderSide: BorderSide(color: airbnbRed, width: 2.0),
+                borderSide: BorderSide(color: AppTheme.mkbhdRed, width: 2.0),
               ),
             ),
             maxLines: 1,

@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../../../core/network/api_client.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../models/customer_model.dart';
 import '../repositories/customer_repository.dart';
 import '../../../common/widgets/custom_button.dart';
@@ -54,9 +54,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       // Try to get the repository from the provider first
       _repository = Provider.of<CustomerRepository>(context, listen: false);
     } catch (e) {
-      // If provider not found, create a local instance with default API client
-      final apiClient = ApiClient();
-      _repository = CustomerRepositoryImpl(apiClient);
+      // If provider not found, create a local instance
+      _repository = CustomerRepositoryImpl();
     }
   }
   
@@ -121,7 +120,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to ${_isEditMode ? 'update' : 'add'} customer: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.mkbhdRed,
           ),
         );
       }

@@ -1,5 +1,5 @@
 import 'dart:async';
-import '../../../../core/network/api_client.dart';
+import 'package:dio/dio.dart';
 import '../models/deleted_item_model.dart';
 
 abstract class DeletedItemRepository {
@@ -18,9 +18,17 @@ abstract class DeletedItemRepository {
 }
 
 class DeletedItemRepositoryImpl implements DeletedItemRepository {
-  final ApiClient _apiClient;
+  late final Dio _dio;
 
-  DeletedItemRepositoryImpl(this._apiClient);
+  DeletedItemRepositoryImpl() {
+    _dio = Dio(BaseOptions(
+      baseUrl: 'http://127.0.0.1:8000/api/v1',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ));
+  }
 
   @override
   Future<List<DeletedItemModel>> getDeletedItems({
@@ -48,8 +56,8 @@ class DeletedItemRepositoryImpl implements DeletedItemRepository {
         queryParams['end_date'] = formatDateForApi(endDate);
       }
 
-      final response = await _apiClient.get('/deleted-items', queryParameters: queryParams);
-      final List<dynamic> data = response['data'] ?? [];
+      final response = await _dio.get('/deleted-items', queryParameters: queryParams);
+      final List<dynamic> data = response.data['data'] ?? [];
       return data.map((json) => DeletedItemModel.fromJson(json)).toList();
     } catch (e) {
       throw _handleError(e);
@@ -59,8 +67,8 @@ class DeletedItemRepositoryImpl implements DeletedItemRepository {
   @override
   Future<DeletedItemModel> getDeletedItemById(String id) async {
     try {
-      final response = await _apiClient.get('/deleted-items/$id');
-      return DeletedItemModel.fromJson(response['data']);
+      final response = await _dio.get('/deleted-items/$id');
+      return DeletedItemModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -69,7 +77,7 @@ class DeletedItemRepositoryImpl implements DeletedItemRepository {
   @override
   Future<void> restoreItem(String id) async {
     try {
-      await _apiClient.post('/deleted-items/$id/restore');
+      await _dio.post('/deleted-items/$id/restore');
     } catch (e) {
       throw _handleError(e);
     }
@@ -78,7 +86,7 @@ class DeletedItemRepositoryImpl implements DeletedItemRepository {
   @override
   Future<void> permanentlyDeleteItem(String id) async {
     try {
-      await _apiClient.delete('/deleted-items/$id');
+      await _dio.delete('/deleted-items/$id');
     } catch (e) {
       throw _handleError(e);
     }

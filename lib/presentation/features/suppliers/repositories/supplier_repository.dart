@@ -1,5 +1,5 @@
 import 'dart:async';
-import '../../../../core/network/api_client.dart';
+import 'package:dio/dio.dart';
 import '../models/supplier_model.dart';
 
 abstract class SupplierRepository {
@@ -19,9 +19,17 @@ abstract class SupplierRepository {
 }
 
 class SupplierRepositoryImpl implements SupplierRepository {
-  final ApiClient _apiClient;
+  late final Dio _dio;
 
-  SupplierRepositoryImpl(this._apiClient);
+  SupplierRepositoryImpl() {
+    _dio = Dio(BaseOptions(
+      baseUrl: 'http://127.0.0.1:8000/api/v1',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ));
+  }
 
   @override
   Future<List<SupplierModel>> getSuppliers({
@@ -44,8 +52,8 @@ class SupplierRepositoryImpl implements SupplierRepository {
         queryParams['end_date'] = formatDateForApi(endDate);
       }
 
-      final response = await _apiClient.get('/suppliers', queryParameters: queryParams);
-      final List<dynamic> data = response['data'] ?? [];
+      final response = await _dio.get('/suppliers', queryParameters: queryParams);
+      final List<dynamic> data = response.data['data'] ?? [];
       return data.map((json) => SupplierModel.fromJson(json)).toList();
     } catch (e) {
       throw _handleError(e);
@@ -55,8 +63,8 @@ class SupplierRepositoryImpl implements SupplierRepository {
   @override
   Future<SupplierModel> getSupplierById(String id) async {
     try {
-      final response = await _apiClient.get('/suppliers/$id');
-      return SupplierModel.fromJson(response['data']);
+      final response = await _dio.get('/suppliers/$id');
+      return SupplierModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -65,11 +73,11 @@ class SupplierRepositoryImpl implements SupplierRepository {
   @override
   Future<SupplierModel> createSupplier(SupplierModel supplier) async {
     try {
-      final response = await _apiClient.post(
+      final response = await _dio.post(
         '/suppliers',
         data: supplier.toJson(),
       );
-      return SupplierModel.fromJson(response['data']);
+      return SupplierModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -78,11 +86,11 @@ class SupplierRepositoryImpl implements SupplierRepository {
   @override
   Future<SupplierModel> updateSupplier(SupplierModel supplier) async {
     try {
-      final response = await _apiClient.put(
+      final response = await _dio.put(
         '/suppliers/${supplier.id}',
         data: supplier.toJson(),
       );
-      return SupplierModel.fromJson(response['data']);
+      return SupplierModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -91,18 +99,35 @@ class SupplierRepositoryImpl implements SupplierRepository {
   @override
   Future<void> deleteSupplier(String id) async {
     try {
-      await _apiClient.delete('/suppliers/$id');
+      await _dio.delete('/suppliers/$id');
     } catch (e) {
       throw _handleError(e);
     }
   }
 
   // Helper function to handle errors
-  Exception _handleError(dynamic error) {
-    if (error is TimeoutException) {
-      return Exception('Connection timed out. Please check your internet connection.');
+  Exception _handleError(dynamic e) {
+    if (e is DioException) {
+      switch (e.type) {
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.receiveTimeout:
+        case DioExceptionType.connectionError:
+          return Exception('Network error. Please check your internet connection.');
+        case DioExceptionType.badResponse:
+          final statusCode = e.response?.statusCode;
+          if (statusCode == 404) {
+            return Exception('Supplier not found.');
+          }
+          if (statusCode == 401 || statusCode == 403) {
+            return Exception('Authentication error. Please login again.');
+          }
+          return Exception('Server error: ${e.response?.statusMessage}');
+        default:
+          return Exception('An error occurred: ${e.message}');
+      }
     }
-    return Exception('Failed to perform operation: $error');
+    
+    return Exception('An error occurred: ${e.toString()}');
   }
 
   // Helper function to format date for API

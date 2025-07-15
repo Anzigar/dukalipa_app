@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/network/api_client.dart';
 import '../models/customer_model.dart';
 import '../repositories/customer_repository.dart';
 import '../../../common/widgets/custom_text_field.dart';
@@ -63,9 +62,8 @@ class _AddEditCustomerScreenState extends State<AddEditCustomerScreen> {
       // Try to get the repository from the provider first
       _repository = Provider.of<CustomerRepository>(context, listen: false);
     } catch (e) {
-      // If provider not found, create a local instance with default API client
-      final apiClient = ApiClient();
-      _repository = CustomerRepositoryImpl(apiClient);
+      // If provider not found, create a local instance
+      _repository = CustomerRepositoryImpl();
     }
   }
   

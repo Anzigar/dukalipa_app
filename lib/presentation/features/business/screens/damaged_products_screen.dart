@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../common/widgets/material3_search_bar.dart';
 
 class DamagedProductsScreen extends StatefulWidget {
   const DamagedProductsScreen({super.key});
@@ -12,18 +13,16 @@ class DamagedProductsScreen extends StatefulWidget {
 class _DamagedProductsScreenState extends State<DamagedProductsScreen> with SingleTickerProviderStateMixin {
   bool _isLoading = false;
   List<DamagedProduct> _damagedProducts = [];
-  late TabController _tabController;
+  Set<String> _selectedStatus = {'all'}; // For segmented button
   
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
     _loadDamagedProducts();
   }
   
   @override
   void dispose() {
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -87,28 +86,56 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> with Sing
         title: const Text('Damaged Products'),
         elevation: 0,
         backgroundColor: Colors.transparent,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppTheme.mkbhdRed,
-          unselectedLabelColor: AppTheme.mkbhdLightGrey,
-          indicatorColor: AppTheme.mkbhdRed,
-          indicatorWeight: 3,
-          indicatorSize: TabBarIndicatorSize.tab,
-          tabs: const [
-            Tab(text: 'All'),
-            Tab(text: 'Pending'),
-            Tab(text: 'Processed'),
-          ],
-        ),
       ),
       body: _isLoading 
           ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
+          : Column(
               children: [
-                _buildProductList(_damagedProducts),
-                _buildProductList(_damagedProducts.where((p) => p.status == 'Pending').toList()),
-                _buildProductList(_damagedProducts.where((p) => p.status == 'Processed' || p.status == 'Written Off').toList()),
+                // Material 3 Segmented Button replacing TabBar
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment<String>(
+                        value: 'all',
+                        label: Text('All'),
+                        icon: Icon(Icons.list_rounded),
+                      ),
+                      ButtonSegment<String>(
+                        value: 'pending',
+                        label: Text('Pending'),
+                        icon: Icon(Icons.schedule_rounded),
+                      ),
+                      ButtonSegment<String>(
+                        value: 'processed',
+                        label: Text('Processed'),
+                        icon: Icon(Icons.check_circle_outline),
+                      ),
+                    ],
+                    selected: _selectedStatus,
+                    onSelectionChanged: (Set<String> newSelection) {
+                      setState(() {
+                        _selectedStatus = newSelection;
+                      });
+                    },
+                    style: SegmentedButton.styleFrom(
+                      backgroundColor: Theme.of(context).cardColor,
+                      foregroundColor: AppTheme.mkbhdLightGrey,
+                      selectedBackgroundColor: AppTheme.mkbhdRed.withOpacity(0.1),
+                      selectedForegroundColor: AppTheme.mkbhdRed,
+                      side: BorderSide(color: AppTheme.mkbhdLightGrey.withOpacity(0.2)),
+                    ),
+                  ),
+                ),
+                
+                // Content based on selection
+                Expanded(
+                  child: _selectedStatus.contains('all')
+                      ? _buildProductList(_damagedProducts)
+                      : _selectedStatus.contains('pending')
+                          ? _buildProductList(_damagedProducts.where((p) => p.status == 'Pending').toList())
+                          : _buildProductList(_damagedProducts.where((p) => p.status == 'Processed' || p.status == 'Written Off').toList()),
+                ),
               ],
             ),
       floatingActionButton: FloatingActionButton.extended(
@@ -154,6 +181,8 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> with Sing
   }
   
   void _showAddDamagedProductDialog() {
+    final productSearchController = TextEditingController();
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -209,31 +238,13 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> with Sing
                     ),
                     const SizedBox(height: 32),
                     
-                    TextField(
-                      decoration: InputDecoration(
-                        labelText: 'Search Product',
-                        hintText: 'Type to search...',
-                        filled: true,
-                        fillColor: Theme.of(context).cardColor,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(
-                            color: AppTheme.mkbhdLightGrey.withOpacity(0.1),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(
-                            color: AppTheme.mkbhdRed,
-                            width: 2,
-                          ),
-                        ),
-                        prefixIcon: const Icon(Icons.search),
-                      ),
+                    // Material 3 Search Bar
+                    Material3SearchBar(
+                      controller: productSearchController,
+                      onChanged: (query) {
+                        // Handle search
+                      },
+                      hintText: 'Search products...',
                     ),
                     const SizedBox(height: 20),
                     

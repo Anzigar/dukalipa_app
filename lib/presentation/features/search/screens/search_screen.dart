@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../../../core/theme/airbnb_colors.dart';
-import '../../../common/widgets/custom_search_bar.dart';
+import '../../../../core/theme/dukalipa_colors.dart';
+import '../../../common/widgets/material3_search_bar.dart';
 import '../../../common/widgets/empty_state.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -89,11 +89,10 @@ class _SearchScreenState extends State<SearchScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: CustomSearchBar(
+            child: Material3SearchBar(
               controller: _searchController,
+              onChanged: _performSearch,
               hintText: 'Search products, sales, clients...',
-              onSearch: _performSearch,
-              autofocus: true,
             ),
           ),
           
@@ -199,3 +198,4 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 }
+

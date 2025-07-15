@@ -58,7 +58,8 @@ class ProductCardWidget extends StatelessWidget {
         
         const SizedBox(height: 6),
         
-        if (product.metadata != null && product.metadata!.containsKey('storage'))
+        // Show different information based on product type
+        if (product.hasSerialNumber && product.metadata != null && product.metadata!.containsKey('storage'))
           Text(
             'Storage: ${product.metadata!['storage']}',
             style: TextStyle(
@@ -67,11 +68,8 @@ class ProductCardWidget extends StatelessWidget {
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-          ),
-          
-        const SizedBox(height: 4),
-        
-        if (product.metadata != null && product.metadata!.containsKey('imei'))
+          )
+        else if (product.hasSerialNumber && product.metadata != null && product.metadata!.containsKey('imei'))
           Text(
             'IMEI: ${product.metadata!['imei']}',
             style: TextStyle(
@@ -83,10 +81,24 @@ class ProductCardWidget extends StatelessWidget {
           )
         else
           Text(
-            'Quantity: ${product.quantity}',
+            'Quantity: ${product.quantity}${product.isAccessory ? ' pcs' : ''}',
             style: TextStyle(
               color: colorScheme.onSurfaceVariant,
               fontSize: 14,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        
+        const SizedBox(height: 4),
+        
+        // Show category for better product identification
+        if (product.category != null)
+          Text(
+            'Category: ${product.category}',
+            style: TextStyle(
+              color: colorScheme.onSurfaceVariant.withOpacity(0.7),
+              fontSize: 12,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -135,9 +147,9 @@ class ProductCardWidget extends StatelessWidget {
         const SizedBox(height: 6),
         
         Text(
-          product.metadata?.containsKey('storage') == true
+          product.hasSerialNumber && product.metadata?.containsKey('storage') == true
               ? 'Storage: ${product.metadata!['storage']}'
-              : 'Qty: ${product.quantity}',
+              : 'Qty: ${product.quantity}${product.isAccessory ? ' pcs' : ''}',
           style: TextStyle(
             color: colorScheme.onSurfaceVariant,
             fontSize: 12,

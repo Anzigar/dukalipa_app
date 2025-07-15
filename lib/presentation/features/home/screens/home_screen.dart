@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart'; // Add this import
-import 'package:lumina/core/providers/auth_provider.dart';
-import 'package:lumina/core/theme/airbnb_colors.dart';
+import 'package:dukalipa_app/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
+import '../../../common/widgets/shimmer_loading.dart';
 
 
 // Define ActionItem class for menu items
@@ -58,40 +59,40 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   ];
 
   // User customizable cards that can be reordered
-  final List<Map<String, dynamic>> _customizableCards = [
+  List<Map<String, dynamic>> _getCustomizableCards(BuildContext context) => [
     {
       'title': 'Matumizi',
       'value': 'TSh 450,000',
       'icon': LucideIcons.wallet,
-      'color': Colors.orange,
+      'color': Theme.of(context).colorScheme.tertiary,
       'route': '/expenses',
     },
     {
       'title': 'Returns',
       'value': '5 Items',
       'icon': LucideIcons.packageMinus,
-      'color': Colors.red,
+      'color': Theme.of(context).colorScheme.error,
       'route': '/returns',
     },
     {
       'title': 'Debts',
       'value': 'TSh 120,000',
       'icon': LucideIcons.banknote,
-      'color': Colors.purple,
+      'color': Theme.of(context).colorScheme.secondary,
       'route': '/debts',
     },
     {
       'title': 'Active Clients',
       'value': '24',
       'icon': LucideIcons.users,
-      'color': Colors.blue,
+      'color': Theme.of(context).colorScheme.primary,
       'route': '/clients',
     },
     {
       'title': 'Notebook',
       'value': '8 Notes',
       'icon': LucideIcons.clipboardList,
-      'color': Colors.green,
+      'color': Theme.of(context).colorScheme.primaryContainer,
       'route': '/notes',
     },
   ];
@@ -148,9 +149,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     final colorScheme = Theme.of(context).colorScheme;
     
     return Scaffold(
-      backgroundColor: isDark ? Colors.grey[900] : Colors.grey[50],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: _isLoading 
-          ? _buildMaterial3LoadingIndicator(colorScheme)
+          ? const DashboardShimmer()
           : CustomScrollView(
               controller: _scrollController,
               slivers: [
@@ -160,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   floating: true,
                   pinned: true,
                   elevation: 0,
-                  backgroundColor: isDark ? Colors.black : Colors.white,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
                   flexibleSpace: FlexibleSpaceBar(
                     background: Container(
                       decoration: BoxDecoration(
@@ -168,8 +169,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            AirbnbColors.primary.withOpacity(0.1),
-                            AirbnbColors.primary.withOpacity(0.05),
+                            Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                            Theme.of(context).colorScheme.primary.withOpacity(0.05),
                           ],
                         ),
                       ),
@@ -189,7 +190,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         _getGreeting(),
                                         style: TextStyle(
                                           fontSize: 16,
-                                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
@@ -461,10 +462,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           label: 'Profile',
         ),
       ],
-      selectedItemColor: AirbnbColors.primary,
-      unselectedItemColor: Colors.grey,
+      selectedItemColor: Theme.of(context).colorScheme.primary,
+      unselectedItemColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
       type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
       elevation: 8,
     );
   }
@@ -485,33 +486,36 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       children: [
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
             ],
           ),
           child: IconButton(
-            icon: Icon(icon, size: 22),
+            icon: Icon(icon, size: 22.sp),
             onPressed: onPressed,
-            color: Colors.grey[700],
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
           ),
         ),
         if (hasNotification)
           Positioned(
-            right: 8,
-            top: 8,
+            right: 8.w,
+            top: 8.h,
             child: Container(
-              width: 10,
-              height: 10,
+              width: 10.w,
+              height: 10.h,
               decoration: BoxDecoration(
-                color: Colors.red,
+                color: Theme.of(context).colorScheme.error,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
+                border: Border.all(
+                  color: Theme.of(context).cardColor, 
+                  width: 2,
+                ),
               ),
             ),
           ),
@@ -528,8 +532,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              AirbnbColors.primary.withOpacity(0.8),
-              AirbnbColors.primary,
+              Theme.of(context).colorScheme.primary.withOpacity(0.8),
+              Theme.of(context).colorScheme.primary,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -537,7 +541,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: AirbnbColors.primary.withOpacity(0.3),
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -548,10 +552,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             profile?.name?.isNotEmpty == true 
                 ? profile!.name![0].toUpperCase() 
                 : 'U',
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onPrimary,
               fontWeight: FontWeight.bold,
-              fontSize: 20,
+              fontSize: 20.sp,
             ),
           ),
         ),
@@ -561,13 +565,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Widget _buildSearchBar() {
     return Container(
-      height: 52,
+      height: 52.h,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -580,23 +584,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+                borderRadius: BorderRadius.horizontal(left: Radius.circular(16.r)),
                 onTap: _navigateToSearch,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
                   child: Row(
                     children: [
                       Icon(
                         LucideIcons.search,
-                        color: Colors.grey[600],
-                        size: 22,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        size: 22.sp,
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       Text(
                         'Search products...',
                         style: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: 16,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                          fontSize: 16.sp,
                         ),
                       ),
                     ],
@@ -608,21 +612,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           // Divider
           Container(
             width: 1,
-            height: 24,
-            color: Colors.grey[300],
+            height: 24.h,
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
           ),
           // Barcode scanner button
           Material(
             color: Colors.transparent,
             child: InkWell(
-              borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)),
+              borderRadius: BorderRadius.horizontal(right: Radius.circular(16.r)),
               onTap: _openBarcodeScanner,
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Icon(
                   LucideIcons.scanLine,
-                  color: AirbnbColors.primary,
-                  size: 24,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 24.sp,
                 ),
               ),
             ),
@@ -634,177 +638,211 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Widget _buildTodaySummaryCard(BuildContext context, profile) {
     return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AirbnbColors.primary,
-            AirbnbColors.primary.withOpacity(0.9),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AirbnbColors.primary.withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
+      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Today\'s Revenue',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'TSh 245,000',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -1,
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  '+15%',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
+          // Main revenue card - Meta style: clean, minimal, no icons
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
+              color: Theme.of(context).colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(16.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildMiniStat('Orders', '32', Icons.shopping_bag_outlined),
-                _buildVerticalDivider(),
-                _buildMiniStat('Products', '148', Icons.inventory_2_outlined),
-                _buildVerticalDivider(),
-                _buildMiniStat('Customers', '24', Icons.people_outline),
+                // Header row - Meta style: simple text hierarchy
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Today\'s Revenue',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.7),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.1,
+                      ),
+                    ),
+                    // Minimal growth indicator - just text, no icon
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.tertiary.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        '+15%',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.tertiary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+                // Main revenue amount - prominent but clean
+                Text(
+                  'TSh 245,000',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    fontSize: 32.sp,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -1.0,
+                    height: 1.1,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                // Subtitle - Meta style: helpful context without clutter
+                Text(
+                  'vs TSh 213,000 yesterday',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.6),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
               ],
             ),
           ),
+          
+          SizedBox(height: 12.h),
+          
+          // Quick stats row - Meta style: minimal, text-focused
+          Row(
+            children: [
+              Expanded(
+                child: _buildMetaStyleStatCard('Orders', '32', 'today'),
+              ),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: _buildMetaStyleStatCard('Products', '148', 'in stock'),
+              ),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: _buildMetaStyleStatCard('Customers', '24', 'active'),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildMiniStat(String label, String value, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.white.withOpacity(0.8), size: 20),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+  // Meta-style stat card: minimal, clean, text-focused
+  Widget _buildMetaStyleStatCard(String label, String value, String subtitle) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 12.w),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.08),
+          width: 1,
         ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
-            fontSize: 12,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Main value - prominent and clean
+          Text(
+            value,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.3,
+              height: 1.1,
+            ),
           ),
-        ),
-      ],
+          SizedBox(height: 3.h),
+          // Label - clean and minimal
+          Text(
+            label,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w500,
+              height: 1.2,
+            ),
+          ),
+          SizedBox(height: 1.h),
+          // Subtitle - helpful context
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w400,
+              height: 1.1,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildVerticalDivider() {
-    return Container(
-      height: 40,
-      width: 1,
-      color: Colors.white.withOpacity(0.2),
-    );
-  }
+
 
   Widget _buildQuickActionsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+          padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 16.h),
           child: Text(
             'Quick Actions',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 18.sp,
               fontWeight: FontWeight.w600,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ),
         SizedBox(
-          height: 95, // Increased from 100 to accommodate content
+          height: 100.h, // Match the card height exactly
           child: ListView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
             children: [
               _buildQuickActionCard(
                 icon: LucideIcons.shoppingCart,
                 label: 'New Sale',
-                color: Colors.green,
+                color: Theme.of(context).colorScheme.primary,
                 onTap: () => context.push('/sales/new'),
               ),
               _buildQuickActionCard(
                 icon: LucideIcons.packagePlus,
                 label: 'Add Product',
-                color: Colors.blue,
+                color: Theme.of(context).colorScheme.secondary,
                 onTap: () => context.push('/inventory/add'),
               ),
               _buildQuickActionCard(
                 icon: LucideIcons.users,
                 label: 'Customers',
-                color: Colors.purple,
+                color: Theme.of(context).colorScheme.tertiary,
                 onTap: () => context.push('/customers'),
               ),
               _buildQuickActionCard(
                 icon: LucideIcons.fileText,
                 label: 'Reports',
-                color: Colors.orange,
+                color: Theme.of(context).colorScheme.primary,
                 onTap: () => context.push('/reports'),
               ),
               _buildQuickActionCard(
                 icon: LucideIcons.scan,
                 label: 'Scan',
-                color: Colors.red,
+                color: Theme.of(context).colorScheme.error,
                 onTap: _openBarcodeScanner,
               ),
             ],
@@ -823,52 +861,47 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 88, // Slightly reduced width
-        margin: const EdgeInsets.only(right: 12),
+        width: 85.w, // Reduced width to prevent overflow
+        height: 100.h, // Fixed height to prevent overflow
+        margin: EdgeInsets.only(right: 12.w),
+        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.08),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Meta style: simple icon without container decoration
+            Icon(
+              icon, 
+              color: color, 
+              size: 22.sp, // Slightly smaller icon
+            ),
+            SizedBox(height: 6.h),
+            // Clean text label with constrained sizing
+            Expanded(
+              child: Center(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600,
+                    height: 1.1,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ),
           ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10), // Reduced padding
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(9), // Reduced from 10
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: color, size: 20), // Reduced from 22
-              ),
-              const SizedBox(height: 5), // Reduced from 6
-              Flexible(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(
-                    label,
-                    style: const TextStyle(
-                      fontSize: 10.5, // Reduced from 11
-                      fontWeight: FontWeight.w600,
-                      height: 1.1, // Tighter line height
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -876,64 +909,73 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Widget _buildMetricsGrid() {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Business Overview',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 20.sp,
               fontWeight: FontWeight.bold,
               letterSpacing: -0.5,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: 16),
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 1.5,
-            children: [
-              _buildMetricCard(
-                title: 'Expenses',
-                value: 'TSh 450,000',
-                icon: LucideIcons.wallet,
-                color: Colors.orange,
-                trend: '-5%',
-                isPositive: false,
-                onTap: () => context.push('/expenses'),
-              ),
-              _buildMetricCard(
-                title: 'Low Stock',
-                value: '12 Items',
-                icon: LucideIcons.alertCircle,
-                color: Colors.red,
-                trend: '3',
-                isPositive: false,
-                onTap: () => context.push('/inventory/low-stock'),
-              ),
-              _buildMetricCard(
-                title: 'Active Debts',
-                value: 'TSh 120,000',
-                icon: LucideIcons.banknote,
-                color: Colors.purple,
-                trend: '2 pending',
-                isPositive: null,
-                onTap: () => context.push('/debts'),
-              ),
-              _buildMetricCard(
-                title: 'Total Customers',
-                value: '156',
-                icon: LucideIcons.users,
-                color: Colors.blue,
-                trend: '+8',
-                isPositive: true,
-                onTap: () => context.push('/customers'),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Calculate appropriate childAspectRatio based on available width
+              double cardWidth = (constraints.maxWidth - 16.w) / 2;
+              double cardHeight = cardWidth * 0.65; // Better ratio for content fit
+              double aspectRatio = cardWidth / cardHeight;
+              
+              return GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                crossAxisSpacing: 16.w,
+                mainAxisSpacing: 16.h,
+                childAspectRatio: aspectRatio.clamp(1.3, 1.6), // Tighter ratio range
+                children: [
+                  _buildMetricCard(
+                    title: 'Expenses',
+                    value: 'TSh 450,000',
+                    icon: LucideIcons.wallet,
+                    color: Theme.of(context).colorScheme.tertiary,
+                    trend: '-5%',
+                    isPositive: false,
+                    onTap: () => context.push('/expenses'),
+                  ),
+                  _buildMetricCard(
+                    title: 'Low Stock',
+                    value: '12 Items',
+                    icon: LucideIcons.alertCircle,
+                    color: Theme.of(context).colorScheme.error,
+                    trend: '3',
+                    isPositive: false,
+                    onTap: () => context.push('/inventory/low-stock'),
+                  ),
+                  _buildMetricCard(
+                    title: 'Active Debts',
+                    value: 'TSh 120,000',
+                    icon: LucideIcons.banknote,
+                    color: Theme.of(context).colorScheme.secondary,
+                    trend: '2 pending',
+                    isPositive: null,
+                    onTap: () => context.push('/debts'),
+                  ),
+                  _buildMetricCard(
+                    title: 'Total Customers',
+                    value: '156',
+                    icon: LucideIcons.users,
+                    color: Theme.of(context).colorScheme.primary,
+                    trend: '+8',
+                    isPositive: true,
+                    onTap: () => context.push('/customers'),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -952,102 +994,115 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16), // Reduced from 20
+        padding: EdgeInsets.all(12.w), // Further reduced padding
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.08),
+            width: 1,
+          ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8), // Reduced from 10
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: color, size: 18), // Reduced from 20
-                ),
-              ],
-            ),
-            Flexible(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      value,
-                      style: const TextStyle(
-                        fontSize: 16, // Reduced from 18
-                        fontWeight: FontWeight.bold,
-                        height: 1.1,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 2), // Reduced from 4
-                  Row(
+                // Top row with indicator and trend
+                SizedBox(
+                  height: 20.h,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
+                      // Small subtle indicator
+                      Container(
+                        width: 3.w,
+                        height: 16.h,
+                        decoration: BoxDecoration(
+                          color: color.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                      ),
+                      // Trend indicator on the right
+                      if (trend.isNotEmpty)
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color: isPositive == null 
+                                ? Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5)
+                                : isPositive 
+                                    ? Theme.of(context).colorScheme.primary.withOpacity(0.1) 
+                                    : Theme.of(context).colorScheme.error.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6.r),
+                          ),
+                          child: Text(
+                            trend,
+                            style: TextStyle(
+                              color: isPositive == null 
+                                  ? Theme.of(context).colorScheme.onSurface.withOpacity(0.6)
+                                  : isPositive 
+                                      ? Theme.of(context).colorScheme.primary 
+                                      : Theme.of(context).colorScheme.error,
+                              fontSize: 9.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                
+                SizedBox(height: 8.h),
+                
+                // Main content area
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      // Value text
+                      Flexible(
+                        flex: 2,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            value,
+                            style: TextStyle(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w700,
+                              height: 1.0,
+                              color: Theme.of(context).colorScheme.onSurface,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                        ),
+                      ),
+                      
+                      SizedBox(height: 2.h),
+                      
+                      // Title text
+                      Flexible(
+                        flex: 1,
                         child: Text(
                           title,
                           style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12, // Reduced from 13
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w500,
                             height: 1.2,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (trend.isNotEmpty) ...[
-                        const SizedBox(width: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6, // Reduced from 8
-                            vertical: 1,    // Reduced from 2
-                          ),
-                          decoration: BoxDecoration(
-                            color: isPositive == null 
-                                ? Colors.grey[100]
-                                : isPositive 
-                                    ? Colors.green.withOpacity(0.1) 
-                                    : Colors.red.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            trend,
-                            style: TextStyle(
-                              color: isPositive == null 
-                                  ? Colors.grey[600]
-                                  : isPositive ? Colors.green : Colors.red,
-                              fontSize: 10,  // Reduced from 11
-                              fontWeight: FontWeight.w600,
-                              height: 1.2,
-                            ),
-                          ),
-                        ),
-                      ],
                     ],
                   ),
-                ],
-              ),
-            ),
-          ],
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -1055,35 +1110,41 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Widget _buildRecentActivitySection() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Recent Activity',
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 20.sp,
                   fontWeight: FontWeight.bold,
                   letterSpacing: -0.5,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               TextButton(
                 onPressed: () => context.push('/activity'),
-                child: const Text('See all'),
+                child: Text(
+                  'See all',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(20.r),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
@@ -1096,7 +1157,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   title: 'New sale completed',
                   subtitle: 'iPhone 13 Pro - TSh 2,500,000',
                   time: '2 min ago',
-                  color: Colors.green,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
                 _buildActivityDivider(),
                 _buildActivityItem(
@@ -1104,7 +1165,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   title: 'Low stock alert',
                   subtitle: 'Samsung Galaxy S21 - 2 units left',
                   time: '1 hour ago',
-                  color: Colors.orange,
+                  color: Theme.of(context).colorScheme.tertiary,
                 ),
                 _buildActivityDivider(),
                 _buildActivityItem(
@@ -1112,7 +1173,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   title: 'New customer added',
                   subtitle: 'John Doe - Premium customer',
                   time: '3 hours ago',
-                  color: Colors.blue,
+                  color: Theme.of(context).colorScheme.secondary,
                 ),
               ],
             ),
@@ -1130,35 +1191,36 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     required Color color,
   }) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 20.sp),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    fontSize: 14,
+                    fontSize: 14.sp,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   subtitle,
                   style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    fontSize: 13.sp,
                   ),
                 ),
               ],
@@ -1167,8 +1229,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           Text(
             time,
             style: TextStyle(
-              color: Colors.grey[500],
-              fontSize: 12,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              fontSize: 12.sp,
             ),
           ),
         ],
@@ -1180,19 +1242,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return Divider(
       height: 1,
       thickness: 1,
-      color: Colors.grey[100],
-      indent: 16,
-      endIndent: 16,
+      color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+      indent: 16.w,
+      endIndent: 16.w,
     );
   }
 
   Widget _buildFloatingActionButton() {
     return FloatingActionButton(
       onPressed: () => _showQuickActionsMenu(context),
-      backgroundColor: AirbnbColors.primary,
-      foregroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      foregroundColor: Theme.of(context).colorScheme.onPrimary,
       elevation: 4,
-      child: const Icon(LucideIcons.plus, size: 28),
+      child: Icon(LucideIcons.plus, size: 28.sp),
     );
   }
 
@@ -1203,46 +1265,48 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       backgroundColor: Colors.transparent,
       builder: (context) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
           ),
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
+              padding: EdgeInsets.symmetric(vertical: 24.h),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 48,
-                    height: 4,
+                    width: 48.w,
+                    height: 4.h,
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(2.r),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  const Text(
+                  SizedBox(height: 24.h),
+                  Text(
                     'Quick Actions',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 20.sp,
                       fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
                     child: GridView.count(
                       shrinkWrap: true,
                       crossAxisCount: 4,
-                      mainAxisSpacing: 20,
-                      crossAxisSpacing: 20,
+                      mainAxisSpacing: 16.h, // Reduced spacing
+                      crossAxisSpacing: 16.w,
+                      childAspectRatio: 0.9, // Better aspect ratio
                       physics: const NeverScrollableScrollPhysics(),
                       children: [
                         _buildQuickActionItem(
                           icon: LucideIcons.shoppingCart,
                           label: 'New Sale',
-                          color: Colors.blue,
+                          color: Theme.of(context).colorScheme.primary,
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/sales/new');
@@ -1251,7 +1315,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         _buildQuickActionItem(
                           icon: LucideIcons.scanLine,
                           label: 'Scan',
-                          color: AirbnbColors.primary,
+                          color: Theme.of(context).colorScheme.error,
                           onTap: () {
                             Navigator.pop(context);
                             _openBarcodeScanner();
@@ -1260,7 +1324,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         _buildQuickActionItem(
                           icon: LucideIcons.package,
                           label: 'Add Product',
-                          color: Colors.green,
+                          color: Theme.of(context).colorScheme.secondary,
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/inventory/add');
@@ -1269,7 +1333,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         _buildQuickActionItem(
                           icon: LucideIcons.users,
                           label: 'Clients',
-                          color: Colors.purple,
+                          color: Theme.of(context).colorScheme.tertiary,
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/clients');
@@ -1278,7 +1342,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         _buildQuickActionItem(
                           icon: LucideIcons.receipt,
                           label: 'Orders',
-                          color: Colors.orange,
+                          color: Theme.of(context).colorScheme.primary,
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/orders');
@@ -1287,7 +1351,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         _buildQuickActionItem(
                           icon: LucideIcons.clipboardList,
                           label: 'Notes',
-                          color: Colors.teal,
+                          color: Theme.of(context).colorScheme.secondary,
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/notes');
@@ -1296,7 +1360,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         _buildQuickActionItem(
                           icon: LucideIcons.barChart,
                           label: 'Reports',
-                          color: Colors.indigo,
+                          color: Theme.of(context).colorScheme.tertiary,
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/reports');
@@ -1305,7 +1369,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         _buildQuickActionItem(
                           icon: LucideIcons.settings,
                           label: 'Settings',
-                          color: Colors.grey,
+                          color: Theme.of(context).colorScheme.outline,
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/settings');
@@ -1314,7 +1378,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                 ],
               ),
             ),
@@ -1332,339 +1396,40 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 28,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showFilterBottomSheet(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    
-    // Stock status options
-    final List<String> stockOptions = ['All', 'In Stock', 'Low Stock', 'Out of Stock'];
-    String selectedStock = 'All';
-    
-    // Price range with default values
-    RangeValues priceRange = const RangeValues(0, 1000000);
-    bool isInteracting = false;
-    
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setStateModal) => Container(
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-          ),
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Filter handle
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
+      child: SizedBox(
+        height: 80.h, // Fixed height to prevent overflow
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 52.w, // Slightly smaller container
+              height: 52.h,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(14.r),
               ),
-              
-              // Filter title
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    Text(
-                      'Filter Products',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    const Spacer(),
-                    TextButton(
-                      onPressed: () {
-                        setStateModal(() {
-                          selectedStock = 'All';
-                          priceRange = const RangeValues(0, 1000000);
-                        });
-                      },
-                      child: Text('Reset', style: TextStyle(color: colorScheme.primary)),
-                    ),
-                  ],
-                ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 24.sp, // Smaller icon
               ),
-              
-              const Divider(height: 1, thickness: 1),
-              
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Stock status filter
-                      Text(
-                        'Stock Status',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      
-                      // Stock status options with Material 3 styling
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: stockOptions.map((option) => 
-                          FilterChip(
-                            label: Text(option),
-                            selected: selectedStock == option,
-                            showCheckmark: false,
-                            onSelected: (_) => setStateModal(() => selectedStock = option),
-                            selectedColor: colorScheme.primaryContainer,
-                            labelStyle: TextStyle(
-                              color: selectedStock == option 
-                                  ? colorScheme.onPrimaryContainer 
-                                  : colorScheme.onSurfaceVariant,
-                            ),
-                          )
-                        ).toList(),
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Price range filter - Material 3 Expressive style
-                      Text(
-                        'Price Range',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      
-                      // Price values display with M3 styling
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // Start price chip
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: isInteracting 
-                                    ? colorScheme.primaryContainer 
-                                    : colorScheme.surfaceVariant,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Text(
-                                'TSh ${priceRange.start.round()}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: isInteracting 
-                                      ? colorScheme.onPrimaryContainer 
-                                      : colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                            
-                            // Price range indicator
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: Container(
-                                  height: 2,
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.outlineVariant,
-                                    borderRadius: BorderRadius.circular(1),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            
-                            // End price chip
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: isInteracting 
-                                    ? colorScheme.primaryContainer 
-                                    : colorScheme.surfaceVariant,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Text(
-                                'TSh ${priceRange.end.round()}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: isInteracting 
-                                      ? colorScheme.onPrimaryContainer 
-                                      : colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      // Material 3 improved RangeSlider
-                      SliderTheme(
-                        data: SliderThemeData(
-                          trackHeight: 6,
-                          activeTrackColor: colorScheme.primary,
-                          inactiveTrackColor: colorScheme.surfaceVariant,
-                          thumbColor: colorScheme.primaryContainer,
-                          overlayColor: colorScheme.primary.withOpacity(0.12),
-                          thumbShape: const RoundSliderThumbShape(
-                            enabledThumbRadius: 10,
-                            elevation: 2,
-                            pressedElevation: 4,
-                          ),
-                          overlayShape: const RoundSliderOverlayShape(overlayRadius: 24),
-                          trackShape: const RoundedRectSliderTrackShape(),
-                          rangeThumbShape: const RoundRangeSliderThumbShape(
-                            enabledThumbRadius: 10,
-                            elevation: 2,
-                            pressedElevation: 4,
-                          ),
-                          rangeTrackShape: const RoundedRectRangeSliderTrackShape(),
-                          showValueIndicator: ShowValueIndicator.always,
-                          valueIndicatorColor: colorScheme.primaryContainer,
-                          valueIndicatorTextStyle: TextStyle(
-                            color: colorScheme.onPrimaryContainer,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        child: RangeSlider(
-                          values: priceRange,
-                          min: 0,
-                          max: 1000000,
-                          divisions: 100,
-                          labels: RangeLabels(
-                            'TSh ${priceRange.start.round()}',
-                            'TSh ${priceRange.end.round()}',
-                          ),
-                          onChanged: (values) {
-                            setStateModal(() {
-                              priceRange = values;
-                              isInteracting = true;
-                            });
-                          },
-                          onChangeEnd: (values) {
-                            setStateModal(() {
-                              isInteracting = false;
-                            });
-                          },
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 8),
-                      
-                      // M3 expressive price range labels
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'TSh 0',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                            Text(
-                              'TSh 500,000',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                            Text(
-                              'TSh 1,000,000',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 32),
-                      
-                      // Apply button
-                      FilledButton(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: colorScheme.primary,
-                          foregroundColor: colorScheme.onPrimary,
-                          minimumSize: const Size(double.infinity, 56),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        onPressed: () {
-                          // Apply the filters
-                          Navigator.of(context).pop();
-                          
-                          // Here you would typically update your fetch criteria
-                          // and call fetchInventory with the new filters
-                        },
-                        child: const Text(
-                          'Apply Filters',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 16),
-                    ],
-                  ),
+            ),
+            SizedBox(height: 6.h),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  height: 1.1,
                 ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -1,22 +1,30 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../../../core/network/api_client.dart';
 import '../../clients/models/client_model.dart';
 import '../models/installment_model.dart';
 import '../models/installment_payment_model.dart';
 import 'installment_repository.dart';
 
 class InstallmentRepositoryImpl implements InstallmentRepository {
-  final ApiClient _apiClient;
+  late final Dio _dio;
   final Uuid _uuid = const Uuid();
 
-  InstallmentRepositoryImpl(this._apiClient);
+  InstallmentRepositoryImpl() {
+    _dio = Dio(BaseOptions(
+      baseUrl: 'http://127.0.0.1:8000/api/v1',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ));
+  }
 
   @override
   Future<void> deleteInstallment(String id) async {
     try {
-      await _apiClient.delete('/installments/$id');
+      await _dio.delete('/installments/$id');
     } catch (e) {
       throw _handleError(e);
     }
@@ -29,8 +37,8 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
         'status': status,
       };
       
-      final response = await _apiClient.patch('/installments/$id', data: data);
-      return InstallmentModel.fromJson(response['data']);
+      final response = await _dio.patch('/installments/$id', data: data);
+      return InstallmentModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -62,8 +70,8 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
         queryParams['end_date'] = formatDateForApi(endDate);
       }
 
-      final response = await _apiClient.get('/installments', queryParameters: queryParams);
-      final List<dynamic> installmentsJson = response['data'] ?? [];
+      final response = await _dio.get('/installments', queryParameters: queryParams);
+      final List<dynamic> installmentsJson = response.data['data'] ?? [];
       return installmentsJson.map((json) => InstallmentModel.fromJson(json)).toList();
     } catch (e) {
       throw _handleError(e);
@@ -73,8 +81,8 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
   @override
   Future<InstallmentModel> getInstallmentById(String id) async {
     try {
-      final response = await _apiClient.get('/installments/$id');
-      return InstallmentModel.fromJson(response['data']);
+      final response = await _dio.get('/installments/$id');
+      return InstallmentModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -121,8 +129,8 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
         'notes': notes,
       };
       
-      final response = await _apiClient.post('/installments', data: data);
-      return InstallmentModel.fromJson(response['data']);
+      final response = await _dio.post('/installments', data: data);
+      return InstallmentModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -142,12 +150,12 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
         'note': note,
       };
       
-      final response = await _apiClient.post(
+      final response = await _dio.post(
         '/installments/$installmentId/payments',
         data: data,
       );
       
-      return InstallmentModel.fromJson(response['data']);
+      return InstallmentModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -172,8 +180,8 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
         if (notes != null) 'notes': notes,
       };
 
-      final response = await _apiClient.post('/installments/$installmentId/payments', data: data);
-      return InstallmentPaymentModel.fromJson(response['data']);
+      final response = await _dio.post('/installments/$installmentId/payments', data: data);
+      return InstallmentPaymentModel.fromJson(response.data['data']);
     } catch (e) {
       throw Exception('Failed to add payment: ${e.toString()}');
     }
@@ -197,8 +205,8 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
       if (status != null) data['status'] = status;
       if (notes != null) data['notes'] = notes;
       
-      final response = await _apiClient.patch('/installments/$id', data: data);
-      return InstallmentModel.fromJson(response['data']);
+      final response = await _dio.patch('/installments/$id', data: data);
+      return InstallmentModel.fromJson(response.data['data']);
     } catch (e) {
       throw _handleError(e);
     }
@@ -207,8 +215,8 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
   @override
   Future<List<InstallmentPaymentModel>> getInstallmentPayments(String installmentId) async {
     try {
-      final response = await _apiClient.get('/installments/$installmentId/payments');
-      final List<dynamic> paymentsJson = response['data'] ?? [];
+      final response = await _dio.get('/installments/$installmentId/payments');
+      final List<dynamic> paymentsJson = response.data['data'] ?? [];
       return paymentsJson.map((json) => InstallmentPaymentModel.fromJson(json)).toList();
     } catch (e) {
       throw _handleError(e);
@@ -216,12 +224,28 @@ class InstallmentRepositoryImpl implements InstallmentRepository {
   }
 
   // Helper function to handle errors
-  Exception _handleError(dynamic error) {
-    if (error is TimeoutException) {
-      return Exception('Connection timed out. Please check your internet connection and try again.');
+  Exception _handleError(dynamic e) {
+    if (e is DioException) {
+      switch (e.type) {
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.receiveTimeout:
+        case DioExceptionType.connectionError:
+          return Exception('Network error. Please check your internet connection.');
+        case DioExceptionType.badResponse:
+          final statusCode = e.response?.statusCode;
+          if (statusCode == 404) {
+            return Exception('Installment not found.');
+          }
+          if (statusCode == 401 || statusCode == 403) {
+            return Exception('Authentication error. Please login again.');
+          }
+          return Exception('Server error: ${e.response?.statusMessage}');
+        default:
+          return Exception('An error occurred: ${e.message}');
+      }
     }
-    // Add more specific error handling as needed
-    return Exception('Failed to perform operation: ${error.toString()}');
+    
+    return Exception('An error occurred: ${e.toString()}');
   }
 
   // Helper function to format date for API

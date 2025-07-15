@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/airbnb_colors.dart';
+import '../../../../core/theme/dukalipa_colors.dart';
 
 class MetaActionButton extends StatelessWidget {
   final String text;

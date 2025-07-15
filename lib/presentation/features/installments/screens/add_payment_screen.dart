@@ -8,7 +8,6 @@ import '../../../../core/theme/app_theme.dart';
 import '../models/installment_model.dart';
 import '../repositories/installment_repository.dart';
 import '../repositories/installment_repository_impl.dart' as impl;
-import '../../../../core/network/api_client.dart';
 import '../../../common/widgets/custom_button.dart';
 import '../../../common/widgets/custom_text_field.dart';
 
@@ -56,8 +55,7 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
     try {
       _repository = Provider.of<InstallmentRepository>(context, listen: false);
     } catch (e) {
-      final apiClient = ApiClient();
-      _repository = impl.InstallmentRepositoryImpl(apiClient);
+      _repository = impl.InstallmentRepositoryImpl();
     }
   }
 

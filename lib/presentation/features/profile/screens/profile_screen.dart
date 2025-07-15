@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/providers/auth_provider.dart';
-import '../../../common/widgets/custom_button.dart';
 import '../viewmodels/profile_viewmodel.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_section_widgets.dart';
-
+import '../../../common/widgets/shimmer_loading.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -35,7 +35,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to load profile: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -48,15 +48,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Logout'),
         content: const Text('Are you sure you want to logout?'),
+        backgroundColor: Theme.of(context).colorScheme.surface,
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
+              foregroundColor: Theme.of(context).colorScheme.error,
             ),
             child: const Text('Logout'),
           ),
@@ -69,6 +73,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) {
         context.go('/login');
       }
+    }
+  }
+  
+  void _showComingSoonDialog(String feature) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Coming Soon'),
+        content: Text('$feature feature is under development and will be available in a future update.'),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'OK',
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToRoute(String route) {
+    try {
+      context.push(route);
+    } catch (e) {
+      // If route doesn't exist, show coming soon dialog
+      final featureName = route.split('/').last.replaceAll('-', ' ').toLowerCase();
+      _showComingSoonDialog(featureName.isNotEmpty ? featureName : 'This feature');
     }
   }
   
@@ -90,9 +124,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               backgroundColor: Colors.transparent,
             ),
             body: viewModel.isLoading 
-                ? const Center(child: CircularProgressIndicator())
+                ? const ProfileShimmer()
                 : RefreshIndicator(
                     onRefresh: _loadUserProfile,
+                    color: Theme.of(context).colorScheme.primary,
                     child: CustomScrollView(
                       slivers: [
                         // Profile header
@@ -105,21 +140,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         
                         // Shop information
                         if (profile?.shopName != null) ...[
-                          SliverToBoxAdapter(
+                          const SliverToBoxAdapter(
                             child: Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                              child: const SectionHeader(title: 'Shop Information'),
+                              padding:  EdgeInsets.fromLTRB(16, 16, 16, 8),
+                              child:  SectionHeader(title: 'Shop Information'),
                             ),
                           ),
                           SliverToBoxAdapter(
                             child: Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 16),
-                              padding: const EdgeInsets.all(20),
+                              margin: EdgeInsets.symmetric(horizontal: 16.w),
+                              padding: EdgeInsets.all(20.w),
                               decoration: BoxDecoration(
                                 color: Theme.of(context).cardColor,
-                                borderRadius: BorderRadius.circular(24),
+                                borderRadius: BorderRadius.circular(24.r),
                                 border: Border.all(
-                                  color: AppTheme.mkbhdLightGrey.withOpacity(0.08),
+                                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
                                   width: 1,
                                 ),
                               ),
@@ -149,10 +184,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                         
                         // Business Management Section
-                        SliverToBoxAdapter(
+                        const SliverToBoxAdapter(
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 32, 16, 12),
-                            child: const SectionHeader(title: 'Business Management'),
+                            padding: EdgeInsets.fromLTRB(16, 32, 16, 12),
+                            child: SectionHeader(title: 'Business Management'),
                           ),
                         ),
                         SliverPadding(
@@ -168,42 +203,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               _GridActionTile(
                                 icon: Icons.business_center,
                                 title: 'Business Hub',
-                                onTap: () => context.push('/business/hub'),
+                                onTap: () {
+                                  debugPrint('🔍 Tapping Business Hub');
+                                  context.push('/business/hub');
+                                },
                               ),
                               _GridActionTile(
                                 icon: Icons.analytics_outlined,
                                 title: 'Analytics',
-                                onTap: () => context.push('/business/analytics'),
+                                onTap: () {
+                                  debugPrint('🔍 Tapping Analytics');
+                                  context.push('/business/analytics');
+                                },
                               ),
                               _GridActionTile(
                                 icon: Icons.inventory_2_outlined,
                                 title: 'Storage',
-                                onTap: () => context.push('/business/storage'),
+                                onTap: () {
+                                  debugPrint('🔍 Tapping Storage');
+                                  context.push('/business/storage');
+                                },
                               ),
                               _GridActionTile(
                                 icon: Icons.healing_outlined,
                                 title: 'Damaged',
-                                onTap: () => context.push('/business/damaged'),
+                                onTap: () {
+                                  debugPrint('🔍 Tapping Damaged');
+                                  context.push('/business/damaged');
+                                },
                               ),
                               _GridActionTile(
                                 icon: Icons.delete_outline,
                                 title: 'Deleted',
-                                onTap: () => context.push('/business/deleted'),
+                                onTap: () {
+                                  debugPrint('🔍 Tapping Deleted');
+                                  context.push('/business/deleted');
+                                },
                               ),
                               _GridActionTile(
                                 icon: Icons.more_horiz,
                                 title: 'More',
-                                onTap: () => context.push('/business/more'),
+                                onTap: () => _showComingSoonDialog('More Options'),
                               ),
                             ]),
                           ),
                         ),
                         
                         // Account settings
-                        SliverToBoxAdapter(
+                        const SliverToBoxAdapter(
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 32, 16, 12),
-                            child: const SectionHeader(title: 'Account Settings'),
+                            padding: EdgeInsets.fromLTRB(16, 32, 16, 12),
+                            child: SectionHeader(title: 'Account Settings'),
                           ),
                         ),
                         SliverPadding(
@@ -219,32 +269,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               _GridActionTile(
                                 icon: Icons.edit_outlined,
                                 title: 'Edit Profile',
-                                onTap: () => context.push('/profile/edit'),
+                                onTap: () {
+                                  debugPrint('🔍 Tapping Edit Profile');
+                                  context.push('/profile/edit');
+                                },
                               ),
                               _GridActionTile(
                                 icon: Icons.lock_outline,
                                 title: 'Password',
-                                onTap: () => context.push('/profile/change-password'),
+                                onTap: () {
+                                  debugPrint('🔍 Tapping Change Password');
+                                  context.push('/profile/change-password');
+                                },
                               ),
                               _GridActionTile(
                                 icon: Icons.settings_outlined,
                                 title: l10n.settings,
-                                onTap: () => context.push('/settings'),
+                                onTap: () {
+                                  debugPrint('🔍 Tapping Settings');
+                                  context.push('/settings');
+                                },
                               ),
                               _GridActionTile(
                                 icon: Icons.language_outlined,
                                 title: l10n.language,
-                                onTap: () => context.push('/profile/language'),
+                                onTap: () {
+                                  debugPrint('🔍 Tapping Language');
+                                  context.push('/profile/language');
+                                },
                               ),
                             ]),
                           ),
                         ),
                         
                         // App information
-                        SliverToBoxAdapter(
+                        const SliverToBoxAdapter(
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 32, 16, 12),
-                            child: const SectionHeader(title: 'App Information'),
+                            padding: EdgeInsets.fromLTRB(16, 32, 16, 12),
+                            child: SectionHeader(title: 'App Information'),
                           ),
                         ),
                         SliverPadding(
@@ -292,21 +354,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 icon: Icons.help_outline,
                                 title: 'Help',
                                 onTap: () {
-                                  // Navigate to help & support screen
+                                  debugPrint('🔍 Tapping Help');
+                                  context.push('/profile/help');
                                 },
                               ),
                               _GridActionTile(
                                 icon: Icons.privacy_tip_outlined,
                                 title: 'Privacy',
                                 onTap: () {
-                                  // Show privacy policy
+                                  debugPrint('🔍 Tapping Privacy');
+                                  context.push('/profile/privacy');
                                 },
                               ),
                               _GridActionTile(
                                 icon: Icons.description_outlined,
                                 title: 'Terms',
                                 onTap: () {
-                                  // Show terms of service
+                                  debugPrint('🔍 Tapping Terms');
+                                  context.push('/profile/terms');
                                 },
                               ),
                             ]),
@@ -319,15 +384,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             padding: const EdgeInsets.all(16),
                             child: Column(
                               children: [
-                                const SizedBox(height: 24),
+                                SizedBox(height: 24.h),
                                 Container(
                                   width: double.infinity,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(24),
+                                    borderRadius: BorderRadius.circular(24.r),
                                     gradient: LinearGradient(
                                       colors: [
-                                        AppTheme.mkbhdRed.withOpacity(0.9),
-                                        AppTheme.mkbhdRed,
+                                        Theme.of(context).colorScheme.error.withOpacity(0.9),
+                                        Theme.of(context).colorScheme.error,
                                       ],
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
@@ -343,9 +408,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           horizontal: 24,
                                           vertical: 18,
                                         ),
-                                        child: Row(
+                                        child: const Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
-                                          children: const [
+                                          children: [
                                             Icon(
                                               Icons.logout,
                                               color: Colors.white,
@@ -367,18 +432,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 24),
-                                const Center(
+                                SizedBox(height: 24.h),
+                                Center(
                                   child: Text(
                                     'Version 1.0.0',
                                     style: TextStyle(
-                                      color: AppTheme.mkbhdLightGrey,
-                                      fontSize: 13,
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                      fontSize: 13.sp,
                                       fontWeight: FontWeight.w400,
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 32),
+                                SizedBox(height: 32.h),
                               ],
                             ),
                           ),
@@ -409,9 +474,9 @@ class _GridActionTile extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.r),
         border: Border.all(
-          color: AppTheme.mkbhdLightGrey.withOpacity(0.08),
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
           width: 1,
         ),
       ),
@@ -419,31 +484,32 @@ class _GridActionTile extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24.r),
           child: Container(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.w),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: AppTheme.mkbhdRed.withOpacity(0.1),
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     icon,
-                    size: 24,
-                    color: AppTheme.mkbhdRed,
+                    size: 24.sp,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                     height: 1.2,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 1,

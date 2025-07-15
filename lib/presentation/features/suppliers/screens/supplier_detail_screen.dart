@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/network/api_client.dart';
 import '../models/supplier_model.dart';
 import '../repositories/supplier_repository.dart';
 import '../../../common/widgets/loading_widget.dart';
@@ -44,9 +43,8 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
       // Try to get the repository from the provider first
       _repository = Provider.of<SupplierRepository>(context, listen: false);
     } catch (e) {
-      // If provider not found, create a local instance with default API client
-      final apiClient = ApiClient();
-      _repository = SupplierRepositoryImpl(apiClient);
+      // If provider not found, create a local instance
+      _repository = SupplierRepositoryImpl();
     }
   }
   

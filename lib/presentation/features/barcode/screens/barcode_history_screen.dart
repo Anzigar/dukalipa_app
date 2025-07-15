@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:lumina/core/theme/airbnb_colors.dart';
+import 'package:dukalipa_app/core/theme/app_theme.dart';
 
 class BarcodeHistoryScreen extends StatefulWidget {
   const BarcodeHistoryScreen({super.key});
@@ -60,7 +60,7 @@ class _BarcodeHistoryScreenState extends State<BarcodeHistoryScreen> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/barcode-scanner'),
-        backgroundColor: AirbnbColors.primary,
+        backgroundColor: AppTheme.mkbhdRed, // Meta blue
         icon: const Icon(LucideIcons.scan),
         label: const Text('Scan New'),
       ),
@@ -115,7 +115,7 @@ class _BarcodeHistoryScreenState extends State<BarcodeHistoryScreen> {
               });
               Navigator.pop(context);
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppTheme.mkbhdRed), // Meta blue
             child: const Text('Clear'),
           ),
         ],
@@ -195,7 +195,7 @@ class _BarcodeHistoryScreenState extends State<BarcodeHistoryScreen> {
                       context.push('/inventory/search?barcode=${item.barcode}');
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AirbnbColors.primary,
+                      backgroundColor: AppTheme.mkbhdRed, // Meta blue
                     ),
                     child: const Text('Search Product'),
                   ),
@@ -246,7 +246,7 @@ class _BarcodeHistoryItem extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
-          color: Colors.red,
+          color: AppTheme.mkbhdRed, // Meta blue instead of red
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Icon(
@@ -276,12 +276,12 @@ class _BarcodeHistoryItem extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AirbnbColors.primary.withOpacity(0.1),
+                      color: AppTheme.mkbhdRed.withOpacity(0.1), // Meta blue
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
                       LucideIcons.scanLine,
-                      color: AirbnbColors.primary,
+                      color: AppTheme.mkbhdRed, // Meta blue
                       size: 24,
                     ),
                   ),
