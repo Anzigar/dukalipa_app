@@ -109,6 +109,10 @@ class AuthProvider extends ChangeNotifier {
         }
       }
     } catch (e) {
+      // Log the error for debugging
+      if (kDebugMode) {
+        print('Error checking session validity: $e');
+      }
       _isAuthenticated = false;
       _userProfile = null;
     } finally {
@@ -205,12 +209,19 @@ class AuthProvider extends ChangeNotifier {
 
   // Check if user has any stored session
   Future<bool> hasStoredSession() async {
-    return await _sessionService.hasStoredSession();
+    try {
+      return await _sessionService.hasStoredSession();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error checking stored session: $e');
+      }
+      return false;
+    }
   }
 
-  // Get remaining session time
-  Future<Duration?> getRemainingSessionTime() async {
-    return await _sessionService.getRemainingSessionTime();
+  // Initialize auth provider - call this on app startup
+  Future<void> initialize() async {
+    await checkAuthStatus();
   }
 
   // Enable/disable biometric authentication
@@ -221,5 +232,42 @@ class AuthProvider extends ChangeNotifier {
   // Check if biometric is enabled
   Future<bool> isBiometricEnabled() async {
     return await _sessionService.isBiometricEnabled();
+  }
+
+  // Get session validity status
+  Future<bool> isSessionValid() async {
+    try {
+      return await _sessionService.isSessionValid();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error checking session validity: $e');
+      }
+      return false;
+    }
+  }
+
+  // Check if auto-login is enabled
+  Future<bool> isAutoLoginEnabled() async {
+    try {
+      return await _sessionService.isAutoLoginEnabled();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error checking auto-login status: $e');
+      }
+      return false;
+    }
+  }
+
+  // Force session restoration (for testing)
+  Future<bool> restoreSession() async {
+    try {
+      await checkAuthStatus();
+      return _isAuthenticated;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error restoring session: $e');
+      }
+      return false;
+    }
   }
 }

@@ -127,7 +127,7 @@ class ProductModel {
       'barcode': barcode,
       'selling_price': sellingPrice,
       'cost_price': costPrice,
-      'quantity': quantity,
+      'stock_quantity': quantity, // API expects stock_quantity
       'low_stock_threshold': lowStockThreshold,
       'reorder_level': reorderLevel,
       'category': category,

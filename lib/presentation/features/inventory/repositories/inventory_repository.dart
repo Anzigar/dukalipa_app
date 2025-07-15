@@ -19,6 +19,9 @@ abstract class InventoryRepository {
   Future<List<String>> getSuppliers();
   Future<int> getLowStockCount();
   Future<ProductModel?> getProductByBarcode(String barcode);
+  Future<ProductModel> updateProductStock(String productId, int newQuantity, {String? reason});
+  Future<List<Map<String, dynamic>>> getDeviceEntries(String productId);
+  Future<void> addDeviceEntries(String productId, Map<String, dynamic> entriesData);
 }
 
 class InventoryRepositoryImpl implements InventoryRepository {
@@ -119,6 +122,38 @@ class InventoryRepositoryImpl implements InventoryRepository {
     } catch (e) {
       // Return null if product not found or API fails
       return null;
+    }
+  }
+
+  @override
+  Future<ProductModel> updateProductStock(String productId, int newQuantity, {String? reason}) async {
+    try {
+      final stockData = {
+        'quantity': newQuantity,
+        'adjustment_type': reason ?? 'manual_update',
+        'notes': reason ?? 'Stock updated via app',
+      };
+      return await _inventoryService.updateProductStock(productId, stockData);
+    } catch (e) {
+      throw Exception('Failed to update product stock: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getDeviceEntries(String productId) async {
+    try {
+      return await _inventoryService.getDeviceEntries(productId);
+    } catch (e) {
+      throw Exception('Failed to get device entries: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> addDeviceEntries(String productId, Map<String, dynamic> entriesData) async {
+    try {
+      await _inventoryService.addDeviceEntries(productId, entriesData);
+    } catch (e) {
+      throw Exception('Failed to add device entries: ${e.toString()}');
     }
   }
 }

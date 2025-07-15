@@ -236,4 +236,55 @@ class AnalyticsService {
       throw Exception('Failed to fetch revenue summary: ${e.toString()}');
     }
   }
+
+  /// Get total products count
+  Future<int> getTotalProductsCount() async {
+    try {
+      final response = await _dio.get('/analytics/products/total/');
+      
+      if (response.data['data'] != null) {
+        return response.data['data']['total'] ?? 0;
+      } else {
+        return response.data['total'] ?? 0;
+      }
+    } on DioException catch (e) {
+      throw Exception('Failed to fetch total products count: ${e.response?.data ?? e.message}');
+    } catch (e) {
+      throw Exception('Failed to fetch total products count: ${e.toString()}');
+    }
+  }
+
+  /// Get total stock value
+  Future<double> getTotalStockValue() async {
+    try {
+      final response = await _dio.get('/analytics/products/stock-value/');
+      
+      if (response.data['data'] != null) {
+        return (response.data['data']['total_value'] ?? 0.0).toDouble();
+      } else {
+        return (response.data['total_value'] ?? 0.0).toDouble();
+      }
+    } on DioException catch (e) {
+      throw Exception('Failed to fetch total stock value: ${e.response?.data ?? e.message}');
+    } catch (e) {
+      throw Exception('Failed to fetch total stock value: ${e.toString()}');
+    }
+  }
+
+  /// Get inventory summary with counts and values
+  Future<Map<String, dynamic>> getInventorySummary() async {
+    try {
+      final response = await _dio.get('/analytics/inventory/summary/');
+      
+      if (response.data['data'] != null) {
+        return response.data['data'] as Map<String, dynamic>;
+      } else {
+        return response.data as Map<String, dynamic>;
+      }
+    } on DioException catch (e) {
+      throw Exception('Failed to fetch inventory summary: ${e.response?.data ?? e.message}');
+    } catch (e) {
+      throw Exception('Failed to fetch inventory summary: ${e.toString()}');
+    }
+  }
 }

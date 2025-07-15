@@ -449,6 +449,22 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }
 
   Future<void> _scanIMEI() async {
+    // Check if quantity limit would be exceeded
+    final currentQuantity = int.tryParse(_quantityController.text) ?? 0;
+    if (_imeiList.length >= currentQuantity && currentQuantity > 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Cannot add more IMEI/Serial numbers. Maximum quantity is $currentQuantity'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          action: SnackBarAction(
+            label: 'OK',
+            onPressed: () {},
+          ),
+        ),
+      );
+      return;
+    }
+
     try {
       final result = await BarcodeScannerService.scanBarcode(context);
       if (result != null && result.isNotEmpty) {
@@ -456,6 +472,14 @@ class _AddProductScreenState extends State<AddProductScreen> {
           if (!_imeiList.contains(result)) {
             _imeiList.add(result);
             _imeiController.text = result;
+          } else {
+            // Show message if IMEI already exists
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('This IMEI/Serial number already exists'),
+                backgroundColor: Colors.orange,
+              ),
+            );
           }
         });
       }
@@ -470,13 +494,56 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }
 
   void _addIMEIManually() {
-    final imei = _imeiController.text.trim();
-    if (imei.isNotEmpty && !_imeiList.contains(imei)) {
-      setState(() {
-        _imeiList.add(imei);
-        _imeiController.clear();
-      });
+    // Check if quantity limit would be exceeded
+    final currentQuantity = int.tryParse(_quantityController.text) ?? 0;
+    if (_imeiList.length >= currentQuantity && currentQuantity > 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Cannot add more IMEI/Serial numbers. Maximum quantity is $currentQuantity'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          action: SnackBarAction(
+            label: 'OK',
+            onPressed: () {},
+          ),
+        ),
+      );
+      return;
     }
+
+    final imei = _imeiController.text.trim();
+    if (imei.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please enter an IMEI/Serial number'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    if (_imeiList.contains(imei)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('This IMEI/Serial number already exists'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _imeiList.add(imei);
+      _imeiController.clear();
+    });
+
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Added IMEI/Serial: $imei (${_imeiList.length}/$currentQuantity)'),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   void _removeIMEI(String imei) {
@@ -1111,6 +1178,30 @@ class _AddProductScreenState extends State<AddProductScreen> {
             return null;
           },
           onChanged: (value) {
+            // Validate IMEI list when quantity changes
+            final newQuantity = int.tryParse(value) ?? 0;
+            if (newQuantity > 0 && _imeiList.length > newQuantity) {
+              // Remove excess IMEI entries
+              setState(() {
+                _imeiList.removeRange(newQuantity, _imeiList.length);
+              });
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Removed ${_imeiList.length - newQuantity} excess IMEI entries to match quantity'),
+                  backgroundColor: Colors.orange,
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            }
+            
+            // Clear device entries if quantity is reduced
+            if (newQuantity > 0 && _deviceEntries.length > newQuantity) {
+              setState(() {
+                _deviceEntries.removeRange(newQuantity, _deviceEntries.length);
+              });
+            }
+            
             setState(() {});
           },
         ),
@@ -1496,14 +1587,17 @@ class _AddProductScreenState extends State<AddProductScreen> {
         Row(
           children: [
             Expanded(
-              child:              CustomTextField(
+              child: CustomTextField(
                 controller: _imeiController,
                 labelText: 'IMEI/Serial Number',
-                hintText: 'Enter or scan IMEI/Serial',
+                hintText: _imeiList.length >= quantity && quantity > 0 
+                    ? 'Limit reached ($quantity/$quantity)' 
+                    : 'Enter or scan IMEI/Serial',
                 prefixIcon: LucideIcons.hash,
+                enabled: _imeiList.length < quantity || quantity <= 0,
                 onChanged: (value) {
                   // Auto-add when enter is pressed or field is complete
-                  if (value.length >= 10) {
+                  if (value.length >= 10 && (_imeiList.length < quantity || quantity <= 0)) {
                     _addIMEIManually();
                   }
                 },
@@ -1512,31 +1606,43 @@ class _AddProductScreenState extends State<AddProductScreen> {
             const SizedBox(width: 8),
             Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
+                color: (_imeiList.length >= quantity && quantity > 0)
+                    ? Theme.of(context).colorScheme.surfaceVariant
+                    : Theme.of(context).colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: IconButton(
-                onPressed: _scanIMEI,
+                onPressed: (_imeiList.length >= quantity && quantity > 0) ? null : _scanIMEI,
                 icon: Icon(
                   LucideIcons.scan,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: (_imeiList.length >= quantity && quantity > 0)
+                      ? Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.4)
+                      : Theme.of(context).colorScheme.primary,
                 ),
-                tooltip: 'Scan IMEI',
+                tooltip: (_imeiList.length >= quantity && quantity > 0) 
+                    ? 'Limit reached' 
+                    : 'Scan IMEI',
               ),
             ),
             const SizedBox(width: 8),
             Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.secondaryContainer,
+                color: (_imeiList.length >= quantity && quantity > 0)
+                    ? Theme.of(context).colorScheme.surfaceVariant
+                    : Theme.of(context).colorScheme.secondaryContainer,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: IconButton(
-                onPressed: _addIMEIManually,
+                onPressed: (_imeiList.length >= quantity && quantity > 0) ? null : _addIMEIManually,
                 icon: Icon(
                   Icons.add,
-                  color: Theme.of(context).colorScheme.secondary,
+                  color: (_imeiList.length >= quantity && quantity > 0)
+                      ? Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.4)
+                      : Theme.of(context).colorScheme.secondary,
                 ),
-                tooltip: 'Add IMEI',
+                tooltip: (_imeiList.length >= quantity && quantity > 0) 
+                    ? 'Limit reached' 
+                    : 'Add IMEI',
               ),
             ),
           ],
@@ -1597,35 +1703,98 @@ class _AddProductScreenState extends State<AddProductScreen> {
           ),
         ],
         
-        // Warning if IMEI count doesn't match quantity
-        if (quantity > 0 && _imeiList.length != quantity) ...[
+        // Status indicator and warnings for IMEI count vs quantity
+        if (quantity > 0) ...[
           const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.errorContainer.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.warning_amber,
-                  size: 16,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Add ${quantity - _imeiList.length} more IMEI/Serial numbers',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.error,
+          if (_imeiList.length == quantity) ...[
+            // Success state - IMEI count matches quantity
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.check_circle,
+                    size: 16,
+                    color: Colors.green,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'All ${quantity} IMEI/Serial numbers added',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.green.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ] else if (_imeiList.length < quantity) ...[
+            // Warning state - need more IMEI entries
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.errorContainer.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.warning_amber,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Add ${quantity - _imeiList.length} more IMEI/Serial numbers',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else if (_imeiList.length > quantity) ...[
+            // Error state - too many IMEI entries (shouldn't happen with validation)
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.red.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.error,
+                    size: 16,
+                    color: Colors.red,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Too many IMEI entries! Remove ${_imeiList.length - quantity} entries',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.red.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ],
     );

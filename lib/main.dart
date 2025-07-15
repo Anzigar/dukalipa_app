@@ -88,9 +88,16 @@ class MyApp extends StatelessWidget {
           providers: [
             ChangeNotifierProvider(create: (_) => ThemeProvider()),
             ChangeNotifierProvider(create: (_) => LanguageProvider()),
-            // Fix: Use service locator to get AuthRepository dependency
+            // Fix: Use service locator to get AuthRepository dependency and initialize
             ChangeNotifierProvider(
-              create: (_) => AuthProvider(locator<AuthRepository>()),
+              create: (_) {
+                final authProvider = AuthProvider(locator<AuthRepository>());
+                // Initialize auth provider on app startup
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  authProvider.initialize();
+                });
+                return authProvider;
+              },
             ),
             // Fix: Use service locator to get NotificationRepository dependency
             ChangeNotifierProvider(

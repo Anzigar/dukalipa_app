@@ -15,15 +15,22 @@ class AnalyticsProvider extends ChangeNotifier {
   List<ProductPerformance> _topProducts = [];
   Map<String, double> _revenueSummary = {};
 
+  // Inventory data
+  int _totalProductsCount = 0;
+  double _totalStockValue = 0.0;
+  Map<String, dynamic> _inventorySummary = {};
+
   // Loading states
   bool _isLoadingAnalytics = false;
   bool _isLoadingDashboard = false;
   bool _isLoadingSalesChart = false;
+  bool _isLoadingInventory = false;
 
   // Error states
   String? _analyticsError;
   String? _dashboardError;
   String? _salesChartError;
+  String? _inventoryError;
 
   // Getters
   AnalyticsModel? get analytics => _analytics;
@@ -33,13 +40,20 @@ class AnalyticsProvider extends ChangeNotifier {
   List<ProductPerformance> get topProducts => _topProducts;
   Map<String, double> get revenueSummary => _revenueSummary;
 
+  // Inventory getters
+  int get totalProductsCount => _totalProductsCount;
+  double get totalStockValue => _totalStockValue;
+  Map<String, dynamic> get inventorySummary => _inventorySummary;
+
   bool get isLoadingAnalytics => _isLoadingAnalytics;
   bool get isLoadingDashboard => _isLoadingDashboard;
   bool get isLoadingSalesChart => _isLoadingSalesChart;
+  bool get isLoadingInventory => _isLoadingInventory;
 
   String? get analyticsError => _analyticsError;
   String? get dashboardError => _dashboardError;
   String? get salesChartError => _salesChartError;
+  String? get inventoryError => _inventoryError;
 
   // Computed properties
   bool get hasData => _dashboardMetrics != null;
@@ -209,6 +223,60 @@ class AnalyticsProvider extends ChangeNotifier {
     }
   }
 
+  /// Load inventory summary data
+  Future<void> loadInventorySummary() async {
+    if (_isLoadingInventory) return;
+
+    _isLoadingInventory = true;
+    _inventoryError = null;
+    notifyListeners();
+
+    try {
+      final summary = await _analyticsRepository.getInventorySummary();
+      final productsCount = await _analyticsRepository.getTotalProductsCount();
+      final stockValue = await _analyticsRepository.getTotalStockValue();
+
+      _inventorySummary = summary;
+      _totalProductsCount = productsCount;
+      _totalStockValue = stockValue;
+      _inventoryError = null;
+    } catch (e) {
+      _inventoryError = e.toString();
+      if (kDebugMode) {
+        print('Inventory summary loading error: $e');
+      }
+    } finally {
+      _isLoadingInventory = false;
+      notifyListeners();
+    }
+  }
+
+  /// Load total products count only
+  Future<void> loadTotalProductsCount() async {
+    try {
+      final count = await _analyticsRepository.getTotalProductsCount();
+      _totalProductsCount = count;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Total products count loading error: $e');
+      }
+    }
+  }
+
+  /// Load total stock value only
+  Future<void> loadTotalStockValue() async {
+    try {
+      final value = await _analyticsRepository.getTotalStockValue();
+      _totalStockValue = value;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Total stock value loading error: $e');
+      }
+    }
+  }
+
   /// Refresh all data
   Future<void> refreshAll({
     String? startDate,
@@ -224,6 +292,7 @@ class AnalyticsProvider extends ChangeNotifier {
         startDate: startDate,
         endDate: endDate,
       ),
+      loadInventorySummary(),
     ]);
   }
 
@@ -236,9 +305,15 @@ class AnalyticsProvider extends ChangeNotifier {
     _topProducts = [];
     _revenueSummary = {};
     
+    // Clear inventory data
+    _totalProductsCount = 0;
+    _totalStockValue = 0.0;
+    _inventorySummary = {};
+    
     _analyticsError = null;
     _dashboardError = null;
     _salesChartError = null;
+    _inventoryError = null;
     
     notifyListeners();
   }
@@ -251,6 +326,17 @@ class AnalyticsProvider extends ChangeNotifier {
       return '${(revenue / 1000).toStringAsFixed(1)}K';
     } else {
       return revenue.toStringAsFixed(0);
+    }
+  }
+
+  /// Get formatted currency with TSh prefix
+  String getFormattedCurrency(double amount) {
+    if (amount >= 1000000) {
+      return 'TSh ${(amount / 1000000).toStringAsFixed(1)}M';
+    } else if (amount >= 1000) {
+      return 'TSh ${(amount / 1000).toStringAsFixed(1)}K';
+    } else {
+      return 'TSh ${amount.toStringAsFixed(0)}';
     }
   }
 

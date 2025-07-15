@@ -11,7 +11,8 @@ class SessionService {
       preferencesKeyPrefix: 'dukalipa_',
     ),
     iOptions: IOSOptions(
-      groupId: 'group.com.dukalipa.app',
+      groupId: 'group.com.dukalipa.dukalipa-app',
+      accessibility: KeychainAccessibility.first_unlock_this_device,
     ),
   );
 

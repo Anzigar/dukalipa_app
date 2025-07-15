@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart'; // Add this import
 import 'package:dukalipa_app/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import '../../../common/widgets/shimmer_loading.dart';
+import '../providers/analytics_provider.dart';
 
 
 // Define ActionItem class for menu items
@@ -110,6 +111,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat();
+
+    // Load analytics data including inventory
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadAnalyticsData();
+    });
+  }
+
+  void _loadAnalyticsData() async {
+    final analyticsProvider = Provider.of<AnalyticsProvider>(context, listen: false);
+    await analyticsProvider.loadInventorySummary();
   }
 
   void _onScroll() {
@@ -239,9 +250,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     children: [
                       // Today's Summary Card - Meta style
                       _buildTodaySummaryCard(context, profile),
-                      
-                      // Quick Actions - Horizontal scroll
-                      _buildQuickActionsSection(),
                       
                       // Business Metrics - Grid layout
                       _buildMetricsGrid(),
@@ -794,191 +802,83 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
 
 
-  Widget _buildQuickActionsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 16.h),
-          child: Text(
-            'Quick Actions',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-        ),
-        SizedBox(
-          height: 100.h, // Match the card height exactly
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
+  Widget _buildMetricsGrid() {
+    return Consumer<AnalyticsProvider>(
+      builder: (context, analyticsProvider, child) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              _buildQuickActionCard(
-                icon: LucideIcons.shoppingCart,
-                label: 'New Sale',
-                color: Theme.of(context).colorScheme.primary,
-                onTap: () => context.push('/sales/new'),
+              Text(
+                'Business Overview',
+                style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.5,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
-              _buildQuickActionCard(
-                icon: LucideIcons.packagePlus,
-                label: 'Add Product',
-                color: Theme.of(context).colorScheme.secondary,
-                onTap: () => context.push('/inventory/add'),
-              ),
-              _buildQuickActionCard(
-                icon: LucideIcons.users,
-                label: 'Customers',
-                color: Theme.of(context).colorScheme.tertiary,
-                onTap: () => context.push('/customers'),
-              ),
-              _buildQuickActionCard(
-                icon: LucideIcons.fileText,
-                label: 'Reports',
-                color: Theme.of(context).colorScheme.primary,
-                onTap: () => context.push('/reports'),
-              ),
-              _buildQuickActionCard(
-                icon: LucideIcons.scan,
-                label: 'Scan',
-                color: Theme.of(context).colorScheme.error,
-                onTap: _openBarcodeScanner,
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  // Calculate appropriate childAspectRatio based on available width
+                  double cardWidth = (constraints.maxWidth - 16.w) / 2;
+                  double cardHeight = cardWidth * 0.65; // Better ratio for content fit
+                  double aspectRatio = cardWidth / cardHeight;
+                  
+                  return GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16.w,
+                    mainAxisSpacing: 16.h,
+                    childAspectRatio: aspectRatio.clamp(1.3, 1.6), // Tighter ratio range
+                    children: [
+                      _buildMetricCard(
+                        title: 'Total Stock',
+                        value: analyticsProvider.getFormattedCurrency(analyticsProvider.totalStockValue),
+                        icon: LucideIcons.package,
+                        color: Theme.of(context).colorScheme.primary,
+                        trend: '${analyticsProvider.totalProductsCount} items',
+                        isPositive: null,
+                        onTap: () => context.push('/inventory'),
+                      ),
+                      _buildMetricCard(
+                        title: 'Low Stock',
+                        value: '${analyticsProvider.inventorySummary['low_stock_count'] ?? 0} Items',
+                        icon: LucideIcons.alertCircle,
+                        color: Theme.of(context).colorScheme.error,
+                        trend: 'need attention',
+                        isPositive: false,
+                        onTap: () => context.push('/inventory/low-stock'),
+                      ),
+                      _buildMetricCard(
+                        title: 'Active Debts',
+                        value: 'TSh 120,000',
+                        icon: LucideIcons.banknote,
+                        color: Theme.of(context).colorScheme.secondary,
+                        trend: '2 pending',
+                        isPositive: null,
+                        onTap: () => context.push('/debts'),
+                      ),
+                      _buildMetricCard(
+                        title: 'Total Customers',
+                        value: '156',
+                        icon: LucideIcons.users,
+                        color: Theme.of(context).colorScheme.tertiary,
+                        trend: '+8',
+                        isPositive: true,
+                        onTap: () => context.push('/customers'),
+                      ),
+                    ],
+                  );
+                },
               ),
             ],
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickActionCard({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 85.w, // Reduced width to prevent overflow
-        height: 100.h, // Fixed height to prevent overflow
-        margin: EdgeInsets.only(right: 12.w),
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.08),
-            width: 1,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Meta style: simple icon without container decoration
-            Icon(
-              icon, 
-              color: color, 
-              size: 22.sp, // Slightly smaller icon
-            ),
-            SizedBox(height: 6.h),
-            // Clean text label with constrained sizing
-            Expanded(
-              child: Center(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w600,
-                    height: 1.1,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMetricsGrid() {
-    return Padding(
-      padding: EdgeInsets.all(20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Business Overview',
-            style: TextStyle(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.bold,
-              letterSpacing: -0.5,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              // Calculate appropriate childAspectRatio based on available width
-              double cardWidth = (constraints.maxWidth - 16.w) / 2;
-              double cardHeight = cardWidth * 0.65; // Better ratio for content fit
-              double aspectRatio = cardWidth / cardHeight;
-              
-              return GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 16.w,
-                mainAxisSpacing: 16.h,
-                childAspectRatio: aspectRatio.clamp(1.3, 1.6), // Tighter ratio range
-                children: [
-                  _buildMetricCard(
-                    title: 'Expenses',
-                    value: 'TSh 450,000',
-                    icon: LucideIcons.wallet,
-                    color: Theme.of(context).colorScheme.tertiary,
-                    trend: '-5%',
-                    isPositive: false,
-                    onTap: () => context.push('/expenses'),
-                  ),
-                  _buildMetricCard(
-                    title: 'Low Stock',
-                    value: '12 Items',
-                    icon: LucideIcons.alertCircle,
-                    color: Theme.of(context).colorScheme.error,
-                    trend: '3',
-                    isPositive: false,
-                    onTap: () => context.push('/inventory/low-stock'),
-                  ),
-                  _buildMetricCard(
-                    title: 'Active Debts',
-                    value: 'TSh 120,000',
-                    icon: LucideIcons.banknote,
-                    color: Theme.of(context).colorScheme.secondary,
-                    trend: '2 pending',
-                    isPositive: null,
-                    onTap: () => context.push('/debts'),
-                  ),
-                  _buildMetricCard(
-                    title: 'Total Customers',
-                    value: '156',
-                    icon: LucideIcons.users,
-                    color: Theme.of(context).colorScheme.primary,
-                    trend: '+8',
-                    isPositive: true,
-                    onTap: () => context.push('/customers'),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 

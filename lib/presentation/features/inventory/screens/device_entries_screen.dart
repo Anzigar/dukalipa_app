@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-import '../../../../core/theme/app_theme.dart';
 import '../models/device_entry_model.dart';
 import '../models/product_model.dart';
 
@@ -58,14 +57,24 @@ class _DeviceEntriesScreenState extends State<DeviceEntriesScreen> {
     super.initState();
     _deviceEntries.addAll(widget.existingEntries);
     
-    // Fill remaining slots with empty entries
-    while (_deviceEntries.length < widget.totalQuantity) {
+    // Ensure we don't exceed the total quantity limit
+    final maxEntries = widget.totalQuantity;
+    if (_deviceEntries.length > maxEntries) {
+      // Trim excess entries if somehow they exceed the limit
+      _deviceEntries.removeRange(maxEntries, _deviceEntries.length);
+    }
+    
+    // Fill remaining slots with empty entries up to the total quantity
+    while (_deviceEntries.length < maxEntries) {
       _deviceEntries.add(DeviceEntryModel(
         color: _selectedColor,
         storage: _selectedStorage,
         condition: _selectedCondition,
       ));
     }
+    
+    // Load the first device
+    _loadCurrentDevice();
   }
 
   @override
@@ -158,21 +167,39 @@ class _DeviceEntriesScreenState extends State<DeviceEntriesScreen> {
   void _finishDeviceEntries() {
     _saveCurrentDevice();
     
+    // Validate that we don't exceed the quantity limit
+    if (_deviceEntries.length > widget.totalQuantity) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Cannot have more than ${widget.totalQuantity} device entries'),
+          backgroundColor: Colors.red,
+          action: SnackBarAction(
+            label: 'OK',
+            onPressed: () {},
+          ),
+        ),
+      );
+      return;
+    }
+    
     // Validate that all devices have at least serial number or IMEI
     bool hasIncompleteEntries = false;
+    List<int> incompleteIndices = [];
+    
     for (int i = 0; i < _deviceEntries.length; i++) {
       final device = _deviceEntries[i];
       if ((device.serialNumber?.isEmpty ?? true) && (device.imei?.isEmpty ?? true)) {
         hasIncompleteEntries = true;
-        break;
+        incompleteIndices.add(i + 1); // Human-readable index
       }
     }
 
     if (hasIncompleteEntries) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please add serial number or IMEI for all devices'),
+          content: Text('Please add serial number or IMEI for all devices. Missing: Device ${incompleteIndices.join(', ')}'),
           backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 4),
           action: SnackBarAction(
             label: 'OK',
             onPressed: () {},
@@ -182,40 +209,103 @@ class _DeviceEntriesScreenState extends State<DeviceEntriesScreen> {
       return;
     }
 
+    // Validate for duplicate IMEI/Serial numbers
+    Set<String> seenSerials = {};
+    Set<String> seenImeis = {};
+    List<String> duplicates = [];
+    
+    for (int i = 0; i < _deviceEntries.length; i++) {
+      final device = _deviceEntries[i];
+      
+      if (device.serialNumber != null && device.serialNumber!.isNotEmpty) {
+        if (seenSerials.contains(device.serialNumber)) {
+          duplicates.add('Serial: ${device.serialNumber}');
+        } else {
+          seenSerials.add(device.serialNumber!);
+        }
+      }
+      
+      if (device.imei != null && device.imei!.isNotEmpty) {
+        if (seenImeis.contains(device.imei)) {
+          duplicates.add('IMEI: ${device.imei}');
+        } else {
+          seenImeis.add(device.imei!);
+        }
+      }
+    }
+    
+    if (duplicates.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Duplicate entries found: ${duplicates.join(', ')}'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'OK',
+            onPressed: () {},
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Successfully added ${_deviceEntries.length} device entries'),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+
     // Return the device entries
     context.pop(_deviceEntries);
   }
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: Text('Add Device Details - ${widget.product.name}'),
+        title: Text(
+          'Add Device Details',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: false,
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft),
+          icon: Icon(LucideIcons.arrowLeft),
           onPressed: () => context.pop(),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.surfaceContainer,
+            foregroundColor: colorScheme.onSurfaceVariant,
+          ),
         ),
         actions: [
-          TextButton(
+          FilledButton.tonal(
             onPressed: _finishDeviceEntries,
+            style: FilledButton.styleFrom(
+              backgroundColor: colorScheme.primaryContainer,
+              foregroundColor: colorScheme.onPrimaryContainer,
+            ),
             child: const Text('Done'),
           ),
+          const SizedBox(width: 16),
         ],
       ),
       body: Column(
         children: [
-          // Progress indicator
+          // Progress indicator - Material 3 style
           Container(
-            padding: const EdgeInsets.all(16),
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              color: colorScheme.surfaceContainer.withOpacity(0.3),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,22 +317,31 @@ class _DeviceEntriesScreenState extends State<DeviceEntriesScreen> {
                       'Device ${_currentDeviceIndex + 1} of ${widget.totalQuantity}',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
                       ),
                     ),
-                    Text(
-                      '${((_currentDeviceIndex + 1) / widget.totalQuantity * 100).round()}%',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.mkbhdRed,
-                        fontWeight: FontWeight.w600,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        '${((_currentDeviceIndex + 1) / widget.totalQuantity * 100).round()}%',
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 LinearProgressIndicator(
                   value: (_currentDeviceIndex + 1) / widget.totalQuantity,
-                  backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.mkbhdRed),
+                  backgroundColor: colorScheme.surfaceVariant,
+                  valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ],
             ),
@@ -263,18 +362,12 @@ class _DeviceEntriesScreenState extends State<DeviceEntriesScreen> {
             ),
           ),
 
-          // Navigation buttons
+          // Navigation buttons - Material 3 style
           Container(
-            padding: const EdgeInsets.all(16),
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, -2),
-                ),
-              ],
+              color: colorScheme.surfaceContainer.withOpacity(0.3),
             ),
             child: Row(
               children: [
@@ -282,8 +375,16 @@ class _DeviceEntriesScreenState extends State<DeviceEntriesScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: _previousDevice,
-                      icon: const Icon(LucideIcons.chevronLeft),
+                      icon: Icon(LucideIcons.chevronLeft, size: 18),
                       label: const Text('Previous'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: BorderSide(color: colorScheme.outline),
+                        foregroundColor: colorScheme.onSurface,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
                     ),
                   ),
                 if (_currentDeviceIndex > 0) const SizedBox(width: 16),
@@ -292,12 +393,23 @@ class _DeviceEntriesScreenState extends State<DeviceEntriesScreen> {
                     onPressed: _currentDeviceIndex < widget.totalQuantity - 1 
                         ? _nextDevice 
                         : _finishDeviceEntries,
-                    icon: Icon(_currentDeviceIndex < widget.totalQuantity - 1 
-                        ? LucideIcons.chevronRight 
-                        : LucideIcons.check),
+                    icon: Icon(
+                      _currentDeviceIndex < widget.totalQuantity - 1 
+                          ? LucideIcons.chevronRight 
+                          : LucideIcons.check,
+                      size: 18,
+                    ),
                     label: Text(_currentDeviceIndex < widget.totalQuantity - 1 
                         ? 'Next' 
                         : 'Finish'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -309,187 +421,349 @@ class _DeviceEntriesScreenState extends State<DeviceEntriesScreen> {
   }
 
   Widget _buildDeviceForm() {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Serial Number Section
-          Text(
-            'Device Identification',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
+          // Header with product info
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.product.name,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Device ${_currentDeviceIndex + 1}',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 16),
+          
+          const SizedBox(height: 32),
 
-          // Serial Number Input
+          // Device Identification Section
+          _buildSection(
+            title: 'Device Identification',
+            icon: LucideIcons.tag,
+            child: Column(
+              children: [
+                // Serial Number Input
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _serialController,
+                        decoration: InputDecoration(
+                          labelText: 'Serial Number *',
+                          hintText: 'Enter or scan serial number',
+                          prefixIcon: Icon(LucideIcons.hash, size: 20),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(color: colorScheme.outline),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(color: colorScheme.outline),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                          ),
+                          filled: true,
+                          fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                        ),
+                        textCapitalization: TextCapitalization.characters,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    FilledButton.tonal(
+                      onPressed: _isScanning ? null : _scanSerialNumber,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: colorScheme.secondaryContainer,
+                        foregroundColor: colorScheme.onSecondaryContainer,
+                        padding: const EdgeInsets.all(16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: _isScanning 
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: colorScheme.onSecondaryContainer,
+                              ),
+                            )
+                          : Icon(LucideIcons.camera, size: 20),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // IMEI Input (for phones)
+                if (widget.product.category?.toLowerCase().contains('phone') ?? false)
+                  TextField(
+                    controller: _imeiController,
+                    decoration: InputDecoration(
+                      labelText: 'IMEI',
+                      hintText: 'Enter IMEI number',
+                      prefixIcon: Icon(LucideIcons.smartphone, size: 20),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: colorScheme.outline),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: colorScheme.outline),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Device Specifications Section
+          _buildSection(
+            title: 'Device Specifications',
+            icon: LucideIcons.settings,
+            child: Column(
+              children: [
+                // Color Selection
+                DropdownButtonFormField<String>(
+                  value: _selectedColor,
+                  decoration: InputDecoration(
+                    labelText: 'Color',
+                    prefixIcon: Icon(LucideIcons.palette, size: 20),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: colorScheme.outline),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: colorScheme.outline),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                    ),
+                    filled: true,
+                    fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                  ),
+                  items: _colors.map((color) {
+                    return DropdownMenuItem(
+                      value: color,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 16,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              color: _getColorFromName(color),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: colorScheme.outline),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(color),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedColor = value!;
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                // Storage Selection
+                DropdownButtonFormField<String>(
+                  value: _selectedStorage,
+                  decoration: InputDecoration(
+                    labelText: 'Storage',
+                    prefixIcon: Icon(LucideIcons.hardDrive, size: 20),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: colorScheme.outline),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: colorScheme.outline),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                    ),
+                    filled: true,
+                    fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                  ),
+                  items: _storageOptions.map((storage) {
+                    return DropdownMenuItem(
+                      value: storage,
+                      child: Text(storage),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedStorage = value!;
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                // Condition Selection
+                DropdownButtonFormField<String>(
+                  value: _selectedCondition,
+                  decoration: InputDecoration(
+                    labelText: 'Condition',
+                    prefixIcon: Icon(LucideIcons.shieldCheck, size: 20),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: colorScheme.outline),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: colorScheme.outline),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                    ),
+                    filled: true,
+                    fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                  ),
+                  items: _conditions.map((condition) {
+                    return DropdownMenuItem(
+                      value: condition,
+                      child: Text(condition),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCondition = value!;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Additional Notes Section
+          _buildSection(
+            title: 'Additional Notes',
+            icon: LucideIcons.fileText,
+            child: TextField(
+              controller: _notesController,
+              decoration: InputDecoration(
+                labelText: 'Notes (Optional)',
+                hintText: 'Any additional information about this device',
+                prefixIcon: Icon(LucideIcons.fileText, size: 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: colorScheme.outline),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: colorScheme.outline),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                ),
+                filled: true,
+                fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+              ),
+              maxLines: 3,
+            ),
+          ),
+
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  // Helper method to build consistent sections
+  Widget _buildSection({
+    required String title,
+    required IconData icon,
+    required Widget child,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainer.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withOpacity(0.5),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Row(
             children: [
-              Expanded(
-                child: TextField(
-                  controller: _serialController,
-                  decoration: InputDecoration(
-                    labelText: 'Serial Number *',
-                    hintText: 'Enter or scan serial number',
-                    prefixIcon: const Icon(LucideIcons.hash),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  textCapitalization: TextCapitalization.characters,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  size: 18,
+                  color: colorScheme.onPrimaryContainer,
                 ),
               ),
               const SizedBox(width: 12),
-              IconButton(
-                onPressed: _isScanning ? null : _scanSerialNumber,
-                icon: _isScanning 
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(LucideIcons.camera),
-                tooltip: 'Scan Serial Number',
-                style: IconButton.styleFrom(
-                  backgroundColor: AppTheme.mkbhdRed.withOpacity(0.1),
-                  foregroundColor: AppTheme.mkbhdRed,
-                  padding: const EdgeInsets.all(12),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
                 ),
               ),
             ],
           ),
-
           const SizedBox(height: 16),
-
-          // IMEI Input (for phones)
-          if (widget.product.category?.toLowerCase().contains('phone') ?? false)
-            TextField(
-              controller: _imeiController,
-              decoration: InputDecoration(
-                labelText: 'IMEI',
-                hintText: 'Enter IMEI number',
-                prefixIcon: const Icon(LucideIcons.smartphone),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              keyboardType: TextInputType.number,
-            ),
-
-          const SizedBox(height: 24),
-
-          // Device Specifications
-          Text(
-            'Device Specifications',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Color Selection
-          DropdownButtonFormField<String>(
-            value: _selectedColor,
-            decoration: InputDecoration(
-              labelText: 'Color',
-              prefixIcon: const Icon(LucideIcons.palette),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            items: _colors.map((color) {
-              return DropdownMenuItem(
-                value: color,
-                child: Row(
-                  children: [
-                    Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: _getColorFromName(color),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(color),
-                  ],
-                ),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedColor = value!;
-              });
-            },
-          ),
-
-          const SizedBox(height: 16),
-
-          // Storage Selection
-          DropdownButtonFormField<String>(
-            value: _selectedStorage,
-            decoration: InputDecoration(
-              labelText: 'Storage',
-              prefixIcon: const Icon(LucideIcons.hardDrive),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            items: _storageOptions.map((storage) {
-              return DropdownMenuItem(
-                value: storage,
-                child: Text(storage),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedStorage = value!;
-              });
-            },
-          ),
-
-          const SizedBox(height: 16),
-
-          // Condition Selection
-          DropdownButtonFormField<String>(
-            value: _selectedCondition,
-            decoration: InputDecoration(
-              labelText: 'Condition',
-              prefixIcon: const Icon(LucideIcons.star),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            items: _conditions.map((condition) {
-              return DropdownMenuItem(
-                value: condition,
-                child: Text(condition),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedCondition = value!;
-              });
-            },
-          ),
-
-          const SizedBox(height: 16),
-
-          // Notes
-          TextField(
-            controller: _notesController,
-            decoration: InputDecoration(
-              labelText: 'Notes (Optional)',
-              hintText: 'Any additional notes about this device',
-              prefixIcon: const Icon(LucideIcons.fileText),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            maxLines: 3,
-          ),
+          child,
         ],
       ),
     );

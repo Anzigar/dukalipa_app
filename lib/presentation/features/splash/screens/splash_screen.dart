@@ -59,14 +59,19 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       final authProvider = context.read<AuthProvider>();
       
+      // Wait a bit for the auth provider to fully initialize
+      await Future.delayed(const Duration(milliseconds: 500));
+      
       // Check if user is authenticated (session restored during initialization)
       if (authProvider.isAuthenticated && authProvider.userProfile != null) {
         // User has valid session, go to home
+        debugPrint('Valid session found, navigating to home');
         if (mounted) {
           context.go('/home');
         }
       } else {
         // No valid session, go to login
+        debugPrint('No valid session, navigating to login');
         _navigateToLogin();
       }
     } catch (e) {

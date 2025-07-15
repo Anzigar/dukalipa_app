@@ -403,6 +403,69 @@ class InventoryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Stock update functionality
+  Future<void> updateProductStock(String productId, int newQuantity, {String? reason}) async {
+    try {
+      final updatedProduct = await _inventoryRepository.updateProductStock(productId, newQuantity, reason: reason);
+      
+      // Update the product in our local lists
+      final productIndex = _products.indexWhere((p) => p.id == productId);
+      if (productIndex != -1) {
+        _products[productIndex] = updatedProduct;
+        _applyFilters();
+        
+        if (!_isDisposed) {
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      debugPrint('Error updating product stock: $e');
+      rethrow;
+    }
+  }
+
+  // Device entries functionality
+  Future<List<Map<String, dynamic>>> getDeviceEntries(String productId) async {
+    try {
+      return await _inventoryRepository.getDeviceEntries(productId);
+    } catch (e) {
+      debugPrint('Error getting device entries: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> addDeviceEntries(String productId, Map<String, dynamic> entriesData) async {
+    try {
+      await _inventoryRepository.addDeviceEntries(productId, entriesData);
+      
+      // Refresh the product to get updated device entries
+      await refreshProductById(productId);
+    } catch (e) {
+      debugPrint('Error adding device entries: $e');
+      rethrow;
+    }
+  }
+
+  // Refresh a specific product
+  Future<void> refreshProductById(String productId) async {
+    try {
+      final updatedProduct = await _inventoryRepository.getProductById(productId);
+      
+      final productIndex = _products.indexWhere((p) => p.id == productId);
+      if (productIndex != -1) {
+        _products[productIndex] = updatedProduct;
+        _applyFilters();
+        
+        if (!_isDisposed) {
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      debugPrint('Error refreshing product: $e');
+      rethrow;
+    }
+  }
+
   @override
   void dispose() {
     _isDisposed = true;

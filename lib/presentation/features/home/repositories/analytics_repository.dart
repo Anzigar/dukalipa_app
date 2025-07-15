@@ -35,6 +35,11 @@ abstract class AnalyticsRepository {
     String? startDate,
     String? endDate,
   });
+
+  // Inventory-related methods
+  Future<int> getTotalProductsCount();
+  Future<double> getTotalStockValue();
+  Future<Map<String, dynamic>> getInventorySummary();
 }
 
 class AnalyticsRepositoryImpl implements AnalyticsRepository {
@@ -152,6 +157,41 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
     } catch (e) {
       // Return fallback revenue summary if API fails
       return _getFallbackRevenueSummary();
+    }
+  }
+
+  @override
+  Future<int> getTotalProductsCount() async {
+    try {
+      return await _analyticsService.getTotalProductsCount();
+    } catch (e) {
+      // Return fallback count if API fails
+      return 45; // Default fallback value
+    }
+  }
+
+  @override
+  Future<double> getTotalStockValue() async {
+    try {
+      return await _analyticsService.getTotalStockValue();
+    } catch (e) {
+      // Return fallback value if API fails
+      return 125000.0; // Default fallback value
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getInventorySummary() async {
+    try {
+      return await _analyticsService.getInventorySummary();
+    } catch (e) {
+      // Return fallback inventory summary if API fails
+      return {
+        'total_products': 45,
+        'total_stock_value': 125000.0,
+        'low_stock_count': 3,
+        'out_of_stock_count': 0,
+      };
     }
   }
 

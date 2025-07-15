@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/di/service_locator.dart';
-import '../../../../data/services/inventory_service.dart';
 import '../models/product_model.dart';
+import '../providers/inventory_provider.dart';
 import '../../../common/widgets/shimmer_loading.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
@@ -26,25 +26,25 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   bool _hasError = false;
   String? _errorMessage;
   ProductModel? _product;
-  late InventoryService _inventoryService;
   
   @override
   void initState() {
     super.initState();
-    _inventoryService = locator<InventoryService>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchProduct();
     });
   }
   
   Future<void> _fetchProduct() async {
+    final inventoryProvider = context.read<InventoryProvider>();
+    
     setState(() {
       _isLoading = true;
       _hasError = false;
     });
     
     try {
-      final product = await _inventoryService.getProductById(widget.productId);
+      final product = await inventoryProvider.getProductById(widget.productId);
       
       if (mounted) {
         setState(() {
@@ -72,32 +72,36 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_product?.name ?? 'Product Details'),
-        leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft),
-          onPressed: () => context.pop(),
-        ),
-        actions: _product != null ? [
-          IconButton(
-            onPressed: () => _handleEditProduct(),
-            icon: const Icon(LucideIcons.edit),
-            tooltip: 'Edit Product',
-          ),
-          IconButton(
-            onPressed: () => _showDeleteConfirmation(context),
-            icon: const Icon(LucideIcons.trash2),
-            tooltip: 'Delete Product',
-            style: IconButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
+    return Consumer<InventoryProvider>(
+      builder: (context, inventoryProvider, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(_product?.name ?? 'Product Details'),
+            leading: IconButton(
+              icon: const Icon(LucideIcons.arrowLeft),
+              onPressed: () => context.pop(),
             ),
+            actions: _product != null ? [
+              IconButton(
+                onPressed: () => _handleEditProduct(),
+                icon: const Icon(LucideIcons.edit),
+                tooltip: 'Edit Product',
+              ),
+              IconButton(
+                onPressed: () => _showDeleteConfirmation(context),
+                icon: const Icon(LucideIcons.trash2),
+                tooltip: 'Delete Product',
+                style: IconButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                ),
+              ),
+              const SizedBox(width: 8),
+            ] : null,
           ),
-          const SizedBox(width: 8),
-        ] : null,
-      ),
-      body: _buildContent(isDarkMode),
-      bottomNavigationBar: _product != null ? _buildActionButtons() : null,
+          body: _buildContent(isDarkMode),
+          bottomNavigationBar: _product != null ? _buildActionButtons() : null,
+        );
+      },
     );
   }
   
@@ -252,15 +256,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   Future<void> _updateProductStock(int newQuantity) async {
+    final inventoryProvider = context.read<InventoryProvider>();
+    
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final updatedProduct = await _inventoryService.updateProductStock(
+      await inventoryProvider.updateProductStock(
         widget.productId,
         newQuantity,
+        reason: 'Stock updated via product details screen',
       );
+
+      // Get the updated product from the provider
+      final updatedProduct = await inventoryProvider.getProductById(widget.productId);
 
       if (mounted) {
         setState(() {
@@ -299,66 +309,88 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
   
   Widget _buildContent(bool isDarkMode) {
-    if (_isLoading) {
-      return const ProductDetailsShimmer();
-    }
-    
-    if (_hasError) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              _errorMessage!.contains('not found') 
-                  ? LucideIcons.packageX 
-                  : LucideIcons.alertTriangle,
-              size: 64,
-              color: _errorMessage!.contains('not found') 
-                  ? Colors.grey 
-                  : Colors.orange,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _errorMessage ?? 'An error occurred while loading the product',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 24),
-            Row(
+    return Consumer<InventoryProvider>(
+      builder: (context, inventoryProvider, child) {
+        // Show provider loading state
+        if ((inventoryProvider.isUpdatingProduct || inventoryProvider.isDeletingProduct) && !_isLoading) {
+          return const Center(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (!_errorMessage!.contains('not found'))
-                  ElevatedButton.icon(
-                    onPressed: _fetchProduct,
-                    icon: const Icon(LucideIcons.refreshCw),
-                    label: const Text('Retry'),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: AppTheme.mkbhdRed,
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Updating product...'),
+              ],
+            ),
+          );
+        }
+        
+        if (_isLoading) {
+          return const ProductDetailsShimmer();
+        }
+        
+        if (_hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  _errorMessage!.contains('not found') 
+                      ? LucideIcons.packageX 
+                      : LucideIcons.alertTriangle,
+                  size: 64,
+                  color: _errorMessage!.contains('not found') 
+                      ? Colors.grey 
+                      : Colors.orange,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _errorMessage ?? 'An error occurred while loading the product',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (!_errorMessage!.contains('not found'))
+                      ElevatedButton.icon(
+                        onPressed: _fetchProduct,
+                        icon: const Icon(LucideIcons.refreshCw),
+                        label: const Text('Retry'),
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: AppTheme.mkbhdRed,
+                        ),
+                      ),
+                    const SizedBox(width: 16),
+                    OutlinedButton.icon(
+                      onPressed: () => context.pop(),
+                      icon: const Icon(LucideIcons.arrowLeft),
+                      label: const Text('Go Back'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.mkbhdRed,
+                      ),
                     ),
-                  ),
-                const SizedBox(width: 16),
-                OutlinedButton.icon(
-                  onPressed: () => context.pop(),
-                  icon: const Icon(LucideIcons.arrowLeft),
-                  label: const Text('Go Back'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.mkbhdRed,
-                  ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      );
-    }
-    
-    if (_product == null) {
-      return const Center(
-        child: Text('Product not found'),
-      );
-    }
-    
+          );
+        }
+        
+        if (_product == null) {
+          return const Center(
+            child: Text('Product not found'),
+          );
+        }
+        
+        return _buildProductDetails(isDarkMode);
+      },
+    );
+  }
+  
+  Widget _buildProductDetails(bool isDarkMode) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -861,21 +893,36 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
   
   Future<void> _deleteProduct() async {
+    final inventoryProvider = context.read<InventoryProvider>();
+    
     setState(() {
       _isLoading = true;
     });
     
     try {
-      await _inventoryService.deleteProduct(widget.productId);
+      final success = await inventoryProvider.deleteProduct(widget.productId);
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Product deleted successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        context.pop();
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Product deleted successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          context.pop();
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to delete product: ${inventoryProvider.deleteError ?? "Unknown error"}'),
+              backgroundColor: AppTheme.mkbhdRed,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
