@@ -111,8 +111,14 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
                           icon: const Icon(
                             LucideIcons.x,
                             color: Colors.white,
+                            size: 24,
                           ),
                           onPressed: () => context.pop(),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.black.withOpacity(0.7),
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(48, 48),
+                          ),
                         ),
                       ),
                       
@@ -146,8 +152,14 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
                           icon: Icon(
                             _flashOn ? LucideIcons.zap : LucideIcons.zapOff,
                             color: _flashOn ? Colors.yellow : Colors.white,
+                            size: 24,
                           ),
                           onPressed: _toggleFlash,
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.black.withOpacity(0.7),
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(48, 48),
+                          ),
                         ),
                       ),
                     ],

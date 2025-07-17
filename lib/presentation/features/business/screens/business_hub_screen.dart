@@ -31,7 +31,7 @@ class BusinessHubScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _buildQuickInsights(),
+            _buildQuickInsights(context),
             const SizedBox(height: 32),
             
             // Business features section
@@ -62,21 +62,26 @@ class BusinessHubScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickInsights() {
+  Widget _buildQuickInsights(BuildContext context) {
+    final primaryBlue = Theme.of(context).colorScheme.primary;
+    final secondaryBlue = Theme.of(context).colorScheme.secondary;
+    final tertiaryBlue = Theme.of(context).colorScheme.tertiary;
+    
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
-      children: const [
+      childAspectRatio: 1.2, // Adjusted for better proportions
+      children: [
         _InsightCard(
           title: 'Sales Today',
           value: '\$1,245',
           trend: '+12%',
           isPositive: true,
           icon: Icons.attach_money_rounded,
-          color: Colors.green,
+          color: primaryBlue,
         ),
         _InsightCard(
           title: 'Orders',
@@ -84,7 +89,7 @@ class BusinessHubScreen extends StatelessWidget {
           trend: '+5',
           isPositive: true,
           icon: Icons.shopping_bag_outlined,
-          color: Colors.blue,
+          color: secondaryBlue,
         ),
         _InsightCard(
           title: 'Low Stock',
@@ -92,7 +97,7 @@ class BusinessHubScreen extends StatelessWidget {
           trend: '-2',
           isPositive: true,
           icon: Icons.inventory_2_outlined,
-          color: Colors.orange,
+          color: tertiaryBlue,
         ),
         _InsightCard(
           title: 'Avg. Order',
@@ -100,101 +105,111 @@ class BusinessHubScreen extends StatelessWidget {
           trend: '-3%',
           isPositive: false,
           icon: Icons.receipt_long_outlined,
-          color: Colors.purple,
+          color: primaryBlue.withOpacity(0.8),
         ),
       ],
     );
   }
 
   Widget _buildBusinessFeatures(BuildContext context) {
+    final primaryBlue = Theme.of(context).colorScheme.primary;
+    final secondaryBlue = Theme.of(context).colorScheme.secondary;
+    final tertiaryBlue = Theme.of(context).colorScheme.tertiary;
+    
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
-      childAspectRatio: 1.1,
+      childAspectRatio: 1.2, // Increased ratio to prevent overflow
       children: [
         _FeatureCard(
           title: 'Inventory',
           description: 'Manage your products',
           icon: Icons.inventory,
           onTap: () => context.push('/inventory'),
+          color: primaryBlue,
         ),
         _FeatureCard(
           title: 'Orders',
           description: 'Track & fulfill orders',
           icon: Icons.receipt_long,
           onTap: () => context.push('/orders'),
+          color: secondaryBlue,
         ),
         _FeatureCard(
           title: 'Storage',
           description: 'Manage locations & stock',
           icon: Icons.warehouse,
           onTap: () => context.push('/business/storage'),
-          color: Colors.amber,
+          color: tertiaryBlue,
         ),
         _FeatureCard(
           title: 'Damaged Products',
           description: 'Track damaged inventory',
           icon: Icons.inventory_2,
           onTap: () => context.push('/business/damaged'),
-          color: Colors.orange,
+          color: primaryBlue.withOpacity(0.8),
         ),
         _FeatureCard(
           title: 'Employees',
           description: 'Manage staff & roles',
           icon: Icons.people,
           onTap: () => context.push('/employees'),
-          color: Colors.teal,
+          color: secondaryBlue.withOpacity(0.8),
         ),
         _FeatureCard(
           title: 'Deleted Items',
           description: 'Recover deleted products',
           icon: Icons.delete_outline,
           onTap: () => context.push('/business/deleted'),
-          color: Colors.redAccent,
+          color: tertiaryBlue.withOpacity(0.8),
         ),
       ],
     );
   }
 
   Widget _buildReportFeatures(BuildContext context) {
+    final primaryBlue = Theme.of(context).colorScheme.primary;
+    final secondaryBlue = Theme.of(context).colorScheme.secondary;
+    final tertiaryBlue = Theme.of(context).colorScheme.tertiary;
+    
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
-      childAspectRatio: 1.1,
+      childAspectRatio: 1.2, // Increased ratio to prevent overflow
       children: [
         _FeatureCard(
           title: 'Sales Analytics',
           description: 'View sales performance',
           icon: Icons.analytics,
           onTap: () => context.push('/business/analytics'),
-          color: Colors.blue,
+          color: primaryBlue,
         ),
         _FeatureCard(
           title: 'Financial Reports',
           description: 'Revenue & expenses',
           icon: Icons.bar_chart,
           onTap: () => context.push('/reports/financials'),
-          color: Colors.green,
+          color: secondaryBlue,
         ),
         _FeatureCard(
           title: 'Customer Insights',
           description: 'Customer behavior & trends',
           icon: Icons.people_alt_outlined,
           onTap: () => context.push('/reports/customers'),
-          color: Colors.purple,
+          color: tertiaryBlue,
         ),
         _FeatureCard(
           title: 'Export Data',
           description: 'Download reports as CSV',
           icon: Icons.download,
           onTap: () => context.push('/reports/export'),
-          color: Colors.indigo,
+          color: primaryBlue.withOpacity(0.8),
         ),
       ],
     );
@@ -417,8 +432,12 @@ class _InsightCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final trendColor = isPositive 
+        ? Theme.of(context).colorScheme.primary
+        : Theme.of(context).colorScheme.secondary.withOpacity(0.8);
+        
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16), // Reduced padding
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
@@ -429,12 +448,13 @@ class _InsightCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min, // Prevent overflow
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(8), // Reduced padding
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
                   shape: BoxShape.circle,
@@ -442,33 +462,32 @@ class _InsightCard extends StatelessWidget {
                 child: Icon(
                   icon,
                   color: color,
-                  size: 22,
+                  size: 20, // Reduced icon size
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(
-                  vertical: 6,
-                  horizontal: 10,
+                  vertical: 4, // Reduced padding
+                  horizontal: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: isPositive 
-                      ? Colors.green.withOpacity(0.1) 
-                      : Colors.red.withOpacity(0.1),
+                  color: trendColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       isPositive ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
-                      color: isPositive ? Colors.green : Colors.red,
-                      size: 14,
+                      color: trendColor,
+                      size: 12, // Reduced icon size
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 2),
                     Text(
                       trend,
                       style: TextStyle(
-                        fontSize: 13,
-                        color: isPositive ? Colors.green : Colors.red,
+                        fontSize: 11, // Reduced font size
+                        color: trendColor,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -477,20 +496,30 @@ class _InsightCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-              fontSize: 14,
+          const SizedBox(height: 12), // Reduced spacing
+          Flexible( // Use Flexible to prevent overflow
+            child: Text(
+              title,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                fontSize: 13, // Reduced font size
+                height: 1.2,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+          Flexible( // Use Flexible to prevent overflow
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 20, // Reduced font size
+                fontWeight: FontWeight.bold,
+                height: 1.1,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -533,13 +562,13 @@ class _FeatureCard extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(20),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16), // Reduced padding
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(10), // Reduced padding
                   decoration: BoxDecoration(
                     color: cardColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -547,29 +576,38 @@ class _FeatureCard extends StatelessWidget {
                   child: Icon(
                     icon,
                     color: cardColor,
-                    size: 26,
+                    size: 22, // Reduced icon size
                   ),
                 ),
-                const SizedBox(height: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                const SizedBox(height: 12), // Reduced spacing
+                Flexible( // Use Flexible to prevent overflow
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15, // Slightly reduced font size
+                          height: 1.2, // Reduced line height
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                        fontSize: 13,
+                      const SizedBox(height: 4),
+                      Text(
+                        description,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          fontSize: 12, // Reduced font size
+                          height: 1.3, // Better line height
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),

@@ -79,13 +79,27 @@ class _SerialNumbersScreenState extends State<SerialNumbersScreen> {
           if (!_isLoading) ...[
             IconButton(
               onPressed: _loadSerialNumbers,
-              icon: const Icon(LucideIcons.refreshCw),
+              icon: Icon(
+                LucideIcons.refreshCw,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               tooltip: 'Refresh',
+              style: IconButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                minimumSize: const Size(44, 44),
+              ),
             ),
             IconButton(
               onPressed: _exportAllDevices,
-              icon: const Icon(LucideIcons.download),
+              icon: Icon(
+                LucideIcons.download,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               tooltip: 'Export All',
+              style: IconButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                minimumSize: const Size(44, 44),
+              ),
             ),
           ],
           const SizedBox(width: 8),

@@ -254,6 +254,23 @@ class AnalyticsService {
     }
   }
 
+  /// Get total stock quantity (sum of all product quantities)
+  Future<int> getTotalStockQuantity() async {
+    try {
+      final response = await _dio.get('/analytics/products/stock-quantity/');
+      
+      if (response.data['data'] != null) {
+        return response.data['data']['total_quantity'] ?? 0;
+      } else {
+        return response.data['total_quantity'] ?? 0;
+      }
+    } on DioException catch (e) {
+      throw Exception('Failed to fetch total stock quantity: ${e.response?.data ?? e.message}');
+    } catch (e) {
+      throw Exception('Failed to fetch total stock quantity: ${e.toString()}');
+    }
+  }
+
   /// Get total stock value
   Future<double> getTotalStockValue() async {
     try {

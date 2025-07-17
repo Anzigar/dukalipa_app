@@ -7,6 +7,8 @@ import 'package:dukalipa_app/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import '../../../common/widgets/shimmer_loading.dart';
 import '../providers/analytics_provider.dart';
+import '../providers/recent_activity_provider.dart';
+import '../../../../data/services/recent_activity_service.dart';
 
 
 // Define ActionItem class for menu items
@@ -733,7 +735,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
               SizedBox(width: 8.w),
               Expanded(
-                child: _buildMetaStyleStatCard('Products', '148', 'in stock'),
+                child: Consumer<AnalyticsProvider>(
+                  builder: (context, analyticsProvider, _) {
+                    return _buildMetaStyleStatCard(
+                      'Products', 
+                      '${analyticsProvider.totalStockQuantity}', 
+                      'total stock'
+                    );
+                  },
+                ),
               ),
               SizedBox(width: 8.w),
               Expanded(

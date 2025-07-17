@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../data/services/inventory_service.dart';
+import '../../../common/widgets/shimmer_loading.dart';
+import '../../inventory/models/product_model.dart';
 
 class StorageManagementScreen extends StatefulWidget {
   const StorageManagementScreen({super.key});
@@ -15,13 +18,40 @@ class _StorageManagementScreenState extends State<StorageManagementScreen> with 
   final List<StorageLocation> _storageLocations = [];
   Set<String> _selectedView = {'locations'}; // For segmented button
   
+  // Inventory data
+  final InventoryService _inventoryService = InventoryService();
+  List<ProductModel> _products = [];
+  bool _isLoadingProducts = false;
+  String? _inventoryError;
+  
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _loadStorageData();
+    _loadProducts();
   }
-  
+
+  Future<void> _loadProducts() async {
+    setState(() {
+      _isLoadingProducts = true;
+      _inventoryError = null;
+    });
+
+    try {
+      final products = await _inventoryService.getProducts();
+      setState(() {
+        _products = products;
+        _isLoadingProducts = false;
+      });
+    } catch (e) {
+      setState(() {
+        _inventoryError = e.toString();
+        _isLoadingProducts = false;
+      });
+    }
+  }
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -84,7 +114,7 @@ class _StorageManagementScreenState extends State<StorageManagementScreen> with 
         backgroundColor: Colors.transparent,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? _buildMainLoadingShimmer()
           : Column(
               children: [
                 // Material 3 Segmented Button replacing TabBar
@@ -144,7 +174,9 @@ class _StorageManagementScreenState extends State<StorageManagementScreen> with 
             _showCreateTransferDialog();
           }
         },
-        backgroundColor: AppTheme.mkbhdRed,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        elevation: 0,
         icon: const Icon(Icons.add_rounded),
         label: Text(_tabController.index == 0 
             ? 'Add Location' 
@@ -184,14 +216,588 @@ class _StorageManagementScreenState extends State<StorageManagementScreen> with 
   }
   
   Widget _buildInventoryTab() {
-    return const Center(
-      child: Text('Inventory management tab content'),
+    return Column(
+      children: [
+        // Header with refresh button
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Inventory Products',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              IconButton(
+                onPressed: _loadProducts,
+                icon: Icon(
+                  Icons.refresh_rounded,
+                  color: AppTheme.mkbhdRed,
+                ),
+              ),
+            ],
+          ),
+        ),
+        
+        // Content
+        Expanded(
+          child: _isLoadingProducts
+              ? _buildInventoryShimmer()
+              : _inventoryError != null
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline_rounded,
+                            size: 64,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Error loading products',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _inventoryError!,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppTheme.mkbhdLightGrey,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: _loadProducts,
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    )
+                  : _products.isEmpty
+                      ? _buildEmptyInventoryState()
+                      : _buildProductsList(),
+        ),
+      ],
     );
+  }
+
+  Widget _buildEmptyInventoryState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.inventory_2_outlined,
+            size: 64,
+            color: AppTheme.mkbhdLightGrey.withOpacity(0.6),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No Products Found',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.mkbhdLightGrey.withOpacity(0.8),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Start by adding products to your inventory',
+            style: TextStyle(
+              color: AppTheme.mkbhdLightGrey,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: _loadProducts,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Refresh'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.mkbhdRed,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductsList() {
+    return RefreshIndicator(
+      onRefresh: _loadProducts,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _products.length,
+        itemBuilder: (context, index) {
+          final product = _products[index];
+          return _buildProductCard(product);
+        },
+      ),
+    );
+  }
+
+  Widget _buildProductCard(ProductModel product) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppTheme.mkbhdLightGrey.withOpacity(0.2),
+        ),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
+        leading: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: _getStatusColor(product).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.inventory_2_outlined,
+            color: _getStatusColor(product),
+          ),
+        ),
+        title: Text(
+          product.name,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            if (product.category != null)
+              Text(
+                product.category!,
+                style: TextStyle(
+                  color: AppTheme.mkbhdLightGrey,
+                  fontSize: 12,
+                ),
+              ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                _buildStatusChip(product),
+                const SizedBox(width: 8),
+                Text(
+                  'Qty: ${product.quantity}',
+                  style: TextStyle(
+                    color: AppTheme.mkbhdLightGrey,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              'TSh ${_formatPrice(product.sellingPrice)}',
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Stock Value: TSh ${_formatPrice(product.inventoryValue)}',
+              style: TextStyle(
+                color: AppTheme.mkbhdLightGrey,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        onTap: () {
+          // TODO: Navigate to product details
+        },
+      ),
+    );
+  }
+
+  Widget _buildStatusChip(ProductModel product) {
+    String status;
+    Color color;
+
+    if (product.isOutOfStock) {
+      status = 'Out of Stock';
+      color = Theme.of(context).colorScheme.error;
+    } else if (product.isLowStock) {
+      status = 'Low Stock';
+      color = Theme.of(context).colorScheme.secondary;
+    } else {
+      status = 'In Stock';
+      color = Theme.of(context).colorScheme.primary;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
+      ),
+      child: Text(
+        status,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Color _getStatusColor(ProductModel product) {
+    if (product.isOutOfStock) {
+      return Theme.of(context).colorScheme.error;
+    } else if (product.isLowStock) {
+      return Theme.of(context).colorScheme.secondary;
+    } else {
+      return Theme.of(context).colorScheme.primary;
+    }
+  }
+
+  String _formatPrice(double price) {
+    if (price >= 1000000) {
+      return '${(price / 1000000).toStringAsFixed(1)}M';
+    } else if (price >= 1000) {
+      return '${(price / 1000).toStringAsFixed(1)}K';
+    } else {
+      return price.toStringAsFixed(0);
+    }
   }
   
   Widget _buildTransfersTab() {
     return const Center(
       child: Text('Inventory transfers tab content'),
+    );
+  }
+  
+  // Shimmer loading widgets
+  Widget _buildMainLoadingShimmer() {
+    return Column(
+      children: [
+        // Segmented button shimmer
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: ShimmerLoading(
+            child: Container(
+              height: 48,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
+          ),
+        ),
+        // Content shimmer based on current view
+        Expanded(
+          child: _selectedView.contains('locations')
+              ? _buildStorageLocationsShimmer()
+              : _selectedView.contains('inventory')
+                  ? _buildInventoryShimmer()
+                  : _buildTransfersShimmer(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInventoryShimmer() {
+    return Column(
+      children: [
+        // Header shimmer
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ShimmerLoading(
+                child: Container(
+                  width: 150,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              ShimmerLoading(
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Product cards shimmer
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: 6,
+            itemBuilder: (context, index) => _buildProductCardShimmer(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProductCardShimmer() {
+    return ShimmerLoading(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            // Leading icon placeholder
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Content placeholder
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 16,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    height: 12,
+                    width: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Container(
+                        height: 20,
+                        width: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        height: 12,
+                        width: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Trailing price placeholder
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  height: 16,
+                  width: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  height: 12,
+                  width: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStorageLocationsShimmer() {
+    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 80),
+      itemCount: 4,
+      itemBuilder: (context, index) => _buildStorageLocationCardShimmer(),
+    );
+  }
+
+  Widget _buildStorageLocationCardShimmer() {
+    return ShimmerLoading(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 17,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        height: 14,
+                        width: 150,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 60,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  height: 15,
+                  width: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                Container(
+                  height: 15,
+                  width: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              height: 8,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTransfersShimmer() {
+    return Center(
+      child: ShimmerLoading(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(60),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: 200,
+              height: 20,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              width: 150,
+              height: 16,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
   

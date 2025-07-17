@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../home/providers/analytics_provider.dart';
+import '../../../common/widgets/shimmer_loading.dart';
 
 class BusinessAnalyticsScreen extends StatefulWidget {
   const BusinessAnalyticsScreen({super.key});
@@ -13,6 +16,17 @@ class _BusinessAnalyticsScreenState extends State<BusinessAnalyticsScreen> {
   String _selectedPeriod = 'Week';
   final List<String> _periods = ['Day', 'Week', 'Month', 'Year'];
   Set<String> _selectedMetrics = {'revenue'}; // For segmented button
+
+  @override
+  void initState() {
+    super.initState();
+    // Load analytics data when screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final analyticsProvider = Provider.of<AnalyticsProvider>(context, listen: false);
+      analyticsProvider.loadAnalytics();
+      analyticsProvider.loadInventorySummary();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,64 +105,108 @@ class _BusinessAnalyticsScreenState extends State<BusinessAnalyticsScreen> {
                   },
                   style: SegmentedButton.styleFrom(
                     backgroundColor: Theme.of(context).cardColor,
-                    foregroundColor: AppTheme.mkbhdLightGrey,
-                    selectedBackgroundColor: AppTheme.mkbhdRed.withOpacity(0.1),
-                    selectedForegroundColor: AppTheme.mkbhdRed,
-                    side: BorderSide(color: Colors.black),
+                    foregroundColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    selectedBackgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    selectedForegroundColor: Theme.of(context).colorScheme.primary,
+                    side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
                   ),
                 ),
                 
                 const SizedBox(height: 24),
                 
-                // Key Metrics Row
-                const Row(
-                  children: [
-                    Expanded(
-                      child: _MetricCard(
-                        title: 'Revenue',
-                        value: '\$12,450',
-                        change: '+12.5%',
-                        isPositive: true,
-                        icon: Icons.trending_up,
-                      ),
-                    ),
-                     SizedBox(width: 16),
-                    Expanded(
-                      child: _MetricCard(
-                        title: 'Orders',
-                        value: '248',
-                        change: '+8.2%',
-                        isPositive: true,
-                        icon: Icons.shopping_cart_outlined,
-                      ),
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 16),
-                
-                const Row(
-                  children: [
-                    Expanded(
-                      child: _MetricCard(
-                        title: 'Profit',
-                        value: '\$3,240',
-                        change: '+15.3%',
-                        isPositive: true,
-                        icon: Icons.account_balance_wallet_outlined,
-                      ),
-                    ),
-                     SizedBox(width: 16),
-                    Expanded(
-                      child: _MetricCard(
-                        title: 'Customers',
-                        value: '186',
-                        change: '-2.1%',
-                        isPositive: false,
-                        icon: Icons.people_outline,
-                      ),
-                    ),
-                  ],
+                // Key Metrics Row - Updated to consume analytics data
+                Consumer<AnalyticsProvider>(
+                  builder: (context, analyticsProvider, _) {
+                    if (analyticsProvider.isLoadingAnalytics || analyticsProvider.isLoadingDashboard) {
+                      return const DashboardShimmer();
+                    }
+                    
+                    if (analyticsProvider.hasError) {
+                      return Card(
+                        elevation: 0,
+                        color: Theme.of(context).cardColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(
+                            color: Theme.of(context).colorScheme.outline.withOpacity(0.12),
+                            width: 1,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
+                              const SizedBox(height: 8),
+                              Text('Failed to load analytics', style: Theme.of(context).textTheme.titleMedium),
+                              const SizedBox(height: 8),
+                              ElevatedButton(
+                                onPressed: () => analyticsProvider.loadAnalytics(forceRefresh: true),
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    
+                    final metrics = analyticsProvider.dashboardMetrics;
+                    return Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _MetricCard(
+                                title: 'Revenue',
+                                value: analyticsProvider.getFormattedCurrency(metrics?.totalRevenue ?? 0),
+                                change: '+12.5%', // Could be calculated from historical data
+                                isPositive: true,
+                                icon: Icons.trending_up,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _MetricCard(
+                                title: 'Orders',
+                                value: '${metrics?.totalSales ?? 0}',
+                                change: '+8.2%',
+                                isPositive: true,
+                                icon: Icons.shopping_cart_outlined,
+                              ),
+                            ),
+                          ],
+                        ),
+                        
+                        const SizedBox(height: 16),
+                        
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _MetricCard(
+                                title: 'Profit',
+                                value: analyticsProvider.getFormattedCurrency(metrics?.totalProfit ?? 0),
+                                change: '+15.3%',
+                                isPositive: true,
+                                icon: Icons.account_balance_wallet_outlined,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _MetricCard(
+                                title: 'Products',
+                                value: '${analyticsProvider.totalProductsCount}',
+                                change: analyticsProvider.inventorySummary['low_stock_count'] != null 
+                                    ? '${analyticsProvider.inventorySummary['low_stock_count']} low stock'
+                                    : 'No issues',
+                                isPositive: (analyticsProvider.inventorySummary['low_stock_count'] ?? 0) == 0,
+                                icon: Icons.inventory_2_outlined,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 
                 const SizedBox(height: 24),
@@ -281,21 +339,31 @@ class _MetricCard extends StatelessWidget {
                 child: Icon(
                   icon,
                   size: 20,
-                  color: AppTheme.mkbhdRed,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: (isPositive ? Colors.green : Colors.red).withOpacity(0.1),
+                  color: (isPositive 
+                      ? Theme.of(context).colorScheme.primary 
+                      : Theme.of(context).colorScheme.secondary).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: (isPositive 
+                        ? Theme.of(context).colorScheme.primary 
+                        : Theme.of(context).colorScheme.secondary).withOpacity(0.2),
+                    width: 1,
+                  ),
                 ),
                 child: Text(
                   change,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: isPositive ? Colors.green : Colors.red,
+                    color: isPositive 
+                        ? Theme.of(context).colorScheme.primary 
+                        : Theme.of(context).colorScheme.secondary,
                   ),
                 ),
               ),

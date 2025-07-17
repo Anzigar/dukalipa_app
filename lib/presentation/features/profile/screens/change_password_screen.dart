@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -79,7 +80,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       appBar: AppBar(
         title: const Text('Change Password'),
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+        systemOverlayStyle: Theme.of(context).brightness == Brightness.dark
+            ? SystemUiOverlayStyle.light
+            : SystemUiOverlayStyle.dark,
       ),
       body: Form(
         key: _formKey,
@@ -123,7 +128,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureCurrentPassword ? Icons.visibility_off : Icons.visibility,
-                        color: AppTheme.mkbhdLightGrey,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                       onPressed: () {
                         setState(() {
@@ -147,7 +152,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureNewPassword ? Icons.visibility_off : Icons.visibility,
-                        color: AppTheme.mkbhdLightGrey,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                       onPressed: () {
                         setState(() {
@@ -174,7 +179,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                        color: AppTheme.mkbhdLightGrey,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                       onPressed: () {
                         setState(() {

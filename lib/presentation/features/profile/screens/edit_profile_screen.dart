@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/meta_colors.dart';
@@ -104,7 +105,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             appBar: AppBar(
               title: const Text('Edit Profile'),
               elevation: 0,
-              backgroundColor: Colors.transparent,
+              backgroundColor: MetaColors.backgroundColor,
+              foregroundColor: MetaColors.primaryText,
+              systemOverlayStyle: SystemUiOverlayStyle.dark,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => context.pop(),

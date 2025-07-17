@@ -1081,8 +1081,16 @@ class _InventoryScreenState extends State<InventoryScreen> with TickerProviderSt
           Stack(
             children: [
               IconButton(
-                icon: Icon(Icons.tune_rounded, color: colorScheme.onSurface),
+                icon: Icon(
+                  Icons.tune_rounded, 
+                  color: colorScheme.primary,
+                  size: 24,
+                ),
                 onPressed: () => _showFilterBottomSheet(context),
+                style: IconButton.styleFrom(
+                  backgroundColor: colorScheme.primary.withOpacity(0.1),
+                  minimumSize: const Size(44, 44),
+                ),
               ),
               if (_selectedCategory != null || _selectedSupplier != null)
                 Positioned(

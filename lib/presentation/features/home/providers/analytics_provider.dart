@@ -17,6 +17,7 @@ class AnalyticsProvider extends ChangeNotifier {
 
   // Inventory data
   int _totalProductsCount = 0;
+  int _totalStockQuantity = 0;
   double _totalStockValue = 0.0;
   Map<String, dynamic> _inventorySummary = {};
 
@@ -42,6 +43,7 @@ class AnalyticsProvider extends ChangeNotifier {
 
   // Inventory getters
   int get totalProductsCount => _totalProductsCount;
+  int get totalStockQuantity => _totalStockQuantity;
   double get totalStockValue => _totalStockValue;
   Map<String, dynamic> get inventorySummary => _inventorySummary;
 
@@ -234,10 +236,12 @@ class AnalyticsProvider extends ChangeNotifier {
     try {
       final summary = await _analyticsRepository.getInventorySummary();
       final productsCount = await _analyticsRepository.getTotalProductsCount();
+      final stockQuantity = await _analyticsRepository.getTotalStockQuantity();
       final stockValue = await _analyticsRepository.getTotalStockValue();
 
       _inventorySummary = summary;
       _totalProductsCount = productsCount;
+      _totalStockQuantity = stockQuantity;
       _totalStockValue = stockValue;
       _inventoryError = null;
     } catch (e) {
@@ -260,6 +264,19 @@ class AnalyticsProvider extends ChangeNotifier {
     } catch (e) {
       if (kDebugMode) {
         print('Total products count loading error: $e');
+      }
+    }
+  }
+
+  /// Load total stock quantity only
+  Future<void> loadTotalStockQuantity() async {
+    try {
+      final quantity = await _analyticsRepository.getTotalStockQuantity();
+      _totalStockQuantity = quantity;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Total stock quantity loading error: $e');
       }
     }
   }
@@ -307,6 +324,7 @@ class AnalyticsProvider extends ChangeNotifier {
     
     // Clear inventory data
     _totalProductsCount = 0;
+    _totalStockQuantity = 0;
     _totalStockValue = 0.0;
     _inventorySummary = {};
     

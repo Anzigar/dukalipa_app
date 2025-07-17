@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/meta_colors.dart';
 
@@ -12,7 +13,9 @@ class HelpScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Help & Support'),
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        backgroundColor: MetaColors.backgroundColor,
+        foregroundColor: MetaColors.primaryText,
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),

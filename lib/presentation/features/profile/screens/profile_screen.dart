@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -121,7 +122,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             appBar: AppBar(
               title: const Text('Profile'),
               elevation: 0,
-              backgroundColor: Colors.transparent,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
+              systemOverlayStyle: Theme.of(context).brightness == Brightness.dark
+                  ? SystemUiOverlayStyle.light
+                  : SystemUiOverlayStyle.dark,
             ),
             body: viewModel.isLoading 
                 ? const ProfileShimmer()

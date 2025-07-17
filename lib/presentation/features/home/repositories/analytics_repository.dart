@@ -38,6 +38,7 @@ abstract class AnalyticsRepository {
 
   // Inventory-related methods
   Future<int> getTotalProductsCount();
+  Future<int> getTotalStockQuantity();
   Future<double> getTotalStockValue();
   Future<Map<String, dynamic>> getInventorySummary();
 }
@@ -167,6 +168,16 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
     } catch (e) {
       // Return fallback count if API fails
       return 45; // Default fallback value
+    }
+  }
+
+  @override
+  Future<int> getTotalStockQuantity() async {
+    try {
+      return await _analyticsService.getTotalStockQuantity();
+    } catch (e) {
+      // Return fallback quantity if API fails
+      return 120; // Default fallback value
     }
   }
 

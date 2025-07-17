@@ -142,7 +142,9 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> with Sing
         onPressed: () {
           _showAddDamagedProductDialog();
         },
-        backgroundColor: AppTheme.mkbhdRed,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        elevation: 0,
         icon: const Icon(Icons.add_rounded),
         label: const Text('Report Damage'),
         shape: RoundedRectangleBorder(
@@ -552,20 +554,20 @@ class _DamagedProductCard extends StatelessWidget {
     Color statusBgColor;
     switch (product.status) {
       case 'Pending':
-        statusColor = Colors.orange;
-        statusBgColor = Colors.orange.withOpacity(0.1);
+        statusColor = Theme.of(context).colorScheme.secondary;
+        statusBgColor = Theme.of(context).colorScheme.secondary.withOpacity(0.1);
         break;
       case 'Processed':
-        statusColor = Colors.green;
-        statusBgColor = Colors.green.withOpacity(0.1);
+        statusColor = Theme.of(context).colorScheme.primary;
+        statusBgColor = Theme.of(context).colorScheme.primary.withOpacity(0.1);
         break;
       case 'Written Off':
-        statusColor = Colors.red;
-        statusBgColor = Colors.red.withOpacity(0.1);
+        statusColor = Theme.of(context).colorScheme.tertiary;
+        statusBgColor = Theme.of(context).colorScheme.tertiary.withOpacity(0.1);
         break;
       default:
-        statusColor = AppTheme.mkbhdLightGrey;
-        statusBgColor = AppTheme.mkbhdLightGrey.withOpacity(0.1);
+        statusColor = Theme.of(context).colorScheme.outline;
+        statusBgColor = Theme.of(context).colorScheme.outline.withOpacity(0.1);
     }
 
     return Container(
@@ -574,7 +576,7 @@ class _DamagedProductCard extends StatelessWidget {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppTheme.mkbhdLightGrey.withOpacity(0.08),
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.12),
           width: 1,
         ),
       ),

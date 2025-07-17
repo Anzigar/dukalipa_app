@@ -167,7 +167,11 @@ class _SearchScreenState extends State<SearchScreen> {
                                 leading: const Icon(LucideIcons.clock),
                                 title: Text(_recentSearches[index]),
                                 trailing: IconButton(
-                                  icon: const Icon(LucideIcons.x, size: 16),
+                                  icon: Icon(
+                                    LucideIcons.x, 
+                                    size: 16,
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
                                   onPressed: () {
                                     setState(() {
                                       _recentSearches.removeAt(index);
