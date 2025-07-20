@@ -18,6 +18,8 @@ import 'presentation/features/auth/repositories/auth_repository.dart';
 import 'presentation/features/notifications/repositories/notification_repository.dart';
 import 'presentation/features/inventory/repositories/inventory_repository.dart';
 import 'presentation/features/inventory/providers/inventory_provider.dart';
+// Add debug configuration
+import 'core/utils/semantic_tree_protection.dart'; // Add semantic tree protection
 import 'presentation/features/home/repositories/analytics_repository.dart';
 import 'presentation/features/home/providers/analytics_provider.dart';
 import 'presentation/features/damaged/providers/damaged_products_provider.dart';
@@ -60,6 +62,9 @@ class SystemUIController extends StatelessWidget {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Enable semantic debugging in debug mode
+
   
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([

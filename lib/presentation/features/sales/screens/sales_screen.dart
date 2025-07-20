@@ -409,7 +409,8 @@ class _SalesScreenState extends State<SalesScreen> with TickerProviderStateMixin
           ),
         ],
       ),
-      floatingActionButton: Container(
+      // Only show floating action button when there are sales
+      floatingActionButton: _filteredSales.isNotEmpty ? Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: const LinearGradient(
@@ -438,7 +439,7 @@ class _SalesScreenState extends State<SalesScreen> with TickerProviderStateMixin
             borderRadius: BorderRadius.circular(16),
           ),
         ),
-      ),
+      ) : null,
     );
   }
 }

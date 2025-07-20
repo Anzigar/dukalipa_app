@@ -30,6 +30,21 @@ class SessionService {
   static const Duration _refreshTokenDuration = Duration(days: 90); // 3 months
   static const Duration _extendedSessionDuration = Duration(days: 365); // 1 year for "Remember Me"
 
+  /// Safe wrapper for secure storage reads with iOS entitlement error handling
+  Future<String?> _safeRead(String key) async {
+    try {
+      return await _storage.read(key: key);
+    } catch (e) {
+      // Handle iOS Keychain entitlement errors gracefully in development
+      if (e.toString().contains('-34018') || e.toString().contains('entitlement')) {
+        // iOS Keychain access error - return null to indicate no stored value
+        return null;
+      }
+      // Re-throw other errors
+      rethrow;
+    }
+  }
+
   /// Save authentication tokens and user data
   Future<void> saveSession({
     required String accessToken,
@@ -52,25 +67,23 @@ class SessionService {
 
   /// Get stored access token
   Future<String?> getAccessToken() async {
-    return await _storage.read(key: _keyAccessToken);
+    return await _safeRead(_keyAccessToken);
   }
 
   /// Get stored refresh token
   Future<String?> getRefreshToken() async {
-    return await _storage.read(key: _keyRefreshToken);
+    return await _safeRead(_keyRefreshToken);
   }
 
   /// Get stored user profile
   Future<UserProfile?> getUserProfile() async {
     try {
-      final profileJson = await _storage.read(key: _keyUserProfile);
+      final profileJson = await _safeRead(_keyUserProfile);
       if (profileJson != null) {
-        final Map<String, dynamic> profileMap = jsonDecode(profileJson);
-        return UserProfile.fromJson(profileMap);
+        return UserProfile.fromJson(jsonDecode(profileJson));
       }
     } catch (e) {
-      // Handle parsing error
-      print('Error parsing user profile: $e');
+      print('Error retrieving user profile: $e');
     }
     return null;
   }
@@ -78,8 +91,8 @@ class SessionService {
   /// Check if session is valid based on login time and remember me preference
   Future<bool> isSessionValid() async {
     try {
-      final loginTimeStr = await _storage.read(key: _keyLoginTime);
-      final rememberMeStr = await _storage.read(key: _keyRememberMe);
+      final loginTimeStr = await _safeRead(_keyLoginTime);
+      final rememberMeStr = await _safeRead(_keyRememberMe);
       final accessToken = await getAccessToken();
 
       if (loginTimeStr == null || accessToken == null) {
@@ -98,6 +111,12 @@ class SessionService {
       
       return !sessionExpired;
     } catch (e) {
+      // Handle iOS Keychain entitlement errors gracefully in development
+      if (e.toString().contains('-34018') || e.toString().contains('entitlement')) {
+        // iOS Keychain access error - this is expected in development mode
+        // Return false to trigger normal login flow
+        return false;
+      }
       print('Error checking session validity: $e');
       return false;
     }
@@ -105,13 +124,13 @@ class SessionService {
 
   /// Check if auto-login is enabled
   Future<bool> isAutoLoginEnabled() async {
-    final autoLoginStr = await _storage.read(key: _keyAutoLoginEnabled);
+    final autoLoginStr = await _safeRead(_keyAutoLoginEnabled);
     return autoLoginStr?.toLowerCase() == 'true';
   }
 
   /// Check if biometric authentication is enabled
   Future<bool> isBiometricEnabled() async {
-    final biometricStr = await _storage.read(key: _keyBiometricEnabled);
+    final biometricStr = await _safeRead(_keyBiometricEnabled);
     return biometricStr?.toLowerCase() == 'true';
   }
 
@@ -136,10 +155,10 @@ class SessionService {
     await _storage.write(key: _keyLoginTime, value: newLoginTime);
   }
 
-  /// Check if refresh token is valid
+    /// Check if refresh token is still valid
   Future<bool> isRefreshTokenValid() async {
     try {
-      final loginTimeStr = await _storage.read(key: _keyLoginTime);
+      final loginTimeStr = await _safeRead(_keyLoginTime);
       final refreshToken = await getRefreshToken();
 
       if (loginTimeStr == null || refreshToken == null) {
@@ -154,6 +173,10 @@ class SessionService {
       
       return !refreshExpired;
     } catch (e) {
+      // Handle iOS Keychain entitlement errors gracefully
+      if (e.toString().contains('-34018') || e.toString().contains('entitlement')) {
+        return false;
+      }
       print('Error checking refresh token validity: $e');
       return false;
     }
@@ -162,10 +185,10 @@ class SessionService {
   /// Get session info for debugging/display
   Future<Map<String, dynamic>> getSessionInfo() async {
     try {
-      final loginTimeStr = await _storage.read(key: _keyLoginTime);
-      final rememberMe = await _storage.read(key: _keyRememberMe);
-      final autoLogin = await _storage.read(key: _keyAutoLoginEnabled);
-      final biometric = await _storage.read(key: _keyBiometricEnabled);
+      final loginTimeStr = await _safeRead(_keyLoginTime);
+      final rememberMe = await _safeRead(_keyRememberMe);
+      final autoLogin = await _safeRead(_keyAutoLoginEnabled);
+      final biometric = await _safeRead(_keyBiometricEnabled);
       final hasAccessToken = await getAccessToken() != null;
       final hasRefreshToken = await getRefreshToken() != null;
 
@@ -217,8 +240,8 @@ class SessionService {
   /// Get remaining session time
   Future<Duration?> getRemainingSessionTime() async {
     try {
-      final loginTimeStr = await _storage.read(key: _keyLoginTime);
-      final rememberMeStr = await _storage.read(key: _keyRememberMe);
+      final loginTimeStr = await _safeRead(_keyLoginTime);
+      final rememberMeStr = await _safeRead(_keyRememberMe);
 
       if (loginTimeStr == null) return null;
 

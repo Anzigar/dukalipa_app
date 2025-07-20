@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
-import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/services/app_initialization_service.dart';
@@ -23,8 +21,10 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     
-    // Initialize app and check authentication status
-    _initializeApp();
+    // Use post-frame callback to prevent setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeApp();
+    });
   }
 
   Future<void> _initializeApp() async {
@@ -57,26 +57,20 @@ class _SplashScreenState extends State<SplashScreen> {
     });
 
     try {
-      final authProvider = context.read<AuthProvider>();
-      
-      // Wait a bit for the auth provider to fully initialize
+      // Wait a bit for any initialization to complete
       await Future.delayed(const Duration(milliseconds: 500));
       
-      // Check if user is authenticated (session restored during initialization)
-      if (authProvider.isAuthenticated && authProvider.userProfile != null) {
-        // User has valid session, go to home
-        debugPrint('Valid session found, navigating to home');
-        if (mounted) {
-          context.go('/home');
-        }
-      } else {
-        // No valid session, go to login
-        debugPrint('No valid session, navigating to login');
-        _navigateToLogin();
+      // Always navigate to home page regardless of authentication status
+      debugPrint('Navigating to home page');
+      if (mounted) {
+        context.go('/home');
       }
     } catch (e) {
       debugPrint('Error during navigation: $e');
-      _navigateToLogin();
+      // Still navigate to home page even if there's an error
+      if (mounted) {
+        context.go('/home');
+      }
     }
   }
 

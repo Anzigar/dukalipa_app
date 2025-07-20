@@ -79,46 +79,49 @@ class AuthProvider extends ChangeNotifier {
 
   // Check authentication status and restore session
   Future<void> checkAuthStatus() async {
-    _isLoading = true;
-    notifyListeners();
+    // Prevent setState during build by scheduling for next frame
+    await Future.microtask(() async {
+      _isLoading = true;
+      notifyListeners();
 
-    try {
-      // Check if valid session exists
-      final isSessionValid = await _sessionService.isSessionValid();
-      final isAutoLoginEnabled = await _sessionService.isAutoLoginEnabled();
-      
-      if (isSessionValid && isAutoLoginEnabled) {
-        // Restore user profile from session
-        _userProfile = await _sessionService.getUserProfile();
-        _isAuthenticated = _userProfile != null;
+      try {
+        // Check if valid session exists
+        final isSessionValid = await _sessionService.isSessionValid();
+        final isAutoLoginEnabled = await _sessionService.isAutoLoginEnabled();
         
-        if (_isAuthenticated) {
-          // Extend session on successful auto-login
-          await _sessionService.extendSession();
+        if (isSessionValid && isAutoLoginEnabled) {
+          // Restore user profile from session
+          _userProfile = await _sessionService.getUserProfile();
+          _isAuthenticated = _userProfile != null;
+          
+          if (_isAuthenticated) {
+            // Extend session on successful auto-login
+            await _sessionService.extendSession();
+          }
+        } else {
+          // Session expired or invalid
+          _isAuthenticated = false;
+          _userProfile = null;
+          
+          // Check if refresh token is valid for silent refresh
+          final isRefreshValid = await _sessionService.isRefreshTokenValid();
+          if (isRefreshValid) {
+            // TODO: Implement token refresh logic
+            // await _refreshToken();
+          }
         }
-      } else {
-        // Session expired or invalid
+      } catch (e) {
+        // Log the error for debugging
+        if (kDebugMode) {
+          print('Error checking session validity: $e');
+        }
         _isAuthenticated = false;
         _userProfile = null;
-        
-        // Check if refresh token is valid for silent refresh
-        final isRefreshValid = await _sessionService.isRefreshTokenValid();
-        if (isRefreshValid) {
-          // TODO: Implement token refresh logic
-          // await _refreshToken();
-        }
+      } finally {
+        _isLoading = false;
+        notifyListeners();
       }
-    } catch (e) {
-      // Log the error for debugging
-      if (kDebugMode) {
-        print('Error checking session validity: $e');
-      }
-      _isAuthenticated = false;
-      _userProfile = null;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
+    });
   }
 
   // Get user profile

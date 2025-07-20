@@ -112,17 +112,36 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _loadingController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
-    )..repeat();
+    );
 
+    // Start loading data
+    _startLoading();
+    
     // Load analytics data including inventory
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadAnalyticsData();
     });
   }
 
+  void _startLoading() {
+    setState(() {
+      _isLoading = true;
+    });
+    _loadingController.repeat();
+  }
+
+  void _stopLoading() {
+    setState(() {
+      _isLoading = false;
+    });
+    _loadingController.stop();
+  }
+
   void _loadAnalyticsData() async {
     final analyticsProvider = Provider.of<AnalyticsProvider>(context, listen: false);
     await analyticsProvider.loadInventorySummary();
+    // Stop loading animation when data is loaded
+    _stopLoading();
   }
 
   void _onScroll() {

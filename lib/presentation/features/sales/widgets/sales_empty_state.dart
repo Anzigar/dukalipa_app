@@ -60,22 +60,33 @@ class SalesEmptyState extends StatelessWidget {
             ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 32),
-              ElevatedButton.icon(
-                onPressed: onAction,
-                icon: Icon(
-                  actionLabel == 'Clear Search' ? Icons.clear : Icons.add,
-                  size: 20,
-                ),
-                label: Text(actionLabel!),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.mkbhdRed,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
+              Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(maxWidth: 280),
+                child: ElevatedButton.icon(
+                  onPressed: onAction,
+                  icon: Icon(
+                    actionLabel == 'Clear Search' ? Icons.clear : Icons.add,
+                    size: 24,
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                  label: Text(
+                    actionLabel!,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.mkbhdRed,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 2,
                   ),
                 ),
               ),
