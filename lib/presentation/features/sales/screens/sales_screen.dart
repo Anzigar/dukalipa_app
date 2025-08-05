@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/localization/app_localizations.dart';
-import '../../../../core/theme/app_theme.dart';
+import '../../../../core/providers/theme_provider.dart';
+import '../providers/sales_provider.dart';
 import '../models/sale_model.dart';
-import '../repositories/sales_repository.dart';
-import '../widgets/sales_empty_state.dart';
-import '../../../common/widgets/shimmer_loading.dart';
 
 class SalesScreen extends StatefulWidget {
   const SalesScreen({super.key});
@@ -15,252 +13,262 @@ class SalesScreen extends StatefulWidget {
   State<SalesScreen> createState() => _SalesScreenState();
 }
 
-class _SalesScreenState extends State<SalesScreen> with TickerProviderStateMixin {
+class _SalesScreenState extends State<SalesScreen> {
   final TextEditingController _searchController = TextEditingController();
-  late final SalesRepository _repository;
-  List<SaleModel> _sales = [];
-  List<SaleModel> _filteredSales = [];
-  bool _isLoading = true;
-  bool _hasError = false;
-  String? _errorMessage;
-  String _selectedStatus = 'All';
+  String _selectedFilter = 'All';
   
-  late AnimationController _loadingController;
-  late AnimationController _fabController;
-  bool _controllersInitialized = false;
-
-  final List<String> _statuses = ['All', 'completed', 'pending', 'cancelled'];
+  final List<String> _filterOptions = ['All', 'completed', 'pending', 'cancelled'];
 
   @override
   void initState() {
     super.initState();
-    _repository = SalesRepositoryImpl();
-    _initializeControllers();
-    _fetchSales();
-  }
-
-  void _initializeControllers() {
-    if (!_controllersInitialized && mounted) {
-      _loadingController = AnimationController(
-        vsync: this,
-        duration: const Duration(seconds: 2),
-      );
-      
-      _fabController = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 300),
-      );
-      
-      _controllersInitialized = true;
-      
-      if (_isLoading) {
-        _loadingController.repeat();
-      }
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<SalesProvider>().loadSales();
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
-    if (_controllersInitialized) {
-      _loadingController.dispose();
-      _fabController.dispose();
-    }
     super.dispose();
   }
 
-  Future<void> _fetchSales() async {
-    if (!mounted) return;
+  List<SaleModel> _getFilteredSales(List<SaleModel> sales) {
+    var filtered = sales;
     
-    setState(() {
-      _isLoading = true;
-      _hasError = false;
-    });
-
-    if (_controllersInitialized && _loadingController.isAnimating) {
-      _loadingController.stop();
+    if (_selectedFilter != 'All') {
+      filtered = filtered.where((sale) => sale.status.toLowerCase() == _selectedFilter.toLowerCase()).toList();
     }
-
-    try {
-      final sales = await _repository.getSales(
-        search: _searchController.text,
-        status: _selectedStatus == 'All' ? null : _selectedStatus,
-      );
-      
-      if (mounted) {
-        setState(() {
-          _sales = sales;
-          _filteredSales = sales;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _hasError = true;
-          _errorMessage = e.toString();
-        });
-      }
-    }
-  }
-
-  void _applyFilters() {
-    List<SaleModel> filtered = List.from(_sales);
     
     if (_searchController.text.isNotEmpty) {
-      final searchQuery = _searchController.text.toLowerCase();
-      filtered = filtered.where((sale) =>
-        sale.customerName?.toLowerCase().contains(searchQuery) == true ||
-        sale.customerPhone?.toLowerCase().contains(searchQuery) == true ||
-        sale.id.toLowerCase().contains(searchQuery)
-      ).toList();
+      final query = _searchController.text.toLowerCase();
+      filtered = filtered.where((sale) {
+        return (sale.customerName?.toLowerCase().contains(query) ?? false) ||
+               sale.id.toLowerCase().contains(query);
+      }).toList();
     }
     
-    if (_selectedStatus != 'All') {
-      filtered = filtered.where((sale) => sale.status == _selectedStatus).toList();
-    }
-    
-    filtered.sort((a, b) => b.dateTime.compareTo(a.dateTime));
-    
-    setState(() {
-      _filteredSales = filtered;
-    });
+    return filtered;
   }
 
-  Widget _buildSalesList() {
-    if (_filteredSales.isEmpty) {
-      return SalesEmptyState(
-        title: _searchController.text.isNotEmpty 
-            ? 'No sales found' 
-            : 'No sales yet',
-        message: _searchController.text.isNotEmpty 
-            ? 'Try adjusting your search or filters'
-            : 'Start making sales to see them here',
-        icon: Icons.receipt_long_outlined,
-        actionLabel: _searchController.text.isNotEmpty 
-            ? 'Clear Search' 
-            : 'Add New Sale',
-        onAction: _searchController.text.isNotEmpty 
-            ? () {
-                _searchController.clear();
-                _applyFilters();
-              }
-            : () => context.push('/sales/add'),
-      );
-    }
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.themeMode == ThemeMode.dark ||
+        (themeProvider.themeMode == ThemeMode.system &&
+            MediaQuery.of(context).platformBrightness == Brightness.dark);
+    
+    return Scaffold(
+      backgroundColor: isDark ? Colors.grey[900] : Colors.grey[100],
+      appBar: AppBar(
+        title: const Text(
+          'Sales',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: isDark ? Colors.grey[850] : Colors.white,
+        elevation: 0,
+        foregroundColor: isDark ? Colors.white : Colors.black,
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(100.h),
+          child: Column(
+            children: [
+              _buildSearchBar(isDark),
+              _buildFilterChips(isDark),
+              SizedBox(height: 10.h),
+            ],
+          ),
+        ),
+      ),
+      body: Consumer<SalesProvider>(
+        builder: (context, salesProvider, child) {
+          if (salesProvider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-    return ListView.builder(
-      padding: EdgeInsets.only(bottom: 16.h),
-      itemCount: _filteredSales.length,
-      itemBuilder: (context, index) {
-        final sale = _filteredSales[index];
-        return _buildSaleCard(sale);
-      },
+          if (salesProvider.errorMessage != null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error, size: 64, color: Colors.red),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'Error: ${salesProvider.errorMessage}',
+                    style: TextStyle(fontSize: 16.sp),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 16.h),
+                  ElevatedButton(
+                    onPressed: () => salesProvider.loadSales(),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final filteredSales = _getFilteredSales(salesProvider.sales);
+
+          if (filteredSales.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.receipt_long,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'No sales found',
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: EdgeInsets.all(16.w),
+            itemCount: filteredSales.length,
+            itemBuilder: (context, index) {
+              final sale = filteredSales[index];
+              return _buildSaleCard(sale, isDark);
+            },
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.push('/sales/add');
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 
-  Widget _buildSaleCard(SaleModel sale) {
+  Widget _buildSearchBar(bool isDark) {
     return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-          width: 1,
-        ),
+        color: isDark ? Colors.grey[800] : Colors.white,
+        borderRadius: BorderRadius.circular(8.r),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
             offset: const Offset(0, 2),
           ),
         ],
       ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (value) => setState(() {}),
+        decoration: InputDecoration(
+          hintText: 'Search sales...',
+          prefixIcon: const Icon(Icons.search),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChips(bool isDark) {
+    return Container(
+      height: 40.h,
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _filterOptions.length,
+        itemBuilder: (context, index) {
+          final option = _filterOptions[index];
+          final isSelected = _selectedFilter == option;
+          
+          return Container(
+            margin: EdgeInsets.only(right: 8.w),
+            child: FilterChip(
+              label: Text(option),
+              selected: isSelected,
+              onSelected: (selected) {
+                setState(() {
+                  _selectedFilter = option;
+                });
+              },
+              backgroundColor: isDark ? Colors.grey[800] : Colors.white,
+              selectedColor: Colors.blue,
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : (isDark ? Colors.white : Colors.black),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSaleCard(SaleModel sale, bool isDark) {
+    return Card(
+      margin: EdgeInsets.only(bottom: 12.h),
+      color: isDark ? Colors.grey[800] : Colors.white,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8.r),
+      ),
       child: InkWell(
-        onTap: () => context.push('/sales/${sale.id}'),
-        borderRadius: BorderRadius.circular(16.r),
+        onTap: () {
+          context.push('/sales/${sale.id}');
+        },
+        borderRadius: BorderRadius.circular(8.r),
         child: Padding(
           padding: EdgeInsets.all(16.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    width: 48.w,
-                    height: 48.h,
-                    decoration: BoxDecoration(
-                      color: AppTheme.mkbhdRed.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Icon(
-                      Icons.receipt_rounded,
-                      color: AppTheme.mkbhdRed,
-                      size: 24.sp,
+                  Text(
+                    'Sale #${sale.id}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16.sp,
+                      color: isDark ? Colors.white : Colors.black,
                     ),
                   ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Sale #${sale.id}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16.sp,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          sale.customerName ?? 'Walk-in Customer',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                            fontSize: 14.sp,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(sale.status),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Text(
-                      sale.status.toUpperCase(),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                  _buildStatusChip(sale.status),
                 ],
               ),
-              
-              SizedBox(height: 16.h),
-              
+              SizedBox(height: 8.h),
+              Text(
+                sale.customerName ?? 'Walk-in Customer',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: isDark ? Colors.grey[300] : Colors.grey[600],
+                ),
+              ),
+              SizedBox(height: 8.h),
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    sale.formattedAmount,
+                    '\$${sale.totalAmount.toStringAsFixed(2)}',
                     style: TextStyle(
-                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 18.sp,
+                      color: Colors.green,
                     ),
                   ),
-                  const Spacer(),
                   Text(
-                    sale.formattedDateTime,
+                    _formatDate(sale.dateTime),
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      color: isDark ? Colors.grey[400] : Colors.grey[500],
                     ),
                   ),
                 ],
@@ -272,174 +280,46 @@ class _SalesScreenState extends State<SalesScreen> with TickerProviderStateMixin
     );
   }
 
-  Color _getStatusColor(String status) {
+  Widget _buildStatusChip(String status) {
+    Color backgroundColor;
+    Color textColor;
+    
     switch (status.toLowerCase()) {
       case 'completed':
-        return Colors.green;
+        backgroundColor = Colors.green;
+        textColor = Colors.white;
+        break;
       case 'pending':
-        return Colors.orange;
+        backgroundColor = Colors.orange;
+        textColor = Colors.white;
+        break;
       case 'cancelled':
-        return Colors.red;
+        backgroundColor = Colors.red;
+        textColor = Colors.white;
+        break;
       default:
-        return AppTheme.mkbhdGrey;
+        backgroundColor = Colors.grey;
+        textColor = Colors.white;
     }
+    
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: TextStyle(
+          fontSize: 10.sp,
+          fontWeight: FontWeight.bold,
+          color: textColor,
+        ),
+      ),
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        centerTitle: true,
-        title: Text(
-          l10n?.sales ?? 'Sales',
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.refresh_rounded,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-            ),
-            onPressed: _fetchSales,
-            tooltip: 'Refresh',
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.all(16.w),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                  width: 1,
-                ),
-              ),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (_) => _applyFilters(),
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 16.sp,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Search sales...',
-                  hintStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                    fontSize: 16.sp,
-                  ),
-                  prefixIcon: Icon(
-                    Icons.search_rounded,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                    size: 24.sp,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-                ),
-              ),
-            ),
-          ),
-          
-          Expanded(
-            child: _isLoading
-                ? ListView.builder(
-                    itemCount: 8,
-                    itemBuilder: (context, index) => const SalesCardShimmer(),
-                  )
-                : _hasError
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.error_outline,
-                              size: 64,
-                              color: AppTheme.mkbhdGrey,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Error loading sales',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              _errorMessage ?? 'Unknown error occurred',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 24),
-                            ElevatedButton.icon(
-                              onPressed: _fetchSales,
-                              icon: const Icon(Icons.refresh),
-                              label: const Text('Retry'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.mkbhdRed,
-                                foregroundColor: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _fetchSales,
-                        color: AppTheme.mkbhdRed,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: _buildSalesList(),
-                        ),
-                      ),
-          ),
-        ],
-      ),
-      // Only show floating action button when there are sales
-      floatingActionButton: _filteredSales.isNotEmpty ? Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppTheme.mkbhdRed,
-              AppTheme.mkbhdDarkRed,
-            ],
-          ),
-        ),
-        child: FloatingActionButton.extended(
-          onPressed: () => context.push('/sales/add'),
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          icon: const Icon(Icons.add_rounded, size: 24),
-          label: const Text(
-            'New Sale',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-            ),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-      ) : null,
-    );
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
   }
 }

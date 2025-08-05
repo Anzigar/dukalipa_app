@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/localization/app_localizations.dart';
@@ -8,7 +9,6 @@ import '../models/product_model.dart';
 import '../providers/inventory_provider.dart';
 import '../widgets/product_card_widget.dart';
 import '../widgets/inventory_summary_widget.dart';
-import '../../../common/widgets/material3_search_bar.dart';
 import '../../../common/widgets/shimmer_loading.dart';
 import 'create_group_screen.dart';
 
@@ -340,27 +340,37 @@ class _InventoryScreenState extends State<InventoryScreen> with TickerProviderSt
 
   Widget _buildCategoriesStrip(ColorScheme colorScheme) {
     return Container(
-      height: 50,
-      margin: const EdgeInsets.only(bottom: 8),
+      height: 50.h,
+      margin: EdgeInsets.only(bottom: 8.h),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
         itemCount: _categories.length + 1,
         itemBuilder: (context, index) {
           if (index == 0) {
             final isSelected = _selectedCategory == null;
             return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: FilterChip(
-                label: const Text('All'),
-                selected: isSelected,
-                onSelected: (selected) => _onCategorySelected(null),
-                selectedColor: colorScheme.primary.withOpacity(0.15),
-                checkmarkColor: colorScheme.primary,
-                backgroundColor: colorScheme.surface,
-                labelStyle: TextStyle(
-                  color: isSelected ? colorScheme.primary : colorScheme.onSurface,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              padding: EdgeInsets.only(right: 8.w),
+              child: GestureDetector(
+                onTap: () => _onCategorySelected(null),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: isSelected 
+                        ? colorScheme.primary
+                        : colorScheme.surface,
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Text(
+                    'All',
+                    style: TextStyle(
+                      color: isSelected 
+                          ? Colors.white
+                          : colorScheme.onSurface,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14.sp,
+                    ),
+                  ),
                 ),
               ),
             );
@@ -370,17 +380,27 @@ class _InventoryScreenState extends State<InventoryScreen> with TickerProviderSt
           final isSelected = _selectedCategory == category;
           
           return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(category),
-              selected: isSelected,
-              onSelected: (selected) => _onCategorySelected(selected ? category : null),
-              selectedColor: colorScheme.primary.withOpacity(0.15),
-              checkmarkColor: colorScheme.primary,
-              backgroundColor: colorScheme.surface,
-              labelStyle: TextStyle(
-                color: isSelected ? colorScheme.primary : colorScheme.onSurface,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            padding: EdgeInsets.only(right: 8.w),
+            child: GestureDetector(
+              onTap: () => _onCategorySelected(isSelected ? null : category),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: isSelected 
+                      ? colorScheme.primary
+                      : colorScheme.surface,
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Text(
+                  category,
+                  style: TextStyle(
+                    color: isSelected 
+                        ? Colors.white
+                        : colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.sp,
+                  ),
+                ),
               ),
             ),
           );
@@ -400,13 +420,13 @@ class _InventoryScreenState extends State<InventoryScreen> with TickerProviderSt
       message = 'No products match "${_searchController.text}".\nTry adjusting your search terms.';
       icon = Icons.search_off_rounded;
     } else if (_selectedCategory != null || _selectedSupplier != null) {
-      title = 'No products found';
-      message = 'No products match your current filters.\nTry adjusting or clearing your filters.';
+      title = 'No filtered products';
+      message = 'No products match your current filters.\nTry changing your filter criteria.';
       icon = Icons.filter_list_off_rounded;
     } else {
-      title = 'No products yet';
-      message = 'Start building your inventory by adding your first product.';
-      icon = Icons.inventory_2_outlined;
+      title = 'Start your inventory';
+      message = 'Add your first product to get started with inventory management.';
+      icon = Icons.inventory_2_rounded;
     }
 
     return AnimatedSwitcher(
@@ -416,40 +436,42 @@ class _InventoryScreenState extends State<InventoryScreen> with TickerProviderSt
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(24),
+              width: 80.w,
+              height: 80.w,
               decoration: BoxDecoration(
                 color: colorScheme.primary.withOpacity(0.1),
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(20.r),
               ),
               child: Icon(
                 icon,
-                size: 48,
+                size: 40.sp,
                 color: colorScheme.primary,
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             Text(
               title,
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700,
                 color: colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
+              padding: EdgeInsets.symmetric(horizontal: 32.w),
               child: Text(
                 message,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   color: colorScheme.onSurface.withOpacity(0.7),
                   height: 1.5,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             if (_selectedCategory != null || _selectedSupplier != null) ...[
               // Clear filters button
               OutlinedButton.icon(
@@ -462,17 +484,50 @@ class _InventoryScreenState extends State<InventoryScreen> with TickerProviderSt
                   });
                   _fetchInventory();
                 },
-                icon: const Icon(Icons.clear_all_rounded),
-                label: const Text('Clear Filters'),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: colorScheme.primary),
+                  padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 24.w),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                icon: Icon(Icons.clear_all_rounded, size: 18.sp),
+                label: Text(
+                  'Clear Filters',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
             ],
             // Add product button
-            FilledButton.icon(
-              onPressed: () => context.push('/inventory/add', extra: {'shopType': widget.shopType}),
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Add Product'),
-            ),
+            if (_searchController.text.isEmpty && _selectedCategory == null && _selectedSupplier == null)
+              Container(
+                width: double.infinity,
+                margin: EdgeInsets.symmetric(horizontal: 32.w),
+                child: ElevatedButton.icon(
+                  onPressed: () => context.push('/inventory/add', extra: {'shopType': widget.shopType}),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    elevation: 0,
+                  ),
+                  icon: Icon(Icons.add_rounded, size: 20.sp),
+                  label: Text(
+                    'Add Product',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16.sp,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -1059,53 +1114,67 @@ class _InventoryScreenState extends State<InventoryScreen> with TickerProviderSt
     final colorScheme = Theme.of(context).colorScheme;
     
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         elevation: 0,
         shadowColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
-        backgroundColor: colorScheme.surface,
-        centerTitle: true,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        centerTitle: false,
         title: Text(
           isSpecificShopType 
               ? '${widget.shopType} Inventory'
               : l10n.inventory,
           style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
             color: colorScheme.onSurface,
           ),
         ),
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: colorScheme.onSurface,
+            size: 20.sp,
+          ),
+          onPressed: () => context.pop(),
+        ),
         actions: [
-          // Filter button with active indicator
-          Stack(
-            children: [
-              IconButton(
-                icon: Icon(
-                  Icons.tune_rounded, 
-                  color: colorScheme.primary,
-                  size: 24,
-                ),
-                onPressed: () => _showFilterBottomSheet(context),
-                style: IconButton.styleFrom(
-                  backgroundColor: colorScheme.primary.withOpacity(0.1),
-                  minimumSize: const Size(44, 44),
-                ),
-              ),
-              if (_selectedCategory != null || _selectedSupplier != null)
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    width: 8,
-                    height: 8,
+          Container(
+            margin: EdgeInsets.only(right: 16.w),
+            child: GestureDetector(
+              onTap: () => _showFilterBottomSheet(context),
+              child: Stack(
+                children: [
+                  Container(
+                    width: 40.w,
+                    height: 40.w,
                     decoration: BoxDecoration(
+                      color: colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Icon(
+                      Icons.tune_rounded, 
                       color: colorScheme.primary,
-                      shape: BoxShape.circle,
+                      size: 20.sp,
                     ),
                   ),
-                ),
-            ],
+                  if (_selectedCategory != null || _selectedSupplier != null)
+                    Positioned(
+                      right: 4.w,
+                      top: 4.h,
+                      child: Container(
+                        width: 8.w,
+                        height: 8.w,
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -1113,107 +1182,145 @@ class _InventoryScreenState extends State<InventoryScreen> with TickerProviderSt
         onTap: _closeFabMenu,
         child: Column(
           children: [
-            // Material 3 SearchBar with expressive design - Fixed at top
+            // iOS style search bar
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              child: Material3SearchBar(
-                controller: _searchController,
-                onChanged: _onSearch,
-                hintText: 'Search products...',
+              padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.h),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: _onSearch,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    color: colorScheme.onSurface,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Search products...',
+                    hintStyle: TextStyle(
+                      color: colorScheme.onSurface.withOpacity(0.5),
+                      fontSize: 16.sp,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      color: colorScheme.onSurface.withOpacity(0.5),
+                      size: 20.sp,
+                    ),
+                    filled: true,
+                    fillColor: colorScheme.surface,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide(
+                        color: colorScheme.primary,
+                        width: 1.5,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 12.h,
+                    ),
+                  ),
+                ),
               ),
             ),
             
-            // Active filters indicator - Fixed below search
+            // Active filters indicator
             if (_selectedCategory != null || _selectedSupplier != null)
               Container(
-                margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 8.h),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer.withOpacity(0.7),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: colorScheme.primary.withOpacity(0.3),
-                    width: 1,
-                  ),
+                  color: colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.filter_list_rounded,
                       color: colorScheme.primary,
-                      size: 18,
+                      size: 18.sp,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Text(
                       'Active filters:',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 13.sp,
                         fontWeight: FontWeight.w600,
-                        color: colorScheme.onPrimaryContainer,
+                        color: colorScheme.primary,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     Expanded(
                       child: Wrap(
-                        spacing: 8,
-                        runSpacing: 4,
+                        spacing: 8.w,
+                        runSpacing: 4.h,
                         children: [
                           if (_selectedCategory != null)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                               decoration: BoxDecoration(
                                 color: colorScheme.primary,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(12.r),
                               ),
                               child: Text(
                                 _selectedCategory!,
-                                style: const TextStyle(
-                                  fontSize: 11,
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
                           if (_selectedSupplier != null)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                               decoration: BoxDecoration(
                                 color: colorScheme.primary,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(12.r),
                               ),
                               child: Text(
                                 _selectedSupplier!,
-                                style: const TextStyle(
-                                  fontSize: 11,
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    InkWell(
+                    SizedBox(width: 8.w),
+                    GestureDetector(
                       onTap: () {
                         setState(() {
                           _selectedCategory = null;
                           _selectedSupplier = null;
+                          _searchController.clear();
                           _isFiltering = true;
                         });
                         _fetchInventory();
                       },
-                      borderRadius: BorderRadius.circular(16),
                       child: Container(
-                        padding: const EdgeInsets.all(6),
+                        padding: EdgeInsets.all(6.w),
                         decoration: BoxDecoration(
-                          color: colorScheme.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(16),
+                          color: colorScheme.error.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(16.r),
                         ),
                         child: Icon(
                           Icons.close_rounded,
-                          color: colorScheme.primary,
-                          size: 16,
+                          color: colorScheme.error,
+                          size: 16.sp,
                         ),
                       ),
                     ),
@@ -1257,16 +1364,7 @@ class _InventoryScreenState extends State<InventoryScreen> with TickerProviderSt
                     : RefreshIndicator(
                         key: const ValueKey('content'),
                         onRefresh: () async {
-                          // Show smooth loading transition
-                          setState(() {
-                            _isFiltering = true;
-                          });
-                          
-                          await Future.wait([
-                            _fetchInventory(),
-                            _fetchCategories(),
-                            _fetchSuppliers(),
-                          ]);
+                          await _fetchInventory();
                         },
                         color: colorScheme.primary,
                         backgroundColor: colorScheme.surface,
@@ -1289,7 +1387,7 @@ class _InventoryScreenState extends State<InventoryScreen> with TickerProviderSt
   Widget _buildSimpleInventoryFAB(ColorScheme colorScheme) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -1308,16 +1406,17 @@ class _InventoryScreenState extends State<InventoryScreen> with TickerProviderSt
         hoverElevation: 0,
         highlightElevation: 0,
         disabledElevation: 0,
-        icon: Icon(Icons.add_rounded, size: 20),
-        label: const Text(
+        icon: Icon(Icons.add_rounded, size: 20.sp),
+        label: Text(
           'Add First Product',
           style: TextStyle(
             fontWeight: FontWeight.w600,
             letterSpacing: 0.2,
+            fontSize: 16.sp,
           ),
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
         ),
       ),
     );

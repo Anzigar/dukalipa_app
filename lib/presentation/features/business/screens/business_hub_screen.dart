@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 class BusinessHubScreen extends StatelessWidget {
@@ -9,53 +10,74 @@ class BusinessHubScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Business Hub'),
+        title: Text(
+          'Business Hub',
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: Theme.of(context).colorScheme.onSurface,
+            size: 20.sp,
+          ),
+          onPressed: () => context.pop(),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(height: 8.h),
             // Header with business overview
             const _BusinessOverview(),
-            const SizedBox(height: 32),
+            SizedBox(height: 24.h),
             
             // Quick insights
-            const Text(
+            Text(
               'Quick Insights',
               style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 12.h),
             _buildQuickInsights(context),
-            const SizedBox(height: 32),
+            SizedBox(height: 24.h),
             
             // Business features section
-            const Text(
+            Text(
               'Business Management',
               style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 12.h),
             _buildBusinessFeatures(context),
-            const SizedBox(height: 32),
+            SizedBox(height: 24.h),
             
             // Reports and analytics
-            const Text(
+            Text(
               'Reports & Analytics',
               style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 12.h),
             _buildReportFeatures(context),
+            SizedBox(height: 32.h),
           ],
         ),
       ),
@@ -71,9 +93,9 @@ class BusinessHubScreen extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      childAspectRatio: 1.2, // Adjusted for better proportions
+      crossAxisSpacing: 16.w,
+      mainAxisSpacing: 16.h,
+      childAspectRatio: 1.3, // Increased for more space
       children: [
         _InsightCard(
           title: 'Sales Today',
@@ -120,9 +142,9 @@ class BusinessHubScreen extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      childAspectRatio: 1.2, // Increased ratio to prevent overflow
+      crossAxisSpacing: 16.w,
+      mainAxisSpacing: 16.h,
+      childAspectRatio: 1.4, // Increased ratio to prevent overflow
       children: [
         _FeatureCard(
           title: 'Inventory',
@@ -179,9 +201,9 @@ class BusinessHubScreen extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      childAspectRatio: 1.2, // Increased ratio to prevent overflow
+      crossAxisSpacing: 16.w,
+      mainAxisSpacing: 16.h,
+      childAspectRatio: 1.4, // Increased ratio to prevent overflow
       children: [
         _FeatureCard(
           title: 'Sales Analytics',
@@ -222,14 +244,10 @@ class _BusinessOverview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.12),
-          width: 1,
-        ),
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Column(
         children: [
@@ -237,8 +255,8 @@ class _BusinessOverview extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 64,
-                height: 64,
+                width: 60.w,
+                height: 60.w,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -250,63 +268,65 @@ class _BusinessOverview extends StatelessWidget {
                   ),
                   shape: BoxShape.circle,
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
                     'DS',
                     style: TextStyle(
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 22.sp,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Dukalipa Shop',
                       style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18.sp,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Text(
                       'Electronics & Accessories',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                        fontSize: 14,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
               ),
               Container(
+                width: 40.w,
+                height: 40.w,
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
-                child: IconButton(
-                  onPressed: () {
-                    // Navigate to shop settings
-                  },
-                  icon: const Icon(Icons.settings_outlined),
+                child: Icon(
+                  Icons.settings_rounded,
                   color: Theme.of(context).colorScheme.primary,
+                  size: 20.sp,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 24.h),
           
           // Stats overview
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(16),
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12.r),
             ),
             child: Row(
               children: [
@@ -314,33 +334,33 @@ class _BusinessOverview extends StatelessWidget {
                   child: _StatItem(
                     value: '348',
                     label: 'Total Products',
-                    icon: Icons.inventory_2_outlined,
+                    icon: Icons.inventory_2_rounded,
                     onTap: () {},
                   ),
                 ),
                 Container(
-                  width: 1,
-                  height: 40,
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                  width: 1.w,
+                  height: 40.h,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
                 ),
                 Expanded(
                   child: _StatItem(
                     value: '125',
                     label: 'Active Orders',
-                    icon: Icons.shopping_bag_outlined,
+                    icon: Icons.shopping_bag_rounded,
                     onTap: () {},
                   ),
                 ),
                 Container(
-                  width: 1,
-                  height: 40,
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                  width: 1.w,
+                  height: 40.h,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
                 ),
                 Expanded(
                   child: _StatItem(
                     value: '\$12.4k',
                     label: 'Monthly Revenue',
-                    icon: Icons.payments_outlined,
+                    icon: Icons.payments_rounded,
                     onTap: () {},
                   ),
                 ),
@@ -368,45 +388,50 @@ class _StatItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8.r),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 8.w),
+          child: Column(
+            children: [
+              Text(
+                value,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16.sp,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  icon,
-                  size: 14,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                ),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                      fontSize: 12,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+              SizedBox(height: 4.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    icon,
+                    size: 14.sp,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  SizedBox(width: 4.w),
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -433,46 +458,42 @@ class _InsightCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final trendColor = isPositive 
-        ? Theme.of(context).colorScheme.primary
-        : Theme.of(context).colorScheme.secondary.withOpacity(0.8);
+        ? Colors.green
+        : Colors.red;
         
     return Container(
-      padding: const EdgeInsets.all(16), // Reduced padding
+      padding: EdgeInsets.all(12.w), // Reduced padding
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.12),
-          width: 1,
-        ),
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // Prevent overflow
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.all(8), // Reduced padding
+                padding: EdgeInsets.all(6.w), // Reduced padding
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
                   icon,
                   color: color,
-                  size: 20, // Reduced icon size
+                  size: 18.sp, // Reduced size
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 4, // Reduced padding
-                  horizontal: 8,
+                padding: EdgeInsets.symmetric(
+                  vertical: 2.h, // Reduced padding
+                  horizontal: 6.w,
                 ),
                 decoration: BoxDecoration(
                   color: trendColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -480,13 +501,13 @@ class _InsightCard extends StatelessWidget {
                     Icon(
                       isPositive ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
                       color: trendColor,
-                      size: 12, // Reduced icon size
+                      size: 10.sp, // Reduced size
                     ),
-                    const SizedBox(width: 2),
+                    SizedBox(width: 2.w),
                     Text(
                       trend,
                       style: TextStyle(
-                        fontSize: 11, // Reduced font size
+                        fontSize: 10.sp, // Reduced size
                         color: trendColor,
                         fontWeight: FontWeight.w600,
                       ),
@@ -496,26 +517,28 @@ class _InsightCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12), // Reduced spacing
-          Flexible( // Use Flexible to prevent overflow
+          SizedBox(height: 8.h), // Reduced spacing
+          Flexible(
             child: Text(
               title,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                fontSize: 13, // Reduced font size
+                fontSize: 12.sp, // Reduced size
+                fontWeight: FontWeight.w500,
                 height: 1.2,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          const SizedBox(height: 4),
-          Flexible( // Use Flexible to prevent overflow
+          SizedBox(height: 2.h), // Reduced spacing
+          Flexible(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 20, // Reduced font size
-                fontWeight: FontWeight.bold,
+              style: TextStyle(
+                fontSize: 18.sp, // Reduced size
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurface,
                 height: 1.1,
               ),
               maxLines: 1,
@@ -549,64 +572,58 @@ class _FeatureCard extends StatelessWidget {
     
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.12),
-          width: 1,
-        ),
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16.r),
           child: Padding(
-            padding: const EdgeInsets.all(16), // Reduced padding
+            padding: EdgeInsets.all(12.w), // Reduced padding
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10), // Reduced padding
+                  padding: EdgeInsets.all(8.w), // Reduced padding
                   decoration: BoxDecoration(
                     color: cardColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Icon(
                     icon,
                     color: cardColor,
-                    size: 22, // Reduced icon size
+                    size: 20.sp, // Reduced size
                   ),
                 ),
-                const SizedBox(height: 12), // Reduced spacing
-                Flexible( // Use Flexible to prevent overflow
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15, // Slightly reduced font size
-                          height: 1.2, // Reduced line height
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        description,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                          fontSize: 12, // Reduced font size
-                          height: 1.3, // Better line height
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                SizedBox(height: 8.h), // Reduced spacing
+                Flexible(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14.sp, // Reduced size
+                      color: Theme.of(context).colorScheme.onSurface,
+                      height: 1.2,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                SizedBox(height: 2.h), // Reduced spacing
+                Flexible(
+                  child: Text(
+                    description,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      fontSize: 11.sp, // Reduced size
+                      fontWeight: FontWeight.w500,
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

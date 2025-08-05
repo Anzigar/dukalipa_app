@@ -596,62 +596,248 @@ class ProfileShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ShimmerLoading(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    
+    return Container(
+      color: isDarkMode ? const Color(0xFF000000) : const Color(0xFFF2F2F7),
+      child: ShimmerLoading(
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: [
-            // Profile header
+            // Profile Header Section
             Container(
-              width: 100,
-              height: 100,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              width: 150,
-              height: 20,
-              color: Colors.white,
-            ),
-            const SizedBox(height: 8),
-            Container(
-              width: 200,
-              height: 14,
-              color: Colors.white,
-            ),
-            const SizedBox(height: 32),
-            // Menu items
-            ...List.generate(6, (index) => Padding(
-              padding: const EdgeInsets.only(bottom: 16),
+              color: theme.colorScheme.surface,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               child: Row(
                 children: [
+                  // Profile Avatar
                   Container(
-                    width: 24,
-                    height: 24,
+                    width: 60,
+                    height: 60,
                     decoration: const BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
                     ),
                   ),
                   const SizedBox(width: 16),
+                  // Profile Info
                   Expanded(
-                    child: Container(
-                      width: double.infinity,
-                      height: 16,
-                      color: Colors.white,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 140,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          width: 180,
+                          height: 14,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  // Edit arrow
                   Container(
-                    width: 16,
-                    height: 16,
-                    color: Colors.white,
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                   ),
                 ],
               ),
-            )),
+            ),
+            const SizedBox(height: 20),
+
+            // Section Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Container(
+                width: 120,
+                height: 13,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+
+            // First Section (Business Management)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: List.generate(5, (index) => _ShimmerListTile(
+                  isFirst: index == 0,
+                  isLast: index == 4,
+                )),
+              ),
+            ),
+            const SizedBox(height: 30),
+
+            // Section Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Container(
+                width: 80,
+                height: 13,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+
+            // Second Section (Account)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: List.generate(4, (index) => _ShimmerListTile(
+                  isFirst: index == 0,
+                  isLast: index == 3,
+                )),
+              ),
+            ),
+            const SizedBox(height: 30),
+
+            // Section Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Container(
+                width: 70,
+                height: 13,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+
+            // Third Section (Support)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: List.generate(4, (index) => _ShimmerListTile(
+                  isFirst: index == 0,
+                  isLast: index == 3,
+                )),
+              ),
+            ),
+            const SizedBox(height: 30),
+
+            // Sign Out Section
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const _ShimmerListTile(
+                isFirst: true,
+                isLast: true,
+              ),
+            ),
+            const SizedBox(height: 30),
+
+            // Version Info
+            Center(
+              child: Container(
+                width: 80,
+                height: 13,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Helper widget for shimmer list tiles
+class _ShimmerListTile extends StatelessWidget {
+  final bool isFirst;
+  final bool isLast;
+  
+  const _ShimmerListTile({
+    required this.isFirst,
+    required this.isLast,
+  });
+  
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: isLast ? BorderSide.none : BorderSide(
+            color: theme.colorScheme.onSurface.withOpacity(0.1),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            // Icon container
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Title
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Chevron
+            Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
           ],
         ),
       ),

@@ -13,6 +13,7 @@ import '../../presentation/features/business/screens/damaged_products_screen.dar
 import '../../presentation/features/business/screens/deleted_items_screen.dart';
 import '../../presentation/features/business/screens/storage_management_screen.dart';
 import '../../presentation/features/home/screens/home_screen.dart';
+import '../../presentation/features/home/screens/activity_screen.dart';
 import '../../presentation/features/inventory/models/product_model.dart';
 import '../../presentation/features/inventory/screens/add_product_screen.dart';
 import '../../presentation/features/inventory/screens/inventory_screen.dart';
@@ -59,6 +60,11 @@ class AppRouter {
       GoRoute(
         path: '/home',
         builder: (context, state) => const HomeScreen(),
+      ),
+      
+      GoRoute(
+        path: '/activity',
+        builder: (context, state) => const ActivityScreen(),
       ),
       
       GoRoute(

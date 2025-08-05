@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/providers/theme_provider.dart';
-import '../../../common/widgets/theme_toggle_widget.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -19,191 +17,174 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.themeMode == ThemeMode.dark ||
+        (themeProvider.themeMode == ThemeMode.system &&
+            MediaQuery.of(context).platformBrightness == Brightness.dark);
+
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: const Text('Settings'),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+      backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFF2F2F7),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(isDark),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                children: [
+                  SizedBox(height: 20.h),
+                  _buildSection(
+                    title: 'Preferences',
+                    children: [
+                      _buildThemeSelector(themeProvider, isDark),
+                      _buildSwitchTile(
+                        title: 'Notifications',
+                        subtitle: 'Receive push notifications',
+                        value: _notificationsEnabled,
+                        onChanged: (value) {
+                          setState(() => _notificationsEnabled = value);
+                        },
+                        isDark: isDark,
+                      ),
+                      _buildSwitchTile(
+                        title: 'Biometric Authentication',
+                        subtitle: 'Use fingerprint or face ID',
+                        value: _biometricEnabled,
+                        onChanged: (value) {
+                          setState(() => _biometricEnabled = value);
+                        },
+                        isDark: isDark,
+                      ),
+                      _buildSwitchTile(
+                        title: 'Auto Backup',
+                        subtitle: 'Automatically backup data',
+                        value: _autoBackup,
+                        onChanged: (value) {
+                          setState(() => _autoBackup = value);
+                        },
+                        isDark: isDark,
+                      ),
+                    ],
+                    isDark: isDark,
+                  ),
+                  SizedBox(height: 20.h),
+                  _buildSection(
+                    title: 'Account',
+                    children: [
+                      _buildActionTile(
+                        title: 'Profile',
+                        subtitle: 'Manage your profile information',
+                        icon: Icons.person_outline,
+                        onTap: () => _showComingSoon(context),
+                        isDark: isDark,
+                      ),
+                      _buildActionTile(
+                        title: 'Security',
+                        subtitle: 'Password and security settings',
+                        icon: Icons.security_outlined,
+                        onTap: () => _showComingSoon(context),
+                        isDark: isDark,
+                      ),
+                      _buildActionTile(
+                        title: 'Privacy',
+                        subtitle: 'Control your data privacy',
+                        icon: Icons.privacy_tip_outlined,
+                        onTap: () => _showComingSoon(context),
+                        isDark: isDark,
+                      ),
+                    ],
+                    isDark: isDark,
+                  ),
+                  SizedBox(height: 20.h),
+                  _buildSection(
+                    title: 'Support',
+                    children: [
+                      _buildActionTile(
+                        title: 'Help Center',
+                        subtitle: 'Get help and support',
+                        icon: Icons.help_outline,
+                        onTap: () => _showComingSoon(context),
+                        isDark: isDark,
+                      ),
+                      _buildActionTile(
+                        title: 'Contact Us',
+                        subtitle: 'Get in touch with our team',
+                        icon: Icons.contact_support_outlined,
+                        onTap: () => _showComingSoon(context),
+                        isDark: isDark,
+                      ),
+                      _buildActionTile(
+                        title: 'Rate App',
+                        subtitle: 'Rate us on the App Store',
+                        icon: Icons.star_outline,
+                        onTap: () => _showComingSoon(context),
+                        isDark: isDark,
+                      ),
+                    ],
+                    isDark: isDark,
+                  ),
+                  SizedBox(height: 20.h),
+                  _buildSection(
+                    title: 'About',
+                    children: [
+                      _buildActionTile(
+                        title: 'Version',
+                        subtitle: '1.0.0 (Build 1)',
+                        icon: Icons.info_outline,
+                        onTap: null,
+                        isDark: isDark,
+                        showArrow: false,
+                      ),
+                      _buildActionTile(
+                        title: 'Terms of Service',
+                        subtitle: 'Read our terms and conditions',
+                        icon: Icons.description_outlined,
+                        onTap: () => _showComingSoon(context),
+                        isDark: isDark,
+                      ),
+                      _buildActionTile(
+                        title: 'Privacy Policy',
+                        subtitle: 'Read our privacy policy',
+                        icon: Icons.policy_outlined,
+                        onTap: () => _showComingSoon(context),
+                        isDark: isDark,
+                      ),
+                    ],
+                    isDark: isDark,
+                  ),
+                  SizedBox(height: 20.h),
+                  _buildSignOutButton(isDark),
+                  SizedBox(height: 40.h),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.all(16),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                // Preferences Section
-                _SettingsSection(
-                  title: 'Preferences',
-                  children: [
-                    _SettingsSwitchTile(
-                      icon: Icons.notifications_outlined,
-                      title: 'Push Notifications',
-                      subtitle: 'Receive alerts and updates',
-                      value: _notificationsEnabled,
-                      onChanged: (value) => setState(() => _notificationsEnabled = value),
-                    ),
-                    // Updated Theme Setting with ThemeToggleWidget
-                    Consumer<ThemeProvider>(
-                      builder: (context, themeProvider, child) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.mkbhdRed.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  Icons.palette_outlined,
-                                  size: 20,
-                                  color: AppTheme.mkbhdRed,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Theme',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      _getThemeModeName(themeProvider.themeMode),
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: AppTheme.mkbhdLightGrey,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const ThemeToggleWidget(
-                                showLabel: false,
-                                padding: EdgeInsets.zero,
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                    _SettingsTile(
-                      icon: Icons.language_outlined,
-                      title: 'Language',
-                      subtitle: 'English (US)',
-                      onTap: () => context.push('/profile/language'),
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 24),
-                
-                // Security Section
-                _SettingsSection(
-                  title: 'Security',
-                  children: [
-                    _SettingsSwitchTile(
-                      icon: Icons.fingerprint_outlined,
-                      title: 'Biometric Login',
-                      subtitle: 'Use fingerprint or face ID',
-                      value: _biometricEnabled,
-                      onChanged: (value) => setState(() => _biometricEnabled = value),
-                    ),
-                    _SettingsTile(
-                      icon: Icons.lock_outline,
-                      title: 'Change Password',
-                      subtitle: 'Update your password',
-                      onTap: () => context.push('/profile/change-password'),
-                    ),
-                    _SettingsTile(
-                      icon: Icons.privacy_tip_outlined,
-                      title: 'Privacy Settings',
-                      subtitle: 'Manage your privacy',
-                      onTap: () {
-                        // Navigate to privacy settings
-                      },
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 24),
-                
-                // Data & Storage Section
-                _SettingsSection(
-                  title: 'Data & Storage',
-                  children: [
-                    _SettingsSwitchTile(
-                      icon: Icons.backup_outlined,
-                      title: 'Auto Backup',
-                      subtitle: 'Automatically backup data',
-                      value: _autoBackup,
-                      onChanged: (value) => setState(() => _autoBackup = value),
-                    ),
-                    _SettingsTile(
-                      icon: Icons.storage_outlined,
-                      title: 'Storage Usage',
-                      subtitle: '1.2 GB used',
-                      onTap: () {
-                        // Show storage details
-                      },
-                    ),
-                    _SettingsTile(
-                      icon: Icons.cloud_sync_outlined,
-                      title: 'Sync Settings',
-                      subtitle: 'Manage data synchronization',
-                      onTap: () {
-                        // Navigate to sync settings
-                      },
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 24),
-                
-                // Support Section
-                _SettingsSection(
-                  title: 'Support',
-                  children: [
-                    _SettingsTile(
-                      icon: Icons.help_outline,
-                      title: 'Help & Support',
-                      subtitle: 'Get help and contact support',
-                      onTap: () {
-                        // Navigate to help
-                      },
-                    ),
-                    _SettingsTile(
-                      icon: Icons.bug_report_outlined,
-                      title: 'Report a Bug',
-                      subtitle: 'Help us improve the app',
-                      onTap: () {
-                        // Report bug
-                      },
-                    ),
-                    _SettingsTile(
-                      icon: Icons.feedback_outlined,
-                      title: 'Send Feedback',
-                      subtitle: 'Share your thoughts',
-                      onTap: () {
-                        // Send feedback
-                      },
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 32),
-              ]),
+    );
+  }
+
+  Widget _buildHeader(bool isDark) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF000000) : Colors.white,
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? const Color(0xFF38383A) : const Color(0xFFE5E5EA),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Text(
+            'Settings',
+            style: TextStyle(
+              fontSize: 34.sp,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : Colors.black,
+              fontFamily: 'Montserrat',
             ),
           ),
         ],
@@ -211,51 +192,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  String _getThemeModeName(ThemeMode themeMode) {
-    switch (themeMode) {
-      case ThemeMode.light:
-        return 'Light mode';
-      case ThemeMode.dark:
-        return 'Dark mode';
-      case ThemeMode.system:
-        return 'Follow system';
-    }
-  }
-}
-
-class _SettingsSection extends StatelessWidget {
-  final String title;
-  final List<Widget> children;
-
-  const _SettingsSection({
-    required this.title,
-    required this.children,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildSection({
+    required String title,
+    required List<Widget> children,
+    required bool isDark,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          padding: EdgeInsets.only(left: 16.w, bottom: 8.h),
           child: Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
+            title.toUpperCase(),
+            style: TextStyle(
+              fontSize: 13.sp,
               fontWeight: FontWeight.w600,
-              color: AppTheme.mkbhdLightGrey,
+              color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6D6D70),
+              fontFamily: 'Montserrat',
+              letterSpacing: 0.5,
             ),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: AppTheme.mkbhdLightGrey.withOpacity(0.08),
-              width: 1,
-            ),
+            color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+            borderRadius: BorderRadius.circular(12.r),
           ),
           child: Column(
             children: children,
@@ -264,148 +225,314 @@ class _SettingsSection extends StatelessWidget {
       ],
     );
   }
-}
 
-class _SettingsTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final VoidCallback? onTap;
-
-  const _SettingsTile({
-    required this.icon,
-    required this.title,
-    this.subtitle,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppTheme.mkbhdRed.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: AppTheme.mkbhdRed,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle!,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppTheme.mkbhdLightGrey,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              if (onTap != null)
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: AppTheme.mkbhdLightGrey,
-                ),
-            ],
+  Widget _buildThemeSelector(ThemeProvider themeProvider, bool isDark) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? const Color(0xFF38383A) : const Color(0xFFE5E5EA),
+            width: 0.5,
           ),
         ),
       ),
-    );
-  }
-}
-
-class _SettingsSwitchTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  const _SettingsSwitchTile({
-    required this.icon,
-    required this.title,
-    this.subtitle,
-    required this.value,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            width: 28.w,
+            height: 28.h,
             decoration: BoxDecoration(
-              color: AppTheme.mkbhdRed.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              color: const Color(0xFF007AFF).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6.r),
             ),
             child: Icon(
-              icon,
-              size: 20,
-              color: AppTheme.mkbhdRed,
+              Icons.palette_outlined,
+              size: 18.sp,
+              color: const Color(0xFF007AFF),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Theme',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white : Colors.black,
+                    fontFamily: 'Montserrat',
+                  ),
+                ),
+                Text(
+                  _getThemeDisplayName(themeProvider.themeMode),
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6D6D70),
+                    fontFamily: 'Montserrat',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.chevron_right,
+            color: isDark ? const Color(0xFF8E8E93) : const Color(0xFFC7C7CC),
+            size: 20.sp,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSwitchTile({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required bool isDark,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? const Color(0xFF38383A) : const Color(0xFFE5E5EA),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white : Colors.black,
+                    fontFamily: 'Montserrat',
                   ),
                 ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle!,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppTheme.mkbhdLightGrey,
-                    ),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6D6D70),
+                    fontFamily: 'Montserrat',
                   ),
-                ],
+                ),
               ],
             ),
           ),
-          Switch(
+          Switch.adaptive(
             value: value,
             onChanged: onChanged,
-            activeColor: AppTheme.mkbhdRed,
+            activeColor: const Color(0xFF34C759),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildActionTile({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required VoidCallback? onTap,
+    required bool isDark,
+    bool showArrow = true,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: isDark ? const Color(0xFF38383A) : const Color(0xFFE5E5EA),
+              width: 0.5,
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 28.w,
+              height: 28.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFF007AFF).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(6.r),
+              ),
+              child: Icon(
+                icon,
+                size: 18.sp,
+                color: const Color(0xFF007AFF),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.white : Colors.black,
+                      fontFamily: 'Montserrat',
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6D6D70),
+                      fontFamily: 'Montserrat',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (showArrow)
+              Icon(
+                Icons.chevron_right,
+                color: isDark ? const Color(0xFF8E8E93) : const Color(0xFFC7C7CC),
+                size: 20.sp,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignOutButton(bool isDark) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12.r),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12.r),
+          onTap: () => _showSignOutDialog(context, isDark),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.logout,
+                  color: const Color(0xFFFF3B30),
+                  size: 20.sp,
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  'Sign Out',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFFFF3B30),
+                    fontFamily: 'Montserrat',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getThemeDisplayName(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return 'Light';
+      case ThemeMode.dark:
+        return 'Dark';
+      case ThemeMode.system:
+        return 'System';
+    }
+  }
+
+  void _showComingSoon(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'This feature is coming soon!',
+          style: TextStyle(fontFamily: 'Montserrat'),
+        ),
+        backgroundColor: const Color(0xFF007AFF),
+      ),
+    );
+  }
+
+  void _showSignOutDialog(BuildContext context, bool isDark) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14.r),
+          ),
+          title: Text(
+            'Sign Out',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white : Colors.black,
+              fontFamily: 'Montserrat',
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to sign out?',
+            style: TextStyle(
+              fontSize: 16.sp,
+              color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6D6D70),
+              fontFamily: 'Montserrat',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  color: const Color(0xFF007AFF),
+                  fontFamily: 'Montserrat',
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // TODO: Implement sign out logic
+                _showComingSoon(context);
+              },
+              child: Text(
+                'Sign Out',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFFFF3B30),
+                  fontFamily: 'Montserrat',
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

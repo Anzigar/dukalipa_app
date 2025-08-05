@@ -18,6 +18,7 @@ import 'presentation/features/auth/repositories/auth_repository.dart';
 import 'presentation/features/notifications/repositories/notification_repository.dart';
 import 'presentation/features/inventory/repositories/inventory_repository.dart';
 import 'presentation/features/inventory/providers/inventory_provider.dart';
+import 'presentation/features/sales/providers/sales_provider.dart';
 // Add debug configuration
 import 'core/utils/semantic_tree_protection.dart'; // Add semantic tree protection
 import 'presentation/features/home/repositories/analytics_repository.dart';
@@ -25,6 +26,7 @@ import 'presentation/features/home/providers/analytics_provider.dart';
 import 'presentation/features/damaged/providers/damaged_products_provider.dart';
 import 'presentation/features/returns/providers/returns_provider.dart';
 import 'presentation/features/expenses/providers/expenses_provider.dart';
+import 'presentation/features/home/providers/recent_activity_provider.dart';
 
 // Add Airbnb color constant
 const Color airbnbRed = AppTheme.mkbhdLightRed;
@@ -112,6 +114,10 @@ class MyApp extends StatelessWidget {
             ChangeNotifierProvider(
               create: (_) => InventoryProvider(locator<InventoryRepository>()),
             ),
+            // Add sales provider
+            ChangeNotifierProvider(
+              create: (_) => SalesProvider(),
+            ),
             // Add analytics provider
             ChangeNotifierProvider(
               create: (_) => AnalyticsProvider(locator<AnalyticsRepository>()),
@@ -127,6 +133,10 @@ class MyApp extends StatelessWidget {
             // Add expenses provider
             ChangeNotifierProvider(
               create: (_) => locator<ExpensesProvider>(),
+            ),
+            // Add recent activity provider
+            ChangeNotifierProvider(
+              create: (_) => locator<RecentActivityProvider>(),
             ),
           ],
           child: Consumer2<ThemeProvider, LanguageProvider>(

@@ -39,6 +39,13 @@ class AuthInterceptor extends Interceptor {
     
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
+    } else {
+      // For development: Add a placeholder token or skip auth for certain endpoints
+      if (kDebugMode) {
+        // You can add a development token here if you have one
+        // options.headers['Authorization'] = 'Bearer your-dev-token-here';
+        print('Warning: No auth token found. API calls may fail with 401.');
+      }
     }
     
     return super.onRequest(options, handler);

@@ -23,9 +23,11 @@ import '../../data/services/returns_service.dart';
 import '../../data/services/deleted_sales_service.dart';
 import '../../data/services/damaged_products_service.dart';
 import '../../data/services/expenses_service.dart';
+import '../../data/services/recent_activity_service.dart';
 import '../../presentation/features/damaged/providers/damaged_products_provider.dart';
 import '../../presentation/features/returns/providers/returns_provider.dart';
 import '../../presentation/features/expenses/providers/expenses_provider.dart';
+import '../../presentation/features/home/providers/recent_activity_provider.dart';
 
 final GetIt locator = GetIt.instance;
 
@@ -97,6 +99,10 @@ Future<void> setupServiceLocator() async {
     () => ExpensesService()
   );
   
+  locator.registerLazySingleton<RecentActivityService>(
+    () => RecentActivityService()
+  );
+  
   // Repositories
   locator.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(locator<LocalStorageService>())
@@ -139,5 +145,9 @@ Future<void> setupServiceLocator() async {
 
   locator.registerLazySingleton<ExpensesProvider>(
     () => ExpensesProvider(locator<ExpensesService>())
+  );
+
+  locator.registerLazySingleton<RecentActivityProvider>(
+    () => RecentActivityProvider(locator<RecentActivityService>())
   );
 }

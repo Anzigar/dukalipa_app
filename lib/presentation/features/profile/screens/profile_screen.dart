@@ -8,7 +8,6 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../viewmodels/profile_viewmodel.dart';
 import '../widgets/profile_header.dart';
-import '../widgets/profile_section_widgets.dart';
 import '../../../common/widgets/shimmer_loading.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -96,16 +95,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-
-  void _navigateToRoute(String route) {
-    try {
-      context.push(route);
-    } catch (e) {
-      // If route doesn't exist, show coming soon dialog
-      final featureName = route.split('/').last.replaceAll('-', ' ').toLowerCase();
-      _showComingSoonDialog(featureName.isNotEmpty ? featureName : 'This feature');
-    }
-  }
   
   @override
   Widget build(BuildContext context) {
@@ -118,12 +107,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final profile = viewModel.userProfile;
           
           return Scaffold(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            backgroundColor: Theme.of(context).brightness == Brightness.dark 
+                ? const Color(0xFF000000)
+                : const Color(0xFFF2F2F7),
             appBar: AppBar(
               title: const Text('Profile'),
               elevation: 0,
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              backgroundColor: Colors.transparent,
               foregroundColor: Theme.of(context).colorScheme.onSurface,
+              shadowColor: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
               systemOverlayStyle: Theme.of(context).brightness == Brightness.dark
                   ? SystemUiOverlayStyle.light
                   : SystemUiOverlayStyle.dark,
@@ -133,200 +126,261 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 : RefreshIndicator(
                     onRefresh: _loadUserProfile,
                     color: Theme.of(context).colorScheme.primary,
-                    child: CustomScrollView(
-                      slivers: [
-                        // Profile header
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: ProfileHeader(viewModel: viewModel, profile: profile),
-                          ),
-                        ),
-                        
-                        // Shop information
-                        if (profile?.shopName != null) ...[
-                          const SliverToBoxAdapter(
-                            child: Padding(
-                              padding:  EdgeInsets.fromLTRB(16, 16, 16, 8),
-                              child:  SectionHeader(title: 'Shop Information'),
-                            ),
-                          ),
-                          SliverToBoxAdapter(
-                            child: Container(
-                              margin: EdgeInsets.symmetric(horizontal: 16.w),
-                              padding: EdgeInsets.all(20.w),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).cardColor,
-                                borderRadius: BorderRadius.circular(24.r),
-                                border: Border.all(
-                                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                                  width: 1,
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        // iOS-style Profile Header Section
+                        Container(
+                          color: Theme.of(context).colorScheme.surface,
+                          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+                          child: Row(
+                            children: [
+                              // Profile Avatar
+                              Container(
+                                width: 60.w,
+                                height: 60.w,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                ),
+                                child: Icon(
+                                  Icons.person,
+                                  size: 30.sp,
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
                               ),
-                              child: Column(
-                                children: [
-                                  ProfileListTile(
-                                    icon: Icons.store_outlined,
-                                    title: 'Shop Name',
-                                    value: profile!.shopName!,
-                                  ),
-                                  if (profile.shopAddress != null)
-                                    ProfileListTile(
-                                      icon: Icons.location_on_outlined,
-                                      title: 'Address',
-                                      value: profile.shopAddress!,
+                              SizedBox(width: 16.w),
+                              // Profile Info
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      profile?.name ?? 'User Name',
+                                      style: TextStyle(
+                                        fontSize: 20.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: Theme.of(context).colorScheme.onSurface,
+                                      ),
                                     ),
-                                  if (profile.shopPhone != null)
-                                    ProfileListTile(
-                                      icon: Icons.phone_outlined,
-                                      title: 'Shop Phone',
-                                      value: profile.shopPhone!,
+                                    SizedBox(height: 2.h),
+                                    Text(
+                                      profile?.email ?? 'user@email.com',
+                                      style: TextStyle(
+                                        fontSize: 14.sp,
+                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                      ),
                                     ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          ),
-                        ],
-                        
-                        // Business Management Section
-                        const SliverToBoxAdapter(
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(16, 32, 16, 12),
-                            child: SectionHeader(title: 'Business Management'),
+                              // Edit arrow
+                              Icon(
+                                Icons.chevron_right,
+                                size: 20.sp,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                              ),
+                            ],
                           ),
                         ),
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          sliver: SliverGrid(
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 16,
-                              crossAxisSpacing: 16,
-                              childAspectRatio: 1.3,
+                        SizedBox(height: 20.h),
+
+                        // Business Information Section
+                        if (profile?.shopName != null) ...[
+                          _IOSSectionHeader(title: 'BUSINESS'),
+                          Container(
+                            margin: EdgeInsets.symmetric(horizontal: 16.w),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface,
+                              borderRadius: BorderRadius.circular(12.r),
                             ),
-                            delegate: SliverChildListDelegate([
-                              _GridActionTile(
-                                icon: Icons.business_center,
+                            child: Column(
+                              children: [
+                                _IOSListTile(
+                                  icon: Icons.store_outlined,
+                                  title: 'Shop Name',
+                                  subtitle: profile!.shopName!,
+                                  isFirst: true,
+                                  isLast: profile.shopAddress == null && profile.shopPhone == null,
+                                ),
+                                if (profile.shopAddress != null)
+                                  _IOSListTile(
+                                    icon: Icons.location_on_outlined,
+                                    title: 'Address',
+                                    subtitle: profile.shopAddress!,
+                                    isFirst: false,
+                                    isLast: profile.shopPhone == null,
+                                  ),
+                                if (profile.shopPhone != null)
+                                  _IOSListTile(
+                                    icon: Icons.phone_outlined,
+                                    title: 'Phone',
+                                    subtitle: profile.shopPhone!,
+                                    isFirst: false,
+                                    isLast: true,
+                                  ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 30.h),
+                        ],
+
+                        // Business Management Section
+                        _IOSSectionHeader(title: 'BUSINESS MANAGEMENT'),
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 16.w),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: Column(
+                            children: [
+                              _IOSActionTile(
+                                icon: Icons.business_center_outlined,
+                                iconColor: Theme.of(context).colorScheme.primary,
                                 title: 'Business Hub',
+                                isFirst: true,
+                                isLast: false,
                                 onTap: () {
                                   debugPrint('🔍 Tapping Business Hub');
                                   context.push('/business/hub');
                                 },
                               ),
-                              _GridActionTile(
+                              _IOSActionTile(
                                 icon: Icons.analytics_outlined,
+                                iconColor: Theme.of(context).colorScheme.primary,
                                 title: 'Analytics',
+                                isFirst: false,
+                                isLast: false,
                                 onTap: () {
                                   debugPrint('🔍 Tapping Analytics');
                                   context.push('/business/analytics');
                                 },
                               ),
-                              _GridActionTile(
+                              _IOSActionTile(
                                 icon: Icons.inventory_2_outlined,
+                                iconColor: Theme.of(context).colorScheme.primary,
                                 title: 'Storage',
+                                isFirst: false,
+                                isLast: false,
                                 onTap: () {
                                   debugPrint('🔍 Tapping Storage');
                                   context.push('/business/storage');
                                 },
                               ),
-                              _GridActionTile(
+                              _IOSActionTile(
                                 icon: Icons.healing_outlined,
-                                title: 'Damaged',
+                                iconColor: Theme.of(context).colorScheme.primary,
+                                title: 'Damaged Items',
+                                isFirst: false,
+                                isLast: false,
                                 onTap: () {
                                   debugPrint('🔍 Tapping Damaged');
                                   context.push('/business/damaged');
                                 },
                               ),
-                              _GridActionTile(
+                              _IOSActionTile(
                                 icon: Icons.delete_outline,
-                                title: 'Deleted',
+                                iconColor: Theme.of(context).colorScheme.primary,
+                                title: 'Deleted Items',
+                                isFirst: false,
+                                isLast: true,
                                 onTap: () {
                                   debugPrint('🔍 Tapping Deleted');
                                   context.push('/business/deleted');
                                 },
                               ),
-                              _GridActionTile(
-                                icon: Icons.more_horiz,
-                                title: 'More',
-                                onTap: () => _showComingSoonDialog('More Options'),
-                              ),
-                            ]),
+                            ],
                           ),
                         ),
-                        
-                        // Account settings
-                        const SliverToBoxAdapter(
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(16, 32, 16, 12),
-                            child: SectionHeader(title: 'Account Settings'),
+                        SizedBox(height: 30.h),
+
+                        // Account Settings Section
+                        _IOSSectionHeader(title: 'ACCOUNT'),
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 16.w),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(12.r),
                           ),
-                        ),
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          sliver: SliverGrid(
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 16,
-                              crossAxisSpacing: 16,
-                              childAspectRatio: 1.3,
-                            ),
-                            delegate: SliverChildListDelegate([
-                              _GridActionTile(
+                          child: Column(
+                            children: [
+                              _IOSActionTile(
                                 icon: Icons.edit_outlined,
+                                iconColor: Theme.of(context).colorScheme.primary,
                                 title: 'Edit Profile',
+                                isFirst: true,
+                                isLast: false,
                                 onTap: () {
                                   debugPrint('🔍 Tapping Edit Profile');
                                   context.push('/profile/edit');
                                 },
                               ),
-                              _GridActionTile(
+                              _IOSActionTile(
                                 icon: Icons.lock_outline,
-                                title: 'Password',
+                                iconColor: Theme.of(context).colorScheme.primary,
+                                title: 'Change Password',
+                                isFirst: false,
+                                isLast: false,
                                 onTap: () {
                                   debugPrint('🔍 Tapping Change Password');
                                   context.push('/profile/change-password');
                                 },
                               ),
-                              _GridActionTile(
+                              _IOSActionTile(
                                 icon: Icons.settings_outlined,
+                                iconColor: Theme.of(context).colorScheme.primary,
                                 title: l10n.settings,
+                                isFirst: false,
+                                isLast: false,
                                 onTap: () {
                                   debugPrint('🔍 Tapping Settings');
                                   context.push('/settings');
                                 },
                               ),
-                              _GridActionTile(
+                              _IOSActionTile(
                                 icon: Icons.language_outlined,
+                                iconColor: Theme.of(context).colorScheme.primary,
                                 title: l10n.language,
+                                isFirst: false,
+                                isLast: true,
                                 onTap: () {
                                   debugPrint('🔍 Tapping Language');
                                   context.push('/profile/language');
                                 },
                               ),
-                            ]),
+                            ],
                           ),
                         ),
-                        
-                        // App information
-                        const SliverToBoxAdapter(
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(16, 32, 16, 12),
-                            child: SectionHeader(title: 'App Information'),
+                        SizedBox(height: 30.h),
+
+                        // Support Section
+                        _IOSSectionHeader(title: 'SUPPORT'),
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 16.w),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(12.r),
                           ),
-                        ),
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          sliver: SliverGrid(
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 16,
-                              crossAxisSpacing: 16,
-                              childAspectRatio: 1.3,
-                            ),
-                            delegate: SliverChildListDelegate([
-                              _GridActionTile(
+                          child: Column(
+                            children: [
+                              _IOSActionTile(
+                                icon: Icons.help_outline,
+                                iconColor: Theme.of(context).colorScheme.primary,
+                                title: 'Help & Support',
+                                isFirst: true,
+                                isLast: false,
+                                onTap: () {
+                                  debugPrint('🔍 Tapping Help');
+                                  context.push('/profile/help');
+                                },
+                              ),
+                              _IOSActionTile(
                                 icon: Icons.info_outline,
+                                iconColor: Theme.of(context).colorScheme.primary,
                                 title: 'About',
+                                isFirst: false,
+                                isLast: false,
                                 onTap: () {
                                   showAboutDialog(
                                     context: context,
@@ -355,104 +409,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   );
                                 },
                               ),
-                              _GridActionTile(
-                                icon: Icons.help_outline,
-                                title: 'Help',
-                                onTap: () {
-                                  debugPrint('🔍 Tapping Help');
-                                  context.push('/profile/help');
-                                },
-                              ),
-                              _GridActionTile(
+                              _IOSActionTile(
                                 icon: Icons.privacy_tip_outlined,
-                                title: 'Privacy',
+                                iconColor: Theme.of(context).colorScheme.primary,
+                                title: 'Privacy Policy',
+                                isFirst: false,
+                                isLast: false,
                                 onTap: () {
                                   debugPrint('🔍 Tapping Privacy');
                                   context.push('/profile/privacy');
                                 },
                               ),
-                              _GridActionTile(
+                              _IOSActionTile(
                                 icon: Icons.description_outlined,
-                                title: 'Terms',
+                                iconColor: Theme.of(context).colorScheme.primary,
+                                title: 'Terms of Service',
+                                isFirst: false,
+                                isLast: true,
                                 onTap: () {
                                   debugPrint('🔍 Tapping Terms');
                                   context.push('/profile/terms');
                                 },
                               ),
-                            ]),
+                            ],
                           ),
                         ),
-                        
-                        // Logout button and version
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              children: [
-                                SizedBox(height: 24.h),
-                                Container(
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(24.r),
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Theme.of(context).colorScheme.error.withOpacity(0.9),
-                                        Theme.of(context).colorScheme.error,
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                  ),
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: _logout,
-                                      borderRadius: BorderRadius.circular(24),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 24,
-                                          vertical: 18,
-                                        ),
-                                        child: const Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.logout,
-                                              color: Colors.white,
-                                              size: 22,
-                                            ),
-                                            SizedBox(width: 12),
-                                            Text(
-                                              'Logout',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 17,
-                                                fontWeight: FontWeight.w600,
-                                                letterSpacing: 0.5,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 24.h),
-                                Center(
-                                  child: Text(
-                                    'Version 1.0.0',
-                                    style: TextStyle(
-                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                                      fontSize: 13.sp,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 32.h),
-                              ],
+                        SizedBox(height: 30.h),
+
+                        // Sign Out Section
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 16.w),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: _IOSActionTile(
+                            icon: Icons.logout,
+                            iconColor: Colors.red,
+                            title: 'Sign Out',
+                            isFirst: true,
+                            isLast: true,
+                            onTap: _logout,
+                          ),
+                        ),
+                        SizedBox(height: 30.h),
+
+                        // Version Info
+                        Center(
+                          child: Text(
+                            'Version 1.0.0',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
                         ),
+                        SizedBox(height: 30.h),
                       ],
                     ),
                   ),
@@ -463,62 +476,173 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-class _GridActionTile extends StatelessWidget {
+// iOS-style Section Header
+class _IOSSectionHeader extends StatelessWidget {
+  final String title;
+  
+  const _IOSSectionHeader({required this.title});
+  
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 8.h),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 13.sp,
+          fontWeight: FontWeight.w400,
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+          letterSpacing: 0.3,
+        ),
+      ),
+    );
+  }
+}
+
+// iOS-style List Tile for Information Display
+class _IOSListTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final VoidCallback onTap;
+  final String subtitle;
+  final bool isFirst;
+  final bool isLast;
   
-  const _GridActionTile({
+  const _IOSListTile({
     required this.icon,
     required this.title,
-    required this.onTap,
+    required this.subtitle,
+    required this.isFirst,
+    required this.isLast,
   });
   
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-          width: 1,
+        border: Border(
+          bottom: isLast ? BorderSide.none : BorderSide(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+            width: 0.5,
+          ),
         ),
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(24.r),
-          child: Container(
-            padding: EdgeInsets.all(20.w),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        child: Row(
+          children: [
+            Container(
+              width: 28.w,
+              height: 28.w,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(6.r),
+              ),
+              child: Icon(
+                icon,
+                size: 16.sp,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w400,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// iOS-style Action Tile
+class _IOSActionTile extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final bool isFirst;
+  final bool isLast;
+  final VoidCallback onTap;
+  
+  const _IOSActionTile({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.isFirst,
+    required this.isLast,
+    required this.onTap,
+  });
+  
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.vertical(
+          top: isFirst ? Radius.circular(12.r) : Radius.zero,
+          bottom: isLast ? Radius.circular(12.r) : Radius.zero,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: isLast ? BorderSide.none : BorderSide(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                width: 0.5,
+              ),
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            child: Row(
               children: [
                 Container(
-                  padding: EdgeInsets.all(12.w),
+                  width: 28.w,
+                  height: 28.w,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                    shape: BoxShape.circle,
+                    color: iconColor,
+                    borderRadius: BorderRadius.circular(6.r),
                   ),
                   child: Icon(
                     icon,
-                    size: 24.sp,
-                    color: Theme.of(context).colorScheme.primary,
+                    size: 16.sp,
+                    color: Colors.white,
                   ),
                 ),
-                SizedBox(height: 12.h),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    height: 1.2,
-                    color: Theme.of(context).colorScheme.onSurface,
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w400,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  size: 18.sp,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
                 ),
               ],
             ),

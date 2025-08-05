@@ -10,7 +10,9 @@ class PrivacyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark 
+          ? const Color(0xFF000000)
+          : const Color(0xFFF2F2F7),
       appBar: AppBar(
         title: Text(
           'Privacy Policy',
@@ -20,8 +22,10 @@ class PrivacyScreen extends StatelessWidget {
           ),
         ),
         elevation: 0,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: Colors.transparent,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         systemOverlayStyle: Theme.of(context).brightness == Brightness.dark
             ? SystemUiOverlayStyle.light
             : SystemUiOverlayStyle.dark,
@@ -33,94 +37,84 @@ class PrivacyScreen extends StatelessWidget {
           onPressed: () => context.pop(),
         ),
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: EdgeInsets.all(16.w),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
+      body: ListView(
+        padding: EdgeInsets.all(16.w),
+        children: [
+          // Clean Header Section
+          Container(
+            margin: EdgeInsets.only(bottom: 24.h),
+            padding: EdgeInsets.all(24.w),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Column(
+              children: [
                 Container(
-                  padding: EdgeInsets.all(24.w),
+                  padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(24.r),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                      width: 1,
-                    ),
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    shape: BoxShape.circle,
                   ),
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(16.w),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.privacy_tip_outlined,
-                          color: Theme.of(context).colorScheme.primary,
-                          size: 32.sp,
-                        ),
-                      ),
-                      SizedBox(height: 16.h),
-                      Text(
-                        'Your Privacy Matters',
-                        style: TextStyle(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        'Last updated: January 2024',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                        ),
-                      ),
-                    ],
+                  child: Icon(
+                    Icons.privacy_tip_outlined,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 32.sp,
                   ),
                 ),
-                
-                SizedBox(height: 24.h),
-                
-                // Privacy sections
-                _PrivacySection(
-                  title: 'Information We Collect',
-                  content: 'We collect information you provide directly to us, such as when you create an account, add products, or contact us for support. This includes your name, email address, business information, and transaction data.',
+                SizedBox(height: 16.h),
+                Text(
+                  'Your Privacy Matters',
+                  style: TextStyle(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
-                
-                _PrivacySection(
-                  title: 'How We Use Your Information',
-                  content: 'We use the information we collect to provide, maintain, and improve our services, process transactions, send you updates and notifications, and provide customer support.',
+                SizedBox(height: 8.h),
+                Text(
+                  'Last updated: January 2024',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
                 ),
-                
-                _PrivacySection(
-                  title: 'Information Sharing',
-                  content: 'We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this policy or as required by law.',
-                ),
-                
-                _PrivacySection(
-                  title: 'Data Security',
-                  content: 'We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.',
-                ),
-                
-                _PrivacySection(
-                  title: 'Your Rights',
-                  content: 'You have the right to access, update, or delete your personal information. You can also opt out of certain communications from us.',
-                ),
-                
-                _PrivacySection(
-                  title: 'Contact Us',
-                  content: 'If you have any questions about this Privacy Policy, please contact us at privacy@dukalipa.com or through our support channels.',
-                ),
-                
-                const SizedBox(height: 32),
-              ]),
+              ],
             ),
           ),
+          
+          // Privacy sections
+          _PrivacySection(
+            title: 'Information We Collect',
+            content: 'We collect information you provide directly to us, such as when you create an account, add products, or contact us for support. This includes your name, email address, business information, and transaction data.',
+          ),
+          
+          _PrivacySection(
+            title: 'How We Use Your Information',
+            content: 'We use the information we collect to provide, maintain, and improve our services, process transactions, send you updates and notifications, and provide customer support.',
+          ),
+          
+          _PrivacySection(
+            title: 'Information Sharing',
+            content: 'We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this policy or as required by law.',
+          ),
+          
+          _PrivacySection(
+            title: 'Data Security',
+            content: 'We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.',
+          ),
+          
+          _PrivacySection(
+            title: 'Your Rights',
+            content: 'You have the right to access, update, or delete your personal information. You can also opt out of certain communications from us.',
+          ),
+          
+          _PrivacySection(
+            title: 'Contact Us',
+            content: 'If you have any questions about this Privacy Policy, please contact us at privacy@dukalipa.com or through our support channels.',
+          ),
+          
+          const SizedBox(height: 32),
         ],
       ),
     );
@@ -140,14 +134,10 @@ class _PrivacySection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
-      padding: EdgeInsets.all(24.w),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-          width: 1,
-        ),
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
