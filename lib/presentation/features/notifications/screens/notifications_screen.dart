@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/providers/notification_provider.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../models/notification_model.dart';
-import '../../../common/widgets/empty_state.dart';
 import '../../../common/widgets/shimmer_loading.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -33,8 +34,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final notifications = notificationProvider.notifications;
     
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text(l10n.notifications),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
         actions: [
           if (notifications.isNotEmpty && notifications.any((n) => !n.isRead))
             IconButton(
@@ -60,36 +65,165 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     
     if (provider.error != null) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              l10n.noNotifications,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              provider.error!,
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => provider.fetchNotifications(),
-              child: Text(l10n.retry),
-            ),
-          ],
+        child: Padding(
+          padding: EdgeInsets.all(32.w),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 200.w,
+                height: 200.w,
+                child: Lottie.asset(
+                  'assets/animations/Notification_bell.json',
+                  width: 200.w,
+                  height: 200.w,
+                  fit: BoxFit.contain,
+                  repeat: true,
+                  animate: true,
+                  errorBuilder: (context, error, stackTrace) {
+                    print('Lottie loading error: $error');
+                    return Container(
+                      width: 200.w,
+                      height: 200.w,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20.r),
+                      ),
+                      child: Icon(
+                        Icons.notifications_outlined,
+                        size: 100.sp,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: 24.h),
+              Text(
+                l10n.noNotifications,
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'Unable to load notifications.\nPlease check your connection and try again.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  fontWeight: FontWeight.w500,
+                  height: 1.4,
+                ),
+              ),
+              SizedBox(height: 32.h),
+              ElevatedButton.icon(
+                onPressed: () => provider.fetchNotifications(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 24.w),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  elevation: 0,
+                ),
+                icon: Icon(Icons.refresh_rounded, size: 18.sp),
+                label: Text(
+                  l10n.retry,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.sp,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
     
     if (provider.notifications.isEmpty) {
-      return EmptyState(
-        icon: Icons.notifications_none,
-        title: l10n.noNotifications,
-        message: 'You don\'t have any notifications yet',
-        buttonText: l10n.refresh,
-        onButtonPressed: () => provider.fetchNotifications(),
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.w),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 200.w,
+                height: 200.w,
+                child: Lottie.asset(
+                  'assets/animations/Notification_bell.json',
+                  width: 200.w,
+                  height: 200.w,
+                  fit: BoxFit.contain,
+                  repeat: true,
+                  animate: true,
+                  errorBuilder: (context, error, stackTrace) {
+                    print('Lottie loading error: $error');
+                    return Container(
+                      width: 200.w,
+                      height: 200.w,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20.r),
+                      ),
+                      child: Icon(
+                        Icons.notifications_outlined,
+                        size: 100.sp,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: 24.h),
+              Text(
+                l10n.noNotifications,
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'You don\'t have any notifications yet.\nWe\'ll notify you when something happens.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  fontWeight: FontWeight.w500,
+                  height: 1.4,
+                ),
+              ),
+              SizedBox(height: 32.h),
+              ElevatedButton.icon(
+                onPressed: () => provider.fetchNotifications(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 24.w),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  elevation: 0,
+                ),
+                icon: Icon(Icons.refresh_rounded, size: 18.sp),
+                label: Text(
+                  l10n.refresh,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.sp,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
     

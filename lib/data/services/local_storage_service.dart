@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/utils/app_constants.dart';
-import '../../presentation/features/profile/models/user_profile.dart';
+import '../models/user_profile.dart';
 
 abstract class LocalStorageService {
   Future<String?> getToken();

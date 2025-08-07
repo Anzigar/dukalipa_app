@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dukalipa_app/core/theme/app_theme.dart';
@@ -60,9 +61,13 @@ class _BarcodeHistoryScreenState extends State<BarcodeHistoryScreen> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/barcode-scanner'),
-        backgroundColor: AppTheme.mkbhdRed, // Meta blue
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         icon: const Icon(LucideIcons.scan),
         label: const Text('Scan New'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
       ),
     );
   }
@@ -195,7 +200,12 @@ class _BarcodeHistoryScreenState extends State<BarcodeHistoryScreen> {
                       context.push('/inventory/search?barcode=${item.barcode}');
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.mkbhdRed, // Meta blue
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
                     ),
                     child: const Text('Search Product'),
                   ),

@@ -911,7 +911,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       onPressed: () => _showIOSQuickActionsMenu(context),
       backgroundColor: Theme.of(context).colorScheme.primary,
       foregroundColor: Theme.of(context).colorScheme.onPrimary,
-      elevation: 2,
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16.r),
       ),

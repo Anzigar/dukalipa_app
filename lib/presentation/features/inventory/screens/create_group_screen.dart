@@ -93,7 +93,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           content: const Text('Please select at least one category'),
           backgroundColor: Theme.of(context).colorScheme.error,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         ),
       );
       return;
@@ -126,7 +126,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             content: Text('${widget.group != null ? 'Updated' : 'Created'} group successfully'),
             backgroundColor: Theme.of(context).colorScheme.primary,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
           ),
         );
         Navigator.of(context).pop(savedGroup);
@@ -138,7 +138,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             content: Text('Failed to ${widget.group != null ? 'update' : 'create'} group: ${e.toString()}'),
             backgroundColor: Theme.of(context).colorScheme.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
           ),
         );
       }

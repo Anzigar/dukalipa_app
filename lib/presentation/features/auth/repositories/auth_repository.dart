@@ -1,7 +1,7 @@
 
 import 'package:dio/dio.dart';
 import '../../../../data/services/local_storage_service.dart';
-import '../../profile/models/user_profile.dart';
+import '../../../../data/models/user_profile.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRepository {
@@ -143,8 +143,8 @@ class AuthRepositoryImpl implements AuthRepository {
       email: model.email,
       phone: model.phoneNumber,
       shopName: model.shopName,
-      avatarUrl: model.profileImage,
       createdAt: DateTime.now(), // Since we don't have this in UserModel
+      updatedAt: DateTime.now(), // Since we don't have this in UserModel
     );
   }
   

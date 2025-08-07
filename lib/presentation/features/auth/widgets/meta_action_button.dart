@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/dukalipa_colors.dart';
 
 class MetaActionButton extends StatelessWidget {
   final String text;
@@ -20,11 +19,12 @@ class MetaActionButton extends StatelessWidget {
       icon: Icon(icon, size: 18),
       label: Text(text),
       style: TextButton.styleFrom(
-        foregroundColor: AirbnbColors.primary,
+        foregroundColor: Theme.of(context).colorScheme.primary,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(50),
         ),
+        elevation: 0,
         textStyle: const TextStyle(fontWeight: FontWeight.bold),
       ),
     );

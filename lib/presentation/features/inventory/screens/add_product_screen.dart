@@ -1021,6 +1021,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _isLoading ? null : _saveProduct,
         backgroundColor: Theme.of(context).colorScheme.primary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
         icon: _isLoading
             ? SizedBox(
                 width: 20,
@@ -2012,6 +2015,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       minimumSize: Size.zero,
+                      elevation: 0,
                     ),
                   ),
                 ],

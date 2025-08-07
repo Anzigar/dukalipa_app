@@ -347,7 +347,12 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AirbnbColors.primary,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
             child: const Text('Search'),
           ),

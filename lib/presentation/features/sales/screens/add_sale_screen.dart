@@ -704,8 +704,15 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.mkbhdRed),
-            child: Text('Confirm Sale', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: Text('Confirm Sale'),
           ),
         ],
       ),
@@ -753,7 +760,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
         content: Text(message),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }
@@ -764,7 +771,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
         content: Text(message),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         duration: const Duration(seconds: 4),
       ),
     );
@@ -807,8 +814,15 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
                 }
               });
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.mkbhdRed),
-            child: Text('Print Receipt', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: Text('Print Receipt'),
           ),
         ],
       ),
@@ -893,12 +907,19 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
                   content: Text('Receipt copied to clipboard again!'),
                   backgroundColor: Colors.green,
                   behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.mkbhdRed),
-            child: Text('Copy Again', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: Text('Copy Again'),
           ),
         ],
       ),
@@ -1277,10 +1298,12 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
               child: FilledButton(
                 onPressed: _currentStep == 2 ? _completeSale : _nextStep,
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.mkbhdRed,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  elevation: 0,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
                 child: Row(
@@ -2941,9 +2964,11 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                           });
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.mkbhdRed,
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                          elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                         child: Text('Exact', style: TextStyle(color: Colors.white, fontSize: 12)),
                       ),

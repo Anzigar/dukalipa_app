@@ -7,7 +7,6 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../viewmodels/profile_viewmodel.dart';
-import '../widgets/profile_header.dart';
 import '../../../common/widgets/shimmer_loading.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -76,26 +75,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
   
-  void _showComingSoonDialog(String feature) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Coming Soon'),
-        content: Text('$feature feature is under development and will be available in a future update.'),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'OK',
-              style: TextStyle(color: Theme.of(context).colorScheme.primary),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -141,12 +120,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 height: 60.w,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
                                 ),
                                 child: Icon(
                                   Icons.person,
                                   size: 30.sp,
-                                  color: Theme.of(context).colorScheme.primary,
+                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
                                 ),
                               ),
                               SizedBox(width: 16.w),
@@ -390,12 +369,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       width: 50,
                                       height: 50,
                                       decoration: BoxDecoration(
-                                        color: AppTheme.mkbhdRed,
-                                        borderRadius: BorderRadius.circular(16),
+                                        color: AppTheme.mkbhdRed.withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(25),
                                       ),
-                                      child: const Icon(
+                                      child: Icon(
                                         Icons.shopping_cart,
-                                        color: Colors.white,
+                                        color: AppTheme.mkbhdRed.withOpacity(0.8),
                                       ),
                                     ),
                                     children: const [
@@ -534,13 +513,13 @@ class _IOSListTile extends StatelessWidget {
               width: 28.w,
               height: 28.w,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(6.r),
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(14.r),
               ),
               child: Icon(
                 icon,
                 size: 16.sp,
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
               ),
             ),
             SizedBox(width: 12.w),
@@ -619,13 +598,13 @@ class _IOSActionTile extends StatelessWidget {
                   width: 28.w,
                   height: 28.w,
                   decoration: BoxDecoration(
-                    color: iconColor,
-                    borderRadius: BorderRadius.circular(6.r),
+                    color: iconColor.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(14.r),
                   ),
                   child: Icon(
                     icon,
                     size: 16.sp,
-                    color: Colors.white,
+                    color: iconColor.withOpacity(0.8),
                   ),
                 ),
                 SizedBox(width: 12.w),

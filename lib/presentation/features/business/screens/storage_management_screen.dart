@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../data/services/inventory_service.dart';
@@ -321,8 +322,12 @@ class _StorageManagementScreenState extends State<StorageManagementScreen> with 
             icon: const Icon(Icons.refresh_rounded),
             label: const Text('Refresh'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.mkbhdRed,
-              foregroundColor: Colors.white,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.r),
+              ),
             ),
           ),
         ],
@@ -1045,8 +1050,12 @@ class _StorageManagementScreenState extends State<StorageManagementScreen> with 
               // Navigate to detailed view or edit
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.mkbhdRed,
-              foregroundColor: Colors.white,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.r),
+              ),
             ),
             child: const Text('Manage'),
           ),

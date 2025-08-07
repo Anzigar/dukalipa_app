@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -370,12 +371,14 @@ class _ReturnsScreenState extends State<ReturnsScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppTheme.mkbhdRed,
-        foregroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         onPressed: () => context.push('/returns/add'),
         icon: const Icon(LucideIcons.plus),
-        // Use a string literal instead of accessing non-existent property
         label: const Text('Process Return'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
       ),
     );
   }
@@ -412,8 +415,12 @@ class _ReturnsScreenState extends State<ReturnsScreen> {
               ElevatedButton(
                 onPressed: _fetchReturns,
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: AppTheme.mkbhdRed,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
                 ),
                 // Use a string literal or try to access a valid property with fallback
                 child: Text(l10n?.retry ?? 'Retry'),

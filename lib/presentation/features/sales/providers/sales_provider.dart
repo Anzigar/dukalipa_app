@@ -409,6 +409,11 @@ class SalesProvider extends ChangeNotifier {
     _errorMessage = null;
   }
 
+  void clearError() {
+    _clearError();
+    notifyListeners();
+  }
+
   void clearSales() {
     _sales.clear();
     _returns.clear();

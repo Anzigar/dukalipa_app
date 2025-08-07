@@ -29,7 +29,7 @@ class CustomButton extends StatefulWidget {
     this.icon,
     this.backgroundColor,
     this.textColor,
-    this.borderRadius = 16.0, // Increased from 8.0 to 16.0
+    this.borderRadius = 50.0, // Increased to 50.0 for fully rounded button appearance
     this.fullWidth = true,
     this.padding,
     this.foregroundColor,
@@ -80,19 +80,20 @@ class _CustomButtonState extends State<CustomButton>
 
   @override
   Widget build(BuildContext context) {
-    // Define a consistent color scheme based on AppTheme
-    const Color airbnbRed = AppTheme.mkbhdRed;
+    // Use theme colors for better consistency
+    final colorScheme = Theme.of(context).colorScheme;
+    final defaultPrimaryColor = colorScheme.primary;
 
     // Determine effective colors based on provided props or defaults
     final defaultBackgroundColor =
-        widget.isOutlined ? Colors.transparent : airbnbRed;
+        widget.isOutlined ? Colors.transparent : defaultPrimaryColor;
     final defaultTextColor =
-        widget.isOutlined ? airbnbRed : Colors.white;
+        widget.isOutlined ? defaultPrimaryColor : colorScheme.onPrimary;
 
     // Use the most specific color provided, falling back to defaults
     final effectiveTextColor =
         widget.textColor ?? widget.foregroundColor ?? defaultTextColor;
-    final effectiveBorderColor = widget.borderColor ?? airbnbRed;
+    final effectiveBorderColor = widget.borderColor ?? defaultPrimaryColor;
     final effectiveBackgroundColor =
         widget.backgroundColor ?? defaultBackgroundColor;
 
@@ -130,15 +131,7 @@ class _CustomButtonState extends State<CustomButton>
                       border: widget.isOutlined
                           ? Border.all(color: effectiveBorderColor, width: 1.5)
                           : null,
-                      boxShadow: !widget.isOutlined
-                          ? [
-                              BoxShadow(
-                                color: airbnbRed.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ]
-                          : null,
+                      // Removed boxShadow for flat design consistency
                     ),
                     child: Padding(
                       padding: widget.padding ??

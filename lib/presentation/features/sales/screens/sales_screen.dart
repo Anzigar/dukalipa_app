@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/providers/theme_provider.dart';
 import '../providers/sales_provider.dart';
 import '../models/sale_model.dart';
 
@@ -23,8 +22,21 @@ class _SalesScreenState extends State<SalesScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<SalesProvider>().loadSales();
+      _loadSalesData();
     });
+  }
+
+  Future<void> _loadSalesData() async {
+    try {
+      await context.read<SalesProvider>().loadSales();
+    } catch (e) {
+      // Handle network errors gracefully
+      if (mounted) {
+        final provider = context.read<SalesProvider>();
+        // Clear error so we show empty state instead of error state
+        provider.clearError();
+      }
+    }
   }
 
   @override
@@ -53,157 +65,291 @@ class _SalesScreenState extends State<SalesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDark = themeProvider.themeMode == ThemeMode.dark ||
-        (themeProvider.themeMode == ThemeMode.system &&
-            MediaQuery.of(context).platformBrightness == Brightness.dark);
+    final colorScheme = Theme.of(context).colorScheme;
     
-    return Scaffold(
-      backgroundColor: isDark ? Colors.grey[900] : Colors.grey[100],
-      appBar: AppBar(
-        title: const Text(
-          'Sales',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: isDark ? Colors.grey[850] : Colors.white,
-        elevation: 0,
-        foregroundColor: isDark ? Colors.white : Colors.black,
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(100.h),
-          child: Column(
-            children: [
-              _buildSearchBar(isDark),
-              _buildFilterChips(isDark),
-              SizedBox(height: 10.h),
-            ],
+    return Consumer<SalesProvider>(
+      builder: (context, salesProvider, child) {
+        final hasSales = salesProvider.sales.isNotEmpty;
+        
+        return Scaffold(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          appBar: AppBar(
+            title: Text(
+              'Sales',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            elevation: 0,
+            surfaceTintColor: Colors.transparent,
+            foregroundColor: colorScheme.onSurface,
+            // Only show search and filter when there are sales
+            bottom: hasSales ? PreferredSize(
+              preferredSize: Size.fromHeight(100.h),
+              child: Column(
+                children: [
+                  _buildSearchBar(),
+                  _buildFilterChips(),
+                  SizedBox(height: 10.h),
+                ],
+              ),
+            ) : null,
           ),
-        ),
-      ),
-      body: Consumer<SalesProvider>(
-        builder: (context, salesProvider, child) {
-          if (salesProvider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (salesProvider.errorMessage != null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error, size: 64, color: Colors.red),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'Error: ${salesProvider.errorMessage}',
-                    style: TextStyle(fontSize: 16.sp),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 16.h),
-                  ElevatedButton(
-                    onPressed: () => salesProvider.loadSales(),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final filteredSales = _getFilteredSales(salesProvider.sales);
-
-          if (filteredSales.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.receipt_long,
-                    size: 64,
-                    color: Colors.grey[400],
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'No sales found',
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: EdgeInsets.all(16.w),
-            itemCount: filteredSales.length,
-            itemBuilder: (context, index) {
-              final sale = filteredSales[index];
-              return _buildSaleCard(sale, isDark);
-            },
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.push('/sales/add');
-        },
-        child: const Icon(Icons.add),
-      ),
+          body: _buildBody(salesProvider),
+          floatingActionButton: _buildFloatingActionButton(salesProvider),
+        );
+      },
     );
   }
 
-  Widget _buildSearchBar(bool isDark) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.grey[800] : Colors.white,
-        borderRadius: BorderRadius.circular(8.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+  Widget _buildBody(SalesProvider salesProvider) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    if (salesProvider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final filteredSales = _getFilteredSales(salesProvider.sales);
+
+    // Show empty state if no sales, even if there's an error
+    if (filteredSales.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.w),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 80.w,
+                height: 80.w,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.receipt_long_rounded,
+                  size: 40.sp,
+                  color: colorScheme.primary,
+                ),
+              ),
+              SizedBox(height: 24.h),
+              Text(
+                'Start your sales',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'Record your first sale to get started with sales management.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: colorScheme.onSurface.withOpacity(0.6),
+                  fontWeight: FontWeight.w500,
+                  height: 1.4,
+                ),
+              ),
+              SizedBox(height: 32.h),
+              ElevatedButton.icon(
+                onPressed: () => context.push('/sales/add'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 24.w),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  elevation: 0,
+                ),
+                icon: Icon(Icons.add_rounded, size: 18.sp),
+                label: Text(
+                  'Add Sale',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.sp,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
+      );
+    }
+
+    // Only show error state if there are sales but there's an error
+    if (salesProvider.errorMessage != null && salesProvider.sales.isNotEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80.w,
+              height: 80.w,
+              decoration: BoxDecoration(
+                color: colorScheme.error.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              child: Icon(
+                Icons.error_outline_rounded,
+                size: 40.sp,
+                color: colorScheme.error,
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'Error: ${salesProvider.errorMessage}',
+              style: TextStyle(
+                fontSize: 16.sp,
+                color: colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 16.h),
+            ElevatedButton(
+              onPressed: () => _loadSalesData(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorScheme.primary,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 24.w),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                elevation: 0,
+              ),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
+      itemCount: filteredSales.length,
+      itemBuilder: (context, index) {
+        final sale = filteredSales[index];
+        return _buildSaleCard(sale);
+      },
+    );
+  }
+
+  Widget _buildFloatingActionButton(SalesProvider salesProvider) {
+    final filteredSales = _getFilteredSales(salesProvider.sales);
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return !salesProvider.isLoading && 
+           filteredSales.isNotEmpty
+        ? FloatingActionButton(
+            onPressed: () {
+              context.push('/sales/add');
+            },
+            backgroundColor: colorScheme.primary,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            mini: true,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Icon(Icons.add_rounded, size: 20.sp),
+          )
+        : const SizedBox.shrink();
+  }
+
+  Widget _buildSearchBar() {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(
+          color: colorScheme.outline.withOpacity(0.2),
+          width: 1,
+        ),
       ),
       child: TextField(
         controller: _searchController,
         onChanged: (value) => setState(() {}),
+        style: TextStyle(
+          fontSize: 16.sp,
+          fontWeight: FontWeight.w500,
+          color: colorScheme.onSurface,
+        ),
         decoration: InputDecoration(
           hintText: 'Search sales...',
-          prefixIcon: const Icon(Icons.search),
+          hintStyle: TextStyle(
+            color: colorScheme.onSurface.withOpacity(0.6),
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w500,
+          ),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            color: colorScheme.onSurface.withOpacity(0.6),
+            size: 20.sp,
+          ),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 16.w,
+            vertical: 14.h,
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildFilterChips(bool isDark) {
+  Widget _buildFilterChips() {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Container(
       height: 40.h,
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      margin: EdgeInsets.only(bottom: 16.h),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: 24.w),
         itemCount: _filterOptions.length,
         itemBuilder: (context, index) {
           final option = _filterOptions[index];
           final isSelected = _selectedFilter == option;
           
-          return Container(
-            margin: EdgeInsets.only(right: 8.w),
-            child: FilterChip(
-              label: Text(option),
-              selected: isSelected,
-              onSelected: (selected) {
+          return Padding(
+            padding: EdgeInsets.only(right: 12.w),
+            child: GestureDetector(
+              onTap: () {
                 setState(() {
                   _selectedFilter = option;
                 });
               },
-              backgroundColor: isDark ? Colors.grey[800] : Colors.white,
-              selectedColor: Colors.blue,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : (isDark ? Colors.white : Colors.black),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: isSelected 
+                      ? colorScheme.primary
+                      : colorScheme.surface,
+                  borderRadius: BorderRadius.circular(20.r),
+                  border: isSelected 
+                      ? null 
+                      : Border.all(
+                          color: colorScheme.outline.withOpacity(0.3),
+                          width: 1,
+                        ),
+                ),
+                child: Text(
+                  option,
+                  style: TextStyle(
+                    color: isSelected 
+                        ? Colors.white
+                        : colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.sp,
+                  ),
+                ),
               ),
             ),
           );
@@ -212,20 +358,28 @@ class _SalesScreenState extends State<SalesScreen> {
     );
   }
 
-  Widget _buildSaleCard(SaleModel sale, bool isDark) {
+  Widget _buildSaleCard(SaleModel sale) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Card(
       margin: EdgeInsets.only(bottom: 12.h),
-      color: isDark ? Colors.grey[800] : Colors.white,
-      elevation: 2,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      color: colorScheme.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(16.r),
+        side: BorderSide(
+          color: colorScheme.outlineVariant.withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: InkWell(
         onTap: () {
           context.push('/sales/${sale.id}');
         },
-        borderRadius: BorderRadius.circular(8.r),
-        child: Padding(
+        borderRadius: BorderRadius.circular(16.r),
+        child: Container(
           padding: EdgeInsets.all(16.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,7 +392,7 @@ class _SalesScreenState extends State<SalesScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16.sp,
-                      color: isDark ? Colors.white : Colors.black,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   _buildStatusChip(sale.status),
@@ -249,7 +403,7 @@ class _SalesScreenState extends State<SalesScreen> {
                 sale.customerName ?? 'Walk-in Customer',
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color: isDark ? Colors.grey[300] : Colors.grey[600],
+                  color: colorScheme.onSurface.withOpacity(0.6),
                 ),
               ),
               SizedBox(height: 8.h),
@@ -268,7 +422,7 @@ class _SalesScreenState extends State<SalesScreen> {
                     _formatDate(sale.dateTime),
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: isDark ? Colors.grey[400] : Colors.grey[500],
+                      color: colorScheme.onSurface.withOpacity(0.5),
                     ),
                   ),
                 ],
