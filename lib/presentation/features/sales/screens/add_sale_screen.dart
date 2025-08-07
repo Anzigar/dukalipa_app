@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/theme/app_theme.dart';
@@ -38,6 +40,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
   // State Variables
   final List<SaleItemModel> _items = [];
   bool _isSearching = false;
+  bool _hasSearched = false; // Track if search has been performed
   bool _isLoading = false;
   List<ProductModel> _searchResults = [];
   int _currentStep = 0;
@@ -205,12 +208,14 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
     if (query.isEmpty) {
       setState(() {
         _searchResults = [];
+        _hasSearched = false; // Reset when search is cleared
       });
       return;
     }
     
     setState(() {
       _isSearching = true;
+      _hasSearched = true; // Mark that search has been performed
     });
     
     try {
@@ -668,7 +673,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: _applyVAT ? Colors.blue.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: _applyVAT ? Colors.blue.withOpacity(0.3) : Colors.grey.withOpacity(0.3)),
                 ),
                 child: Row(
@@ -880,7 +885,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.grey[300]!),
             ),
             child: Text(
@@ -1408,7 +1413,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                     padding: const EdgeInsets.all(6), // Reduced from 8 to 6
                     decoration: BoxDecoration(
                       color: AppTheme.mkbhdRed.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: Icon(Icons.schedule_rounded, color: AppTheme.mkbhdRed, size: 18), // Reduced size
                   ),
@@ -1925,26 +1930,43 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
               ),
               const SizedBox(height: 16),
               TextField(
+                style: TextStyle(
+                  fontSize: 15.sp, 
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w400,
+                ),
                 decoration: InputDecoration(
                   hintText: 'Type product name to search...',
-                  prefixIcon: Icon(LucideIcons.search, color: AppTheme.mkbhdRed),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: colorScheme.outline.withOpacity(0.5)),
+                  hintStyle: TextStyle(
+                    color: colorScheme.onSurfaceVariant.withOpacity(0.7),
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: 0.5,
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: colorScheme.outline.withOpacity(0.5)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: AppTheme.mkbhdRed, width: 2),
+                  prefixIcon: Icon(
+                    LucideIcons.search, 
+                    color: colorScheme.onSurfaceVariant,
+                    size: 18.r,
                   ),
                   filled: true,
-                  fillColor: colorScheme.surface,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  fillColor: colorScheme.surfaceVariant.withOpacity(0.8),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.r),
+                    borderSide: BorderSide(
+                      color: colorScheme.primary,
+                      width: 2,
+                    ),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 ),
-                style: TextStyle(fontSize: 16, color: colorScheme.onSurface),
                 onChanged: _searchProducts,
               ),
             ],
@@ -1991,6 +2013,51 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
             ),
           ),
           // Divider between search results and cart
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            height: 1,
+            color: colorScheme.outline.withOpacity(0.2),
+          ),
+        ],
+        
+        // Empty search state
+        if (_hasSearched && _searchResults.isEmpty && !_isSearching) ...[
+          Container(
+            height: 220,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Lottie.asset(
+                    'assets/animations/Empty_box.json',
+                    width: 120.w,
+                    height: 120.h,
+                    fit: BoxFit.contain,
+                    repeat: true,
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'No products found',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'Try searching with different keywords',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: colorScheme.onSurfaceVariant.withOpacity(0.7),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Divider between empty state and cart
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             height: 1,
@@ -2220,33 +2287,27 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceVariant.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Icon(
-                LucideIcons.shoppingCart,
-                size: 40,
-                color: colorScheme.onSurfaceVariant,
-              ),
+            Lottie.asset(
+              'assets/animations/Empty_box.json',
+              width: 180.w,
+              height: 180.h,
+              fit: BoxFit.contain,
+              repeat: true,
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             Text(
               'Your cart is empty',
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 20.sp,
                 fontWeight: FontWeight.w600,
                 color: colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               'Search for products above to add them to your cart',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 14.sp,
                 color: colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,

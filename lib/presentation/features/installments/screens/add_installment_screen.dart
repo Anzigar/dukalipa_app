@@ -424,7 +424,7 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 constraints: const BoxConstraints(maxHeight: 200),
                 child: ListView.builder(
@@ -492,28 +492,57 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
             // Product search field
             Stack(
               children: [
-                TextField(
-                  controller: _productSearchController,
-                  decoration: InputDecoration(
-                    labelText: 'Search Products',
-                    hintText: 'Search by name or code',
-                    prefixIcon: const Icon(LucideIcons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(24), // Fully rounded Material3
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                      width: 1,
                     ),
-                    suffixIcon: _productSearchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(LucideIcons.x),
-                          onPressed: () {
-                            _productSearchController.clear();
-                            setState(() {
-                              _productSearchResults = [];
-                            });
-                          },
-                        )
-                      : null,
                   ),
-                  onChanged: _searchProducts,
+                  child: TextField(
+                    controller: _productSearchController,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Search Products',
+                      hintText: 'Search by name or code',
+                      hintStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.5,
+                      ),
+                      prefixIcon: Icon(
+                        LucideIcons.search,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        size: 20,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      suffixIcon: _productSearchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(
+                              LucideIcons.x,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              size: 18,
+                            ),
+                            onPressed: () {
+                              _productSearchController.clear();
+                              setState(() {
+                                _productSearchResults = [];
+                              });
+                            },
+                          )
+                        : null,
+                    ),
+                    onChanged: _searchProducts,
+                  ),
                 ),
                 if (_isSearchingProducts)
                   const Positioned(
@@ -537,7 +566,7 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
                 margin: const EdgeInsets.only(top: 8, bottom: 16),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 constraints: const BoxConstraints(maxHeight: 200),
                 child: ListView.builder(
@@ -551,7 +580,7 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
                         height: 48,
                         decoration: BoxDecoration(
                           color: AppTheme.mkbhdRed.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: const Icon(
                           LucideIcons.package,
@@ -654,7 +683,7 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
                   labelText: 'Start Date',
                   prefixIcon: const Icon(LucideIcons.calendar),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 child: Text(
@@ -673,7 +702,7 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
                   labelText: 'Due Date',
                   prefixIcon: const Icon(LucideIcons.calendarClock),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 child: Text(
@@ -713,7 +742,7 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       decoration: BoxDecoration(
         color: AppTheme.mkbhdRed.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
@@ -749,7 +778,7 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade300,
         ),
@@ -761,7 +790,7 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
             height: 40,
             decoration: BoxDecoration(
               color: AppTheme.mkbhdRed.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(
               LucideIcons.package,

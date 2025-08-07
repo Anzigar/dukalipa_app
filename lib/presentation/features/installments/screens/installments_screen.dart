@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -8,10 +9,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../models/installment_model.dart';
 import '../repositories/installment_repository.dart';
 import '../repositories/installment_repository_impl.dart' as impl;
-import '../../../common/widgets/custom_search_bar.dart';
-import '../../../common/widgets/empty_state.dart';
-import '../../../common/widgets/custom_button.dart';
-import '../../../common/widgets/shimmer_loading.dart';
+import '../../../common/widgets/animated_empty_state.dart';
 
 class InstallmentsScreen extends StatefulWidget {
   const InstallmentsScreen({Key? key}) : super(key: key);
@@ -34,7 +32,6 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize repository and fetch data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initRepository();
       _fetchInstallments();
@@ -102,34 +99,14 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
       start: _startDate ?? DateTime.now().subtract(const Duration(days: 30)),
       end: _endDate ?? DateTime.now(),
     );
-
+    
     final dateRange = await showDateRangePicker(
       context: context,
       initialDateRange: initialDateRange,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: AppTheme.mkbhdRed,
-              onPrimary: Colors.white,
-              onSurface: Theme.of(context).brightness == Brightness.dark 
-                  ? Colors.white 
-                  : Colors.black87,
-              surface: AppTheme.mkbhdRed.withOpacity(0.1),
-            ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: AppTheme.mkbhdRed,
-              ),
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
-
+    
     if (dateRange != null) {
       setState(() {
         _startDate = dateRange.start;
@@ -139,333 +116,262 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
     }
   }
 
-  Map<String, dynamic> _calculateInstallmentSummary() {
-    double totalAmount = _installments.fold(0, (sum, installment) => sum + installment.totalAmount);
-    double remainingAmount = _installments.fold(0, (sum, installment) => sum + installment.remainingAmount);
-    int overdueCount = _installments.where((installment) => installment.isOverdue).length;
-    int activeCount = _installments.where((installment) => installment.isActive).length;
-    
-    return {
-      'totalAmount': totalAmount,
-      'remainingAmount': remainingAmount,
-      'overdueCount': overdueCount,
-      'activeCount': activeCount,
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+    final hasInstallments = _installments.isNotEmpty;
     
     return Scaffold(
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // Modern App Bar with slight transparency
-            SliverAppBar(
-              pinned: true,
-              floating: true,
-              backgroundColor: isDark 
-                  ? Colors.black.withOpacity(0.7) 
-                  : Colors.white.withOpacity(0.9),
-              elevation: 0,
-              title: const Text(
-                'Installments',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24,
-                ),
-              ),
-              actions: [
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: Text(
+          'Installments',
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: colorScheme.onSurface,
+        actions: [
+          IconButton(
+            icon: Icon(LucideIcons.calendarDays, size: 20.sp),
+            onPressed: _showDateRangeDialog,
+            tooltip: 'Filter by date',
+          ),
+          IconButton(
+            icon: Icon(LucideIcons.plus, size: 20.sp),
+            onPressed: () => context.push('/installments/add'),
+            tooltip: 'Add installment plan',
+          ),
+        ],
+        // Only show search and filter when there are installments
+        bottom: hasInstallments ? PreferredSize(
+          preferredSize: Size.fromHeight(120.h),
+          child: Column(
+            children: [
+              _buildSearchBar(),
+              _buildFilterChips(),
+              SizedBox(height: 16.h),
+            ],
+          ),
+        ) : null,
+      ),
+      body: _isLoading 
+          ? _buildLoadingState()
+          : _hasError 
+              ? _buildErrorState()
+              : hasInstallments 
+                  ? _buildInstallmentsList()
+                  : _buildEmptyState(),
+      floatingActionButton: hasInstallments ? FloatingActionButton.extended(
+        onPressed: () => context.push('/installments/add'),
+        backgroundColor: AppTheme.mkbhdRed,
+        foregroundColor: Colors.white,
+        icon: Icon(LucideIcons.plus, size: 20.sp),
+        label: Text(
+          'New Plan',
+          style: TextStyle(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ) : null,
+    );
+  }
+
+  Widget _buildSearchBar() {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: SearchBar(
+        controller: _searchController,
+        onChanged: _onSearch,
+        hintText: 'Search installments...',
+        leading: Icon(
+          LucideIcons.search,
+          color: colorScheme.onSurfaceVariant,
+          size: 20.sp,
+        ),
+        trailing: _searchController.text.isNotEmpty
+            ? [
                 IconButton(
                   icon: Icon(
-                    LucideIcons.calendarDays,
-                    color: isDark ? Colors.white70 : Colors.black87,
-                  ),
-                  onPressed: _showDateRangeDialog,
-                  tooltip: 'Filter by date',
-                ),
-                IconButton(
-                  icon: Icon(
-                    LucideIcons.barChart2,
-                    color: isDark ? Colors.white70 : Colors.black87,
+                    LucideIcons.x,
+                    color: colorScheme.onSurfaceVariant,
+                    size: 20.sp,
                   ),
                   onPressed: () {
-                    // Show installment analytics
+                    _searchController.clear();
+                    _onSearch('');
                   },
-                  tooltip: 'Analytics',
                 ),
-              ],
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(1),
-                child: Container(
-                  width: double.infinity,
-                  height: 1,
-                  color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
-                ),
-              ),
-            ),
-
-            // Content
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Date filter chip
-                    if (_startDate != null && _endDate != null)
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 16.0),
-                        child: Wrap(
-                          spacing: 8,
-                          children: [
-                            Chip(
-                              label: Text(
-                                '${DateFormat('MMM d').format(_startDate!)} - ${DateFormat('MMM d, yyyy').format(_endDate!)}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: isDark ? Colors.white : Colors.black87,
-                                ),
-                              ),
-                              deleteIcon: const Icon(
-                                LucideIcons.x,
-                                size: 16,
-                                color: AppTheme.mkbhdRed,
-                              ),
-                              onDeleted: () {
-                                setState(() {
-                                  _startDate = null;
-                                  _endDate = null;
-                                });
-                                _fetchInstallments();
-                              },
-                              backgroundColor: AppTheme.mkbhdRed.withOpacity(0.1),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50), // More rounded like Meta's design
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                    // Search bar with modern design
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(50), // More rounded
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: CustomSearchBar(
-                        controller: _searchController,
-                        hintText: 'Search installments...',
-                        onSearch: _onSearch,
-                        borderRadius: 50, // Make sure CustomSearchBar accepts this param
-                      ),
-                    ),
-
-                    // Status filters with modern pill design
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 16),
-                      height: 40,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        children: [
-                          _buildStatusPill('All', null, 0),
-                          _buildStatusPill('Active', 'active', 8),
-                          _buildStatusPill('Completed', 'completed', 8),
-                          _buildStatusPill('Defaulted', 'defaulted', 8),
-                        ],
-                      ),
-                    ),
-
-                    // Installments summary with modern card design
-                    if (!_isLoading && !_hasError && _installments.isNotEmpty)
-                      _buildInstallmentSummary(),
-                  ],
-                ),
-              ),
-            ),
-
-            // Installments list
-            SliverFillRemaining(
-              child: _buildInstallmentsList(),
-            ),
-          ],
+              ]
+            : null,
+        backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+          (Set<WidgetState> states) {
+            if (states.contains(WidgetState.focused)) {
+              return colorScheme.surface;
+            }
+            return colorScheme.surfaceContainerHigh;
+          },
         ),
-      ),
-      floatingActionButton: AnimatedScale(
-        duration: const Duration(milliseconds: 200),
-        scale: 1.0,
-        child: FloatingActionButton.extended(
-          backgroundColor: AppTheme.mkbhdRed,
-          foregroundColor: Colors.white,
-          elevation: 4,
-          onPressed: () => context.push('/installments/add'),
-          icon: const Icon(LucideIcons.plus),
-          label: const Text(
-            'New Installment',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
-            ),
+        surfaceTintColor: WidgetStateProperty.all(Colors.transparent),
+        overlayColor: WidgetStateProperty.all(Colors.transparent),
+        shadowColor: WidgetStateProperty.all(Colors.transparent),
+        side: WidgetStateProperty.resolveWith<BorderSide?>(
+          (Set<WidgetState> states) {
+            if (states.contains(WidgetState.focused)) {
+              return BorderSide(
+                color: colorScheme.primary,
+                width: 2.0,
+              );
+            }
+            return BorderSide(
+              color: colorScheme.outline.withOpacity(0.2),
+              width: 1.0,
+            );
+          },
+        ),
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28.r),
           ),
+        ),
+        textStyle: WidgetStateProperty.all(
+          TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w400,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        hintStyle: WidgetStateProperty.all(
+          TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w400,
+            color: colorScheme.onSurfaceVariant.withOpacity(0.6),
+          ),
+        ),
+        constraints: BoxConstraints(
+          minHeight: 56.h,
+          maxHeight: 56.h,
         ),
       ),
     );
   }
 
-  Widget _buildStatusPill(String label, String? status, double leftMargin) {
-    final isSelected = _selectedStatus == status;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  Widget _buildFilterChips() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final statuses = ['All', 'Active', 'Overdue', 'Completed', 'Defaulted'];
     
     return Container(
-      margin: EdgeInsets.only(left: leftMargin),
-      child: InkWell(
-        onTap: () => _onStatusSelected(status),
-        borderRadius: BorderRadius.circular(50),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected 
-                ? AppTheme.mkbhdRed 
-                : (isDark ? Colors.grey.shade800 : Colors.grey.shade200),
-            borderRadius: BorderRadius.circular(50),
-            boxShadow: isSelected ? [
-              BoxShadow(
-                color: AppTheme.mkbhdRed.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+      height: 48.h,
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: statuses.length,
+        itemBuilder: (context, index) {
+          final status = statuses[index];
+          final isSelected = _selectedStatus == status || (_selectedStatus == null && status == 'All');
+          
+          return Container(
+            margin: EdgeInsets.only(right: 8.w),
+            child: ChoiceChip(
+              label: Text(
+                status,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ] : null,
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              fontSize: 14,
-              color: isSelected 
-                  ? Colors.white 
-                  : (isDark ? Colors.white70 : Colors.black87),
+              selected: isSelected,
+              onSelected: (selected) {
+                _onStatusSelected(status == 'All' ? null : status);
+              },
+              backgroundColor: colorScheme.surfaceContainerHighest,
+              selectedColor: colorScheme.secondaryContainer,
+              labelStyle: WidgetStateTextStyle.resolveWith(
+                (Set<WidgetState> states) {
+                  if (states.contains(WidgetState.selected)) {
+                    return TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                      color: colorScheme.onSecondaryContainer,
+                    );
+                  }
+                  return TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                    color: colorScheme.onSurfaceVariant,
+                  );
+                },
+              ),
+              side: BorderSide(
+                color: isSelected 
+                    ? colorScheme.secondary 
+                    : colorScheme.outline.withOpacity(0.2),
+                width: isSelected ? 1.5 : 1.0,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24.r),
+              ),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildInstallmentSummary() {
-    final summary = _calculateInstallmentSummary();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16.0),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.grey.shade900 : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.mkbhdRed.withOpacity(0.05),
-            AppTheme.mkbhdRed.withOpacity(0.15),
-          ],
-        ),
+  Widget _buildLoadingState() {
+    return Center(
+      child: AnimatedLoadingState.general(
+        message: 'Loading installments...',
       ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Total Value',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppTheme.mkbhdLightGrey,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      NumberFormat.currency(symbol: 'TSh ').format(summary['totalAmount']),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.mkbhdRed,
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const Text(
-                      'Outstanding',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppTheme.mkbhdLightGrey,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      NumberFormat.currency(symbol: 'TSh ').format(summary['remainingAmount']),
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+          Icon(
+            LucideIcons.alertCircle,
+            size: 48.sp,
+            color: Colors.red,
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Error loading installments',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          
-          const Divider(height: 1),
-          
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                _buildStatChip(
-                  'Active',
-                  summary['activeCount'].toString(),
-                  Colors.green,
-                  flex: 1,
-                ),
-                const SizedBox(width: 8),
-                _buildStatChip(
-                  'Overdue',
-                  summary['overdueCount'].toString(),
-                  Colors.red,
-                  flex: 1,
-                ),
-                const SizedBox(width: 8),
-                _buildStatChip(
-                  'Total',
-                  _installments.length.toString(),
-                  AppTheme.mkbhdRed,
-                  flex: 1,
-                ),
-              ],
+          SizedBox(height: 8.h),
+          Text(
+            _errorMessage ?? 'Please try again later',
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 24.h),
+          FilledButton.icon(
+            onPressed: _fetchInstallments,
+            icon: Icon(LucideIcons.refreshCw, size: 20.sp),
+            label: Text('Retry'),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.mkbhdRed,
+              foregroundColor: Colors.white,
             ),
           ),
         ],
@@ -473,313 +379,152 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
     );
   }
 
-  Widget _buildStatChip(String label, String value, Color color, {int flex = 1}) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return Expanded(
-      flex: flex,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: color.withOpacity(isDark ? 0.15 : 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: color.withOpacity(isDark ? 0.3 : 0.2),
-            width: 1,
-          ),
-        ),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                color: color,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? color.withOpacity(0.8) : color.withOpacity(0.7),
-              ),
-            ),
-          ],
-        ),
-      ),
+  Widget _buildEmptyState() {
+    return AnimatedEmptyState.installments(
+      title: 'No Installment Plans',
+      message: 'Create installment plans to offer flexible payment options to your customers.',
+      buttonText: 'Create Plan',
+      onButtonPressed: () => context.push('/installments/add'),
     );
   }
 
   Widget _buildInstallmentsList() {
-    if (_isLoading) {
-      return ListView.builder(
-        itemCount: 8,
-        itemBuilder: (context, index) => const TransactionCardShimmer(),
-      );
-    }
-
-    if (_hasError) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              LucideIcons.alertTriangle,
-              size: 64,
-              color: Colors.orange,
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Text(
-                _errorMessage ?? 'An error occurred while loading installments',
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.grey),
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _fetchInstallments,
-              icon: const Icon(LucideIcons.refreshCw),
-              label: const Text('Retry'),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (_installments.isEmpty) {
-      return Center(
-        child: EmptyState(
-          icon: LucideIcons.fileText,
-          title: 'No Installment Plans Found',
-          message: 'Create your first installment plan to manage customer payments over time.',
-          buttonText: 'Create Installment Plan',
-          onButtonPressed: () => context.push('/installments/add'),
-        ),
-      );
-    }
-
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       itemCount: _installments.length,
       itemBuilder: (context, index) {
-        return InstallmentCard(
-          installment: _installments[index],
-          onTap: () => context.push('/installments/${_installments[index].id}'),
-        );
+        return _buildInstallmentCard(_installments[index]);
       },
     );
   }
-}
 
-class InstallmentCard extends StatelessWidget {
-  final InstallmentModel installment;
-  final VoidCallback onTap;
-  
-  const InstallmentCard({
-    Key? key,
-    required this.installment,
-    required this.onTap,
-  }) : super(key: key);
-  
-  @override
-  Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+  Widget _buildInstallmentCard(InstallmentModel installment) {
+    final colorScheme = Theme.of(context).colorScheme;
     
-    // Meta-styled card
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: colorScheme.outline.withOpacity(0.1),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 1),
+            color: colorScheme.shadow.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
-        clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: onTap,
+          onTap: () => context.push('/installments/${installment.id}'),
+          borderRadius: BorderRadius.circular(16.r),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Client avatar
-                    CircleAvatar(
-                      backgroundColor: AppTheme.mkbhdRed.withOpacity(0.1),
-                      radius: 24,
-                      child: Text(
-                        installment.clientName.isNotEmpty ? 
-                          installment.clientName[0].toUpperCase() : 'C',
-                        style: const TextStyle(
-                          color: AppTheme.mkbhdDarkGrey,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    
-                    // Client info and amount
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             installment.clientName,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            installment.clientPhone,
                             style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 14,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Due: ${installment.formattedDueDate}',
-                            style: TextStyle(
-                              color: installment.isOverdue ? 
-                                Colors.red : Colors.grey.shade700,
-                              fontWeight: FontWeight.w500,
+                          if (installment.notes != null && installment.notes!.isNotEmpty) ...[
+                            SizedBox(height: 4.h),
+                            Text(
+                              installment.notes!,
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ),
-                    
-                    // Status badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 6.h,
+                      ),
                       decoration: BoxDecoration(
                         color: _getStatusColor(installment).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: _getStatusColor(installment).withOpacity(0.5),
-                        ),
+                        borderRadius: BorderRadius.circular(20.r),
                       ),
                       child: Text(
                         _getStatusText(installment),
                         style: TextStyle(
-                          color: _getStatusColor(installment),
+                          fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
-                          fontSize: 12,
+                          color: _getStatusColor(installment),
                         ),
                       ),
                     ),
                   ],
                 ),
-                
-                const SizedBox(height: 16),
-                
-                // Payment progress section
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Payment Progress',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade700,
-                          ),
-                        ),
-                        Text(
-                          '${installment.percentagePaid.toStringAsFixed(0)}%',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                        value: installment.paymentProgress,
-                        backgroundColor: Colors.grey.shade200,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          installment.isOverdue ? Colors.orange : AppTheme.mkbhdRed,
-                        ),
-                        minHeight: 8,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    
-                    // Amount information with Meta styling
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildAmountInfo(
-                          'Total',
-                          installment.formattedTotalAmount,
-                          Colors.grey.shade700
-                        ),
-                        _buildAmountInfo(
-                          'Paid',
-                          installment.formattedPaidAmount,
-                          Colors.green.shade700
-                        ),
-                        _buildAmountInfo(
-                          'Remaining',
-                          installment.formattedRemainingAmount,
-                          installment.isOverdue ? Colors.red : AppTheme.mkbhdRed
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 16),
-                const Divider(height: 1),
-                const SizedBox(height: 12),
-                
-                // Actions with Meta styling
+                SizedBox(height: 16.h),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    MetaActionButton(
-                      text: 'View Details',
-                      icon: LucideIcons.arrowRight,
-                      onPressed: onTap,
+                    Expanded(
+                      child: _buildInfoColumn(
+                        'Total Amount',
+                        'TZS ${NumberFormat('#,###').format(installment.totalAmount)}',
+                        AppTheme.mkbhdRed,
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    MetaActionButton(
-                      text: 'Add Payment',
-                      icon: LucideIcons.plus,
-                      onPressed: () {
-                        // Navigate to add payment screen
-                        context.push('/installments/${installment.id}/add-payment');
-                      },
+                    Expanded(
+                      child: _buildInfoColumn(
+                        'Paid',
+                        'TZS ${NumberFormat('#,###').format(installment.paidAmount)}',
+                        Colors.green,
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildInfoColumn(
+                        'Remaining',
+                        'TZS ${NumberFormat('#,###').format(installment.remainingAmount)}',
+                        Colors.orange,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12.h),
+                Row(
+                  children: [
+                    Icon(
+                      LucideIcons.calendar,
+                      size: 14.sp,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      'Due: ${DateFormat('MMM d, yyyy').format(installment.dueDate)}',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '${installment.payments.length} payments made',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -790,23 +535,23 @@ class InstallmentCard extends StatelessWidget {
       ),
     );
   }
-  
-  Widget _buildAmountInfo(String label, String value, Color valueColor) {
+
+  Widget _buildInfoColumn(String label, String value, Color valueColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 12.sp,
             color: Colors.grey.shade600,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h),
         Text(
           value,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 14.sp,
             fontWeight: FontWeight.bold,
             color: valueColor,
           ),

@@ -416,7 +416,7 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
               decoration: BoxDecoration(
                 color: AppTheme.mkbhdRed.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: const Row(
                 children: [
@@ -483,7 +483,7 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
                 border: Border.all(
                   color: AppTheme.mkbhdLightGrey.withOpacity(0.5),
                 ),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
@@ -534,7 +534,7 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
                   border: Border.all(
                     color: AppTheme.mkbhdLightGrey.withOpacity(0.5),
                   ),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
                   children: [

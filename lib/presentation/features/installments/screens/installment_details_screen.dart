@@ -152,7 +152,7 @@ class _InstallmentDetailsScreenState extends State<InstallmentDetailsScreen> {
           Card(
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(20),
               side: BorderSide(
                 color: Theme.of(context).brightness == Brightness.dark 
                     ? Colors.grey.shade700 
@@ -188,7 +188,7 @@ class _InstallmentDetailsScreenState extends State<InstallmentDetailsScreen> {
           Card(
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(20),
               side: BorderSide(
                 color: Theme.of(context).brightness == Brightness.dark 
                     ? Colors.grey.shade700 
@@ -226,7 +226,7 @@ class _InstallmentDetailsScreenState extends State<InstallmentDetailsScreen> {
           Card(
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(20),
               side: BorderSide(
                 color: Theme.of(context).brightness == Brightness.dark 
                     ? Colors.grey.shade700 

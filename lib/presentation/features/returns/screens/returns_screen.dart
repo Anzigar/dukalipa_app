@@ -202,7 +202,7 @@ class _ReturnsScreenState extends State<ReturnsScreen> {
                     deleteIconColor: AppTheme.mkbhdRed,
                     labelStyle: const TextStyle(color: AppTheme.mkbhdRed),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                 ],

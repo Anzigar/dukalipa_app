@@ -171,21 +171,44 @@ class _SerialNumbersScreenState extends State<SerialNumbersScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Search Bar
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search serial numbers...',
-                  prefixIcon: const Icon(LucideIcons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+              Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(24), // Fully rounded Material3
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                    width: 1,
                   ),
-                  filled: true,
-                  fillColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value.toLowerCase();
-                  });
-                },
+                child: TextField(
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Search serial numbers...',
+                    hintStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0.5,
+                    ),
+                    prefixIcon: Icon(
+                      LucideIcons.search,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      size: 20,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value.toLowerCase();
+                    });
+                  },
+                ),
               ),
               
               const SizedBox(height: 16),

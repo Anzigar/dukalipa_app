@@ -342,7 +342,7 @@ class _BarcodeHistoryItem extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: Colors.blue.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(16),
                               ),
                               child: Text(
                                 item.action,

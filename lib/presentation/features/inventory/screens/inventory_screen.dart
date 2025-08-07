@@ -132,11 +132,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
     
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+      height: 48.h, // Increased height for Material3 design
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(10.r),
+        color: colorScheme.surfaceVariant.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(24.r), // Fully rounded like Material3
         border: Border.all(
-          color: colorScheme.outline.withOpacity(0.2),
+          color: colorScheme.outline.withOpacity(0.3),
           width: 1,
         ),
       ),
@@ -145,25 +146,26 @@ class _InventoryScreenState extends State<InventoryScreen> {
         onChanged: _onSearch,
         style: TextStyle(
           fontSize: 16.sp,
-          fontWeight: FontWeight.w500,
-          color: colorScheme.onSurface,
+          fontWeight: FontWeight.w400,
+          color: colorScheme.onSurfaceVariant,
         ),
         decoration: InputDecoration(
           hintText: 'Search products...',
           hintStyle: TextStyle(
-            color: colorScheme.onSurface.withOpacity(0.6),
+            color: colorScheme.onSurfaceVariant,
             fontSize: 16.sp,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w400,
+            letterSpacing: 0.5,
           ),
           prefixIcon: Icon(
             Icons.search_rounded,
-            color: colorScheme.onSurface.withOpacity(0.6),
+            color: colorScheme.onSurfaceVariant,
             size: 20.sp,
           ),
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
             horizontal: 16.w,
-            vertical: 14.h,
+            vertical: 12.h,
           ),
         ),
       ),

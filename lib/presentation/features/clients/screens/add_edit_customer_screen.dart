@@ -274,7 +274,7 @@ class _AddEditCustomerScreenState extends State<AddEditCustomerScreen> {
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
                 color: Colors.red.shade100,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 children: [

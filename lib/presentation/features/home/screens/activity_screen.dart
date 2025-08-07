@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 
 import '../providers/recent_activity_provider.dart';
 
@@ -48,36 +49,41 @@ class _ActivityScreenState extends State<ActivityScreen> {
   Widget _buildIOSSearchBar() {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      height: 36.h,
+      height: 48.h, // Increased height for Material3 design
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(10.r),
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(24.r), // Fully rounded like Material3
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: TextField(
         controller: _searchController,
         autofocus: true,
         style: TextStyle(
-          fontSize: 15.sp,
-          color: Theme.of(context).colorScheme.onSurface,
+          fontSize: 16.sp,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         decoration: InputDecoration(
           hintText: 'Search activities...',
           hintStyle: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-            fontSize: 15.sp,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontSize: 16.sp,
             fontWeight: FontWeight.w400,
+            letterSpacing: 0.5,
           ),
           prefixIcon: Icon(
             Icons.search,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-            size: 18.sp,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            size: 20.sp,
           ),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
                   icon: Icon(
                     Icons.clear,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                    size: 18.sp,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    size: 20.sp,
                   ),
                   onPressed: () {
                     _searchController.clear();
@@ -87,8 +93,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
               : null,
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
-            vertical: 8.h,
-            horizontal: 12.w,
+            vertical: 12.h,
+            horizontal: 16.w,
           ),
         ),
         onChanged: (value) {
@@ -306,20 +312,35 @@ class _ActivityScreenState extends State<ActivityScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 64.w,
-              height: 64.h,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Icon(
-                Icons.history,
-                size: 32.sp,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            SizedBox(
+              width: 220.w,
+              height: 220.w,
+              child: Lottie.asset(
+                'assets/animations/No_Data.json',
+                width: 220.w,
+                height: 220.w,
+                fit: BoxFit.contain,
+                repeat: true,
+                animate: true,
+                errorBuilder: (context, error, stackTrace) {
+                  print('Lottie loading error: $error');
+                  return Container(
+                    width: 220.w,
+                    height: 220.w,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(22.r),
+                    ),
+                    child: Icon(
+                      Icons.history,
+                      size: 110.sp,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  );
+                },
               ),
             ),
-            SizedBox(height: 16.h),
+            SizedBox(height: 24.h),
             Text(
               'No Recent Activities',
               style: TextStyle(
@@ -330,11 +351,12 @@ class _ActivityScreenState extends State<ActivityScreen> {
             ),
             SizedBox(height: 8.h),
             Text(
-              'Your recent activities will appear here',
+              'Your recent activities will appear here\nonce you start using the app.',
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w400,
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                height: 1.4,
               ),
               textAlign: TextAlign.center,
             ),

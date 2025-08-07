@@ -9,11 +9,16 @@ import '../../presentation/features/barcode/screens/barcode_history_screen.dart'
 import '../../presentation/features/barcode/screens/barcode_scanner_screen.dart';
 import '../../presentation/features/business/screens/business_analytics_screen.dart';
 import '../../presentation/features/business/screens/business_hub_screen.dart';
-import '../../presentation/features/business/screens/damaged_products_screen.dart';
-import '../../presentation/features/business/screens/deleted_items_screen.dart';
 import '../../presentation/features/business/screens/storage_management_screen.dart';
+import '../../presentation/features/clients/screens/customers_screen.dart';
+import '../../presentation/features/damaged/screens/damaged_products_screen.dart';
+import '../../presentation/features/deleted/screens/deleted_items_screen.dart';
+import '../../presentation/features/expenses/screens/expenses_screen.dart';
+import '../../presentation/features/installments/screens/installments_screen.dart';
+import '../../presentation/features/returns/screens/returns_screen.dart';
 import '../../presentation/features/home/screens/home_screen.dart';
 import '../../presentation/features/home/screens/activity_screen.dart';
+import '../../presentation/features/search/screens/search_screen.dart';
 import '../../presentation/features/inventory/models/product_model.dart';
 import '../../presentation/features/inventory/screens/add_product_screen.dart';
 import '../../presentation/features/inventory/screens/inventory_screen.dart';
@@ -68,6 +73,14 @@ class AppRouter {
       ),
       
       GoRoute(
+        path: '/search',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to SearchScreen');
+          return const SearchScreen();
+        },
+      ),
+      
+      GoRoute(
         path: '/inventory',
         builder: (context, state) => const InventoryScreen(),
       ),
@@ -96,6 +109,29 @@ class AppRouter {
       GoRoute(
         path: '/sales',
         builder: (context, state) => const SalesScreen(),
+      ),
+      
+      GoRoute(
+        path: '/sales/new',
+        builder: (context, state) {
+          final extraData = state.extra as Map<String, dynamic>?;
+          ProductModel? preSelectedProduct;
+          Map<String, dynamic>? customerData;
+          
+          if (extraData != null) {
+            if (extraData.containsKey('product')) {
+              preSelectedProduct = extraData['product'] as ProductModel?;
+            }
+            if (extraData.containsKey('customer')) {
+              customerData = {'customer': extraData['customer']};
+            }
+          }
+          
+          return AddSaleScreen(
+            preSelectedProduct: preSelectedProduct,
+            extraData: customerData ?? extraData,
+          );
+        },
       ),
       
       GoRoute(
@@ -264,6 +300,47 @@ class AppRouter {
         path: '/barcode/history',
         builder: (context, state) => const BarcodeHistoryScreen(),
       ),
+      
+      // Additional routes for floating action button navigation
+      GoRoute(
+        path: '/customers',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to CustomersScreen');
+          return const CustomersScreen();
+        },
+      ),
+      
+      GoRoute(
+        path: '/installments',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to InstallmentsScreen');
+          return const InstallmentsScreen();
+        },
+      ),
+      
+      GoRoute(
+        path: '/returns',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to ReturnsScreen');
+          return const ReturnsScreen();
+        },
+      ),
+      
+      GoRoute(
+        path: '/expenses',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to ExpensesScreen');
+          return const ExpensesScreen();
+        },
+      ),
+      
+      GoRoute(
+        path: '/damaged',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to DamagedProductsScreen');
+          return const DamagedProductsScreen();
+        },
+      ),
     ],
     
     // Redirect logic for auth state
@@ -275,13 +352,22 @@ class AppRouter {
       // If not logged in, redirect to login except for login/signup pages
       final isInAuthRoute = state.matchedLocation == '/login' || 
                            state.matchedLocation == '/signup';
+      
+      // Allow search route without authentication check (for debugging)
+      final isSearchRoute = state.matchedLocation == '/search';
                            
       // If on splash screen, let SplashScreen handle redirection
       if (state.matchedLocation == '/') {
         return null;
       }
       
+      // Allow search route to pass through
+      if (isSearchRoute) {
+        return null;
+      }
+      
       if (!isLoggedIn && !isInAuthRoute) {
+        debugPrint('🔒 Redirecting to login from: ${state.matchedLocation}');
         return '/login';
       }
       

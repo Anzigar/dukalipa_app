@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../../core/theme/app_theme.dart';
-
 class CustomSearchBar extends StatefulWidget {
   final TextEditingController controller;
   final String hintText;
@@ -79,25 +77,21 @@ class _CustomSearchBarState extends State<CustomSearchBar> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
     
     return Hero(
       tag: 'searchBar',
       child: Material(
         color: Colors.transparent,
         child: Container(
-          height: 56,
+          height: 48, // Material3 standard height
           decoration: BoxDecoration(
-            color: isDarkMode ? Colors.grey.shade800 : Colors.white,
-            borderRadius: BorderRadius.circular(widget.borderRadius),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                offset: const Offset(0, 2),
-                blurRadius: 10.0,
-                spreadRadius: 1.0,
-              ),
-            ],
+            color: colorScheme.surfaceVariant.withOpacity(0.8),
+            borderRadius: BorderRadius.circular(24), // Fully rounded Material3 style
+            border: Border.all(
+              color: colorScheme.outline.withOpacity(0.3),
+              width: 1,
+            ),
           ),
           child: TextField(
             controller: widget.controller,
@@ -107,19 +101,21 @@ class _CustomSearchBarState extends State<CustomSearchBar> with SingleTickerProv
             onChanged: widget.onSearch,
             style: TextStyle(
               fontSize: 16,
-              color: isDarkMode ? Colors.white : Colors.black87,
+              color: colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w400,
             ),
             decoration: InputDecoration(
               hintText: widget.hintText,
               hintStyle: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
-                color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade500,
+                color: colorScheme.onSurfaceVariant,
+                letterSpacing: 0.5,
               ),
               prefixIcon: Icon(
                 LucideIcons.search, 
                 size: 20,
-                color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
+                color: colorScheme.onSurfaceVariant,
               ),
               suffixIcon: AnimatedBuilder(
                 animation: _clearButtonAnimation,
@@ -130,13 +126,13 @@ class _CustomSearchBarState extends State<CustomSearchBar> with SingleTickerProv
                       icon: Container(
                         padding: const EdgeInsets.all(2),
                         decoration: BoxDecoration(
-                          color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade300,
+                          color: colorScheme.onSurfaceVariant.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(50),
                         ),
                         child: Icon(
                           LucideIcons.x, 
                           size: 14, 
-                          color: isDarkMode ? Colors.white : Colors.black87,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                       onPressed: () {
@@ -148,12 +144,9 @@ class _CustomSearchBarState extends State<CustomSearchBar> with SingleTickerProv
                 },
               ),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               enabledBorder: InputBorder.none,
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(widget.borderRadius),
-                borderSide: BorderSide(color: AppTheme.mkbhdRed, width: 2.0),
-              ),
+              focusedBorder: InputBorder.none,
             ),
             maxLines: 1,
             textAlignVertical: TextAlignVertical.center,

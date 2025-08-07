@@ -3,10 +3,13 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart'; // Add this import
+import 'package:lottie/lottie.dart';
 import 'package:dukalipa_app/core/providers/auth_provider.dart';
+import 'package:dukalipa_app/core/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import '../../../common/widgets/shimmer_loading.dart';
 import '../providers/analytics_provider.dart';
+import '../providers/recent_activity_provider.dart';
 
 
 // Define ActionItem class for menu items
@@ -80,9 +83,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   void _loadAnalyticsData() async {
     final analyticsProvider = Provider.of<AnalyticsProvider>(context, listen: false);
+    final activityProvider = Provider.of<RecentActivityProvider>(context, listen: false);
     
     try {
-      await analyticsProvider.loadInventorySummary();
+      await Future.wait([
+        analyticsProvider.loadInventorySummary(),
+        activityProvider.loadRecentActivities(),
+      ]);
     } catch (e) {
       debugPrint('Error loading data: $e');
     } finally {
@@ -93,8 +100,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Future<void> _refreshData() async {
     final analyticsProvider = Provider.of<AnalyticsProvider>(context, listen: false);
+    final activityProvider = Provider.of<RecentActivityProvider>(context, listen: false);
     
-    await analyticsProvider.loadInventorySummary();
+    await Future.wait([
+      analyticsProvider.loadInventorySummary(),
+      activityProvider.loadRecentActivities(),
+    ]);
   }
 
   void _onScroll() {
@@ -124,20 +135,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void _navigateToSearch() {
-    // For now, show a simple snackbar or navigate to inventory
-    // You can replace this with the actual search route when it's implemented
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Search functionality coming soon!'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.r),
-        ),
-      ),
-    );
-    // Alternative: Navigate to inventory for now
-    // context.push('/inventory');
+    // Navigate to search screen with proper functionality
+    debugPrint('🔍 Navigating to search screen...');
+    debugPrint('🔍 Current route: ${GoRouter.of(context).routerDelegate.currentConfiguration}');
+    try {
+      context.push('/search');
+      debugPrint('✅ Navigation to search screen successful');
+    } catch (e) {
+      debugPrint('❌ Navigation to search screen failed: $e');
+    }
   }
 
   @override
@@ -369,36 +375,46 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Widget _buildIOSSearchBar() {
     return Container(
-      height: 36.h,
+      height: 48.h, // Increased height for Material3 design
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(10.r),
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(24.r), // Fully rounded like Material3
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: Row(
         children: [
-          // Search area
+          // Search area with Material3 style
           Expanded(
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                borderRadius: BorderRadius.circular(10.r),
+                borderRadius: BorderRadius.circular(24.r),
                 onTap: _navigateToSearch,
+                splashColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                highlightColor: Theme.of(context).colorScheme.primary.withOpacity(0.05),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                   child: Row(
                     children: [
                       Icon(
                         LucideIcons.search,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                        size: 16.sp,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        size: 20.sp,
                       ),
-                      SizedBox(width: 6.w),
-                      Text(
-                        'Search products...',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w400,
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Text(
+                          'Search products, sales, customers...',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0.5,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -407,24 +423,25 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
             ),
           ),
-          // Barcode scanner button
+          // Barcode scanner button with Material3 style
           Container(
-            width: 36.w,
-            height: 36.h,
+            width: 44.w,
+            height: 44.h,
             margin: EdgeInsets.only(right: 2.w),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
-              borderRadius: BorderRadius.circular(8.r),
+              borderRadius: BorderRadius.circular(22.r), // Circular for Material3
             ),
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(22.r),
                 onTap: _openBarcodeScanner,
+                splashColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
                 child: Icon(
                   LucideIcons.scanLine,
                   color: Theme.of(context).colorScheme.onPrimary,
-                  size: 18.sp,
+                  size: 22.sp,
                 ),
               ),
             ),
@@ -608,7 +625,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
-              SizedBox(height: 12.h),
+              SizedBox(height: 4.h),
               LayoutBuilder(
                 builder: (context, constraints) {
                   double cardWidth = (constraints.maxWidth - 12.w) / 2;
@@ -694,7 +711,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               height: 28.h,
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(14.r),
               ),
               child: Icon(
                 icon,
@@ -758,82 +775,269 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildRecentActivitySection() {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Consumer<RecentActivityProvider>(
+      builder: (context, activityProvider, child) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Recent Activity',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Recent Activity',
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => context.push('/activity'),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                    ),
+                    child: Text(
+                      'See all',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              TextButton(
-                onPressed: () => context.push('/activity'),
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                ),
-                child: Text(
-                  'See all',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
+              SizedBox(height: 12.h),
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                    width: 1,
                   ),
                 ),
+                child: activityProvider.isLoadingActivities
+                    ? _buildLoadingActivities()
+                    : activityProvider.recentActivities.isEmpty
+                        ? Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).scaffoldBackgroundColor,
+                              borderRadius: BorderRadius.circular(16.r),
+                            ),
+                            child: _buildEmptyActivities(),
+                          )
+                        : _buildActivitiesList(activityProvider),
               ),
             ],
           ),
-          SizedBox(height: 12.h),
-          Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
-                width: 1,
+        );
+      },
+    );
+  }
+
+  Widget _buildLoadingActivities() {
+    return Padding(
+      padding: EdgeInsets.all(16.w),
+      child: Column(
+        children: List.generate(3, (index) {
+          return Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 32.w,
+                    height: 32.h,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          height: 14.h,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(7.r),
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Container(
+                          width: 120.w,
+                          height: 12.h,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(6.r),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ),
-            child: Column(
-              children: [
-                _buildIOSActivityItem(
-                  icon: Icons.shopping_cart,
-                  title: 'New sale completed',
-                  subtitle: 'iPhone 13 Pro - TSh 2,500,000',
-                  time: '2 min ago',
-                  color: Theme.of(context).colorScheme.primary,
-                  isFirst: true,
-                ),
+              if (index < 2) ...[
+                SizedBox(height: 16.h),
                 _buildIOSActivityDivider(),
-                _buildIOSActivityItem(
-                  icon: Icons.warning,
-                  title: 'Low stock alert',
-                  subtitle: 'Samsung Galaxy S21 - 2 units left',
-                  time: '1 hour ago',
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                _buildIOSActivityDivider(),
-                _buildIOSActivityItem(
-                  icon: Icons.inventory_2,
-                  title: 'Product added to inventory',
-                  subtitle: 'MacBook Pro M2 - 5 units',
-                  time: '3 hours ago',
-                  color: Theme.of(context).colorScheme.secondary,
-                  isLast: true,
-                ),
+                SizedBox(height: 16.h),
               ],
+            ],
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildEmptyActivities() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(32.w),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 100.w,
+            height: 100.w,
+            child: Lottie.asset(
+              'assets/animations/No_Data.json',
+              width: 100.w,
+              height: 100.w,
+              fit: BoxFit.contain,
+              repeat: true,
+              animate: true,
+              errorBuilder: (context, error, stackTrace) {
+                print('Lottie loading error: $error');
+                return Container(
+                  width: 100.w,
+                  height: 100.w,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(18.r),
+                  ),
+                  child: Icon(
+                    Icons.history,
+                    size: 50.sp,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                );
+              },
             ),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'No Recent Activity',
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            'Activities will appear here\nonce you start using the app',
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w400,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildActivitiesList(RecentActivityProvider activityProvider) {
+    final activitiesToShow = activityProvider.recentActivities.take(3).toList();
+    
+    return Column(
+      children: [
+        ...activitiesToShow.asMap().entries.map((entry) {
+          final index = entry.key;
+          final activity = entry.value;
+          
+          return Column(
+            children: [
+              _buildIOSActivityItem(
+                icon: _getActivityIcon(activity.type),
+                title: activity.title,
+                subtitle: activity.subtitle.isNotEmpty 
+                    ? activity.subtitle 
+                    : _formatTimestamp(activity.timestamp),
+                time: _formatTimestamp(activity.timestamp),
+                color: _getActivityColor(activity.type),
+                isFirst: index == 0,
+                isLast: index == activitiesToShow.length - 1,
+              ),
+              if (index < activitiesToShow.length - 1) _buildIOSActivityDivider(),
+            ],
+          );
+        }).toList(),
+      ],
+    );
+  }
+
+  Color _getActivityColor(String type) {
+    switch (type.toLowerCase()) {
+      case 'sale':
+        return Colors.green;
+      case 'inventory':
+      case 'stock':
+        return Theme.of(context).colorScheme.primary;
+      case 'alert':
+      case 'low_stock':
+        return Theme.of(context).colorScheme.error;
+      case 'return':
+        return Colors.red;
+      case 'expense':
+        return Colors.purple;
+      default:
+        return Theme.of(context).colorScheme.secondary;
+    }
+  }
+
+  IconData _getActivityIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'sale':
+        return Icons.shopping_cart;
+      case 'inventory':
+      case 'stock':
+        return Icons.inventory_2;
+      case 'alert':
+      case 'low_stock':
+        return Icons.warning;
+      case 'return':
+        return Icons.keyboard_return;
+      case 'expense':
+        return Icons.money_off;
+      default:
+        return Icons.info;
+    }
+  }
+
+  String _formatTimestamp(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m ago';
+    } else {
+      return 'now';
+    }
   }
 
   Widget _buildIOSActivityItem({
@@ -958,82 +1162,64 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     padding: EdgeInsets.symmetric(horizontal: 20.w),
                     child: GridView.count(
                       shrinkWrap: true,
-                      crossAxisCount: 4,
-                      mainAxisSpacing: 12.h,
-                      crossAxisSpacing: 12.w,
+                      crossAxisCount: 3,
+                      mainAxisSpacing: 16.h,
+                      crossAxisSpacing: 16.w,
                       childAspectRatio: 0.85,
                       physics: const NeverScrollableScrollPhysics(),
                       children: [
                         _buildIOSQuickActionItem(
-                          icon: LucideIcons.shoppingCart,
-                          label: 'New Sale',
-                          color: Theme.of(context).colorScheme.primary,
+                          icon: LucideIcons.calendar,
+                          label: 'Installments',
+                          color: AppTheme.mkbhdRed,
                           onTap: () {
                             Navigator.pop(context);
-                            context.push('/sales/new');
+                            context.push('/installments');
                           },
                         ),
                         _buildIOSQuickActionItem(
-                          icon: LucideIcons.scanLine,
-                          label: 'Scan',
-                          color: Theme.of(context).colorScheme.error,
+                          icon: LucideIcons.undo2,
+                          label: 'Returns',
+                          color: Colors.orange,
                           onTap: () {
                             Navigator.pop(context);
-                            _openBarcodeScanner();
-                          },
-                        ),
-                        _buildIOSQuickActionItem(
-                          icon: LucideIcons.package,
-                          label: 'Add Product',
-                          color: Theme.of(context).colorScheme.secondary,
-                          onTap: () {
-                            Navigator.pop(context);
-                            context.push('/inventory/add');
+                            context.push('/returns');
                           },
                         ),
                         _buildIOSQuickActionItem(
                           icon: LucideIcons.users,
-                          label: 'Clients',
-                          color: Theme.of(context).colorScheme.tertiary,
+                          label: 'Customers',
+                          color: Colors.blue,
                           onTap: () {
                             Navigator.pop(context);
-                            context.push('/clients');
+                            context.push('/customers');
                           },
                         ),
                         _buildIOSQuickActionItem(
-                          icon: LucideIcons.receipt,
-                          label: 'Orders',
-                          color: Theme.of(context).colorScheme.primary,
+                          icon: LucideIcons.creditCard,
+                          label: 'Expenses',
+                          color: Colors.purple,
                           onTap: () {
                             Navigator.pop(context);
-                            context.push('/orders');
+                            context.push('/expenses');
                           },
                         ),
                         _buildIOSQuickActionItem(
-                          icon: LucideIcons.clipboardList,
-                          label: 'Notes',
-                          color: Theme.of(context).colorScheme.secondary,
+                          icon: LucideIcons.alertTriangle,
+                          label: 'Damaged',
+                          color: Colors.redAccent,
                           onTap: () {
                             Navigator.pop(context);
-                            context.push('/notes');
+                            context.push('/damaged');
                           },
                         ),
                         _buildIOSQuickActionItem(
-                          icon: LucideIcons.barChart,
-                          label: 'Reports',
-                          color: Theme.of(context).colorScheme.tertiary,
+                          icon: LucideIcons.scanLine,
+                          label: 'Barcode',
+                          color: Colors.green,
                           onTap: () {
                             Navigator.pop(context);
-                            context.push('/reports');
-                          },
-                        ),
-                        _buildIOSQuickActionItem(
-                          icon: LucideIcons.settings,
-                          label: 'Settings',
-                          color: Theme.of(context).colorScheme.outline,
-                          onTap: () {
-                            Navigator.pop(context);
-                            context.push('/settings');
+                            context.push('/barcode-scanner');
                           },
                         ),
                       ],
@@ -1055,37 +1241,54 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     required Color color,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 56.w,
-            height: 56.h,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16.r),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16.r),
+        splashColor: color.withOpacity(0.1),
+        highlightColor: color.withOpacity(0.05),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56.w,
+              height: 56.h,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16.r),
+                border: Border.all(
+                  color: color.withOpacity(0.2),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 24.sp,
+              ),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24.sp,
+            SizedBox(height: 8.h),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w500,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

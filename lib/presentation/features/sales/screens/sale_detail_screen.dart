@@ -165,7 +165,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                       height: 56,
                       decoration: BoxDecoration(
                         color: AppTheme.mkbhdRed.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: const Icon(
                         Icons.receipt_rounded,
