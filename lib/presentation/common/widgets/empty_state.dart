@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_theme.dart';
@@ -52,7 +53,7 @@ class EmptyState extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: isDarkMode ? Colors.white : Colors.black87,
@@ -62,7 +63,7 @@ class EmptyState extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 16,
                 color: isDarkMode ? Colors.grey.shade300 : Colors.grey.shade700,
               ),
@@ -86,7 +87,7 @@ class EmptyState extends StatelessWidget {
                 ),
                 child: Text(
                   buttonText!,
-                  style: const TextStyle(
+                  style:  GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),

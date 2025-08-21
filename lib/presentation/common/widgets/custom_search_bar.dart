@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class CustomSearchBar extends StatefulWidget {
@@ -99,14 +100,14 @@ class _CustomSearchBarState extends State<CustomSearchBar> with SingleTickerProv
             autofocus: widget.autofocus,
             onTap: widget.onTap,
             onChanged: widget.onSearch,
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 16,
               color: colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w400,
             ),
             decoration: InputDecoration(
               hintText: widget.hintText,
-              hintStyle: TextStyle(
+              hintStyle: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
                 color: colorScheme.onSurfaceVariant,

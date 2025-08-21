@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Main theme class for the application
 class AppTheme {
@@ -82,15 +83,15 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: metaLightBackground,
       cardColor: metaLightCardColor,
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: metaLightSurface,
         elevation: elevationXSmall,
         centerTitle: false,
         foregroundColor: mkbhdDarkGrey,
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
-        iconTheme: IconThemeData(color: mkbhdDarkGrey),
-        titleTextStyle: TextStyle(
+        iconTheme: const IconThemeData(color: mkbhdDarkGrey),
+        titleTextStyle: GoogleFonts.poppins(
           color: mkbhdDarkGrey,
           fontWeight: FontWeight.w600,
           fontSize: fontSizeXLarge,
@@ -105,7 +106,7 @@ class AppTheme {
         backgroundColor: mkbhdRed,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(cornerRadiusLarge)),
+          borderRadius: BorderRadius.all(Radius.circular(50)),
         ),
       ),
       cardTheme: CardThemeData(
@@ -113,15 +114,15 @@ class AppTheme {
         color: metaLightCardColor,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(cornerRadiusLarge),
+          borderRadius: BorderRadius.circular(50),
         ),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: Colors.grey.shade100,
         selectedColor: mkbhdRed.withOpacity(0.2),
-        labelStyle: const TextStyle(color: mkbhdDarkGrey),
+        labelStyle:  GoogleFonts.poppins(color: mkbhdDarkGrey),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(cornerRadiusLarge),
+          borderRadius: BorderRadius.circular(50),
         ),
       ),
       dividerTheme: const DividerThemeData(
@@ -140,7 +141,7 @@ class AppTheme {
         backgroundColor: metaLightSurface,
         indicatorColor: mkbhdRed.withOpacity(0.2),
         labelTextStyle: WidgetStateProperty.all(
-          const TextStyle(fontSize: fontSizeSmall),
+         GoogleFonts.poppins(fontSize: fontSizeSmall),
         ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
@@ -179,15 +180,15 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: metaDarkBackground,
       cardColor: metaDarkCardColor,
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: metaDarkSurface,
         elevation: elevationNone,
         centerTitle: false,
         foregroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
-        iconTheme: IconThemeData(color: Colors.white),
-        titleTextStyle: TextStyle(
+        iconTheme: const IconThemeData(color: Colors.white),
+        titleTextStyle: GoogleFonts.poppins(
           color: Colors.white,
           fontWeight: FontWeight.w600,
           fontSize: fontSizeXLarge,
@@ -202,7 +203,7 @@ class AppTheme {
         backgroundColor: mkbhdRed,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(cornerRadiusLarge)),
+          borderRadius: BorderRadius.all(Radius.circular(50)),
         ),
       ),
       cardTheme: CardThemeData(
@@ -210,15 +211,15 @@ class AppTheme {
         color: metaDarkCardColor,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(cornerRadiusLarge),
+          borderRadius: BorderRadius.circular(50),
         ),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: metaDarkCardColor,
         selectedColor: mkbhdRed.withOpacity(0.3),
-        labelStyle: const TextStyle(color: Colors.white),
+        labelStyle:  GoogleFonts.poppins(color: Colors.white),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(cornerRadiusLarge),
+          borderRadius: BorderRadius.circular(50),
         ),
       ),
       dividerTheme: const DividerThemeData(
@@ -237,7 +238,7 @@ class AppTheme {
         backgroundColor: metaDarkSurface,
         indicatorColor: mkbhdRed.withOpacity(0.3),
         labelTextStyle: WidgetStateProperty.all(
-          const TextStyle(fontSize: fontSizeSmall, color: Colors.white),
+           GoogleFonts.poppins(fontSize: fontSizeSmall, color: Colors.white),
         ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
@@ -257,21 +258,82 @@ class AppTheme {
   static TextTheme _buildTextTheme([bool isDark = false]) {
     final baseColor = isDark ? Colors.white : mkbhdDarkGrey;
     
-    return TextTheme(
-      displayLarge: TextStyle(
-        fontSize: fontSizeHeadline,
-        fontWeight: FontWeight.w400,
-        color: baseColor,
-      ),
-      titleLarge: TextStyle(
-        fontSize: fontSizeXLarge,
-        fontWeight: FontWeight.w500,
-        color: baseColor,
-      ),
-      bodyLarge: TextStyle(
-        fontSize: fontSizeMedium,
-        fontWeight: FontWeight.w400,
-        color: baseColor,
+    return GoogleFonts.poppinsTextTheme(
+      TextTheme(
+        // Display styles - Large headings
+        displayLarge: GoogleFonts.poppins(
+          fontSize: fontSizeHeadline,
+          fontWeight: FontWeight.w700,
+          color: baseColor,
+        ),
+        displayMedium: GoogleFonts.poppins(
+          fontSize: fontSizeTitle,
+          fontWeight: FontWeight.w600,
+          color: baseColor,
+        ),
+        
+        // Headline styles - Section headers
+        headlineLarge: GoogleFonts.poppins(
+          fontSize: fontSizeXXLarge,
+          fontWeight: FontWeight.w600,
+          color: baseColor,
+        ),
+        headlineMedium: GoogleFonts.poppins(
+          fontSize: fontSizeXLarge,
+          fontWeight: FontWeight.w600,
+          color: baseColor,
+        ),
+        
+        // Title styles - AppBar titles, card titles
+        titleLarge: GoogleFonts.poppins(
+          fontSize: fontSizeXLarge,
+          fontWeight: FontWeight.w600,
+          color: baseColor,
+        ),
+        titleMedium: GoogleFonts.poppins(
+          fontSize: fontSizeLarge,
+          fontWeight: FontWeight.w500,
+          color: baseColor,
+        ),
+        titleSmall: GoogleFonts.poppins(
+          fontSize: fontSizeMedium,
+          fontWeight: FontWeight.w500,
+          color: baseColor,
+        ),
+        
+        // Body styles - Main content text
+        bodyLarge: GoogleFonts.poppins(
+          fontSize: fontSizeLarge,
+          fontWeight: FontWeight.w400,
+          color: baseColor,
+        ),
+        bodyMedium: GoogleFonts.poppins(
+          fontSize: fontSizeMedium,
+          fontWeight: FontWeight.w400,
+          color: baseColor,
+        ),
+        bodySmall: GoogleFonts.poppins(
+          fontSize: fontSizeSmall,
+          fontWeight: FontWeight.w400,
+          color: baseColor,
+        ),
+        
+        // Label styles - Buttons, chips, etc.
+        labelLarge: GoogleFonts.poppins(
+          fontSize: fontSizeMedium,
+          fontWeight: FontWeight.w600,
+          color: baseColor,
+        ),
+        labelMedium: GoogleFonts.poppins(
+          fontSize: fontSizeSmall,
+          fontWeight: FontWeight.w500,
+          color: baseColor,
+        ),
+        labelSmall: GoogleFonts.poppins(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: baseColor,
+        ),
       ),
     );
   }
@@ -305,11 +367,11 @@ class AppTheme {
         borderRadius: BorderRadius.circular(cornerRadiusLarge),
         borderSide: const BorderSide(color: Color(0xFFE74C3C), width: 1.5),
       ),
-      hintStyle: TextStyle(
+      hintStyle: GoogleFonts.poppins(
         color: isDark ? mkbhdLightGrey : mkbhdGrey,
         fontSize: fontSizeMedium,
       ),
-      labelStyle: TextStyle(
+      labelStyle: GoogleFonts.poppins(
         color: isDark ? mkbhdLightGrey : mkbhdGrey,
         fontSize: fontSizeMedium,
       ),
@@ -327,9 +389,9 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         padding: const EdgeInsets.symmetric(horizontal: spacingLarge, vertical: spacingMedium),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(cornerRadiusLarge),
+          borderRadius: BorderRadius.circular(50),
         ),
-        textStyle: const TextStyle(
+        textStyle:  GoogleFonts.poppins(
           fontSize: fontSizeMedium,
           fontWeight: FontWeight.w600,
         ),
@@ -350,9 +412,9 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         padding: const EdgeInsets.symmetric(horizontal: spacingLarge, vertical: spacingMedium),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(cornerRadiusLarge),
+          borderRadius: BorderRadius.circular(50),
         ),
-        textStyle: const TextStyle(
+        textStyle:  GoogleFonts.poppins(
           fontSize: fontSizeMedium,
           fontWeight: FontWeight.w600,
         ),
@@ -372,9 +434,9 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         padding: const EdgeInsets.symmetric(horizontal: spacingMedium, vertical: spacingSmall),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(cornerRadiusMedium),
+          borderRadius: BorderRadius.circular(50),
         ),
-        textStyle: const TextStyle(
+        textStyle:  GoogleFonts.poppins(
           fontSize: fontSizeMedium,
           fontWeight: FontWeight.w500,
         ),

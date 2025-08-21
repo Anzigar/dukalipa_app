@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
@@ -78,14 +79,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: AppTheme.mkbhdRed,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
                           'D',
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 60,
                             fontWeight: FontWeight.bold,
-                            fontFamily: 'Montserrat',
                           ),
                         ),
                       ),

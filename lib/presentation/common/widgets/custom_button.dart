@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_theme.dart';
 
@@ -164,7 +165,7 @@ class _CustomButtonState extends State<CustomButton>
                           else
                             Text(
                               widget.text,
-                              style: TextStyle(
+                              style: GoogleFonts.poppins(
                                 color: effectiveTextColor,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -218,7 +219,7 @@ class MetaActionButton extends StatelessWidget {
               ],
               Text(
                 text,
-                style: const TextStyle(
+                style:  GoogleFonts.poppins(
                   color: AppTheme.mkbhdRed,
                   fontWeight: FontWeight.w500,
                   fontSize: 14,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -8,7 +10,6 @@ import '../../../../core/theme/app_theme.dart';
 import '../models/customer_model.dart';
 import '../repositories/customer_repository.dart';
 import '../../../common/widgets/loading_widget.dart';
-import '../../../common/widgets/custom_button.dart';
 
 class CustomerDetailScreen extends StatefulWidget {
   final String customerId;
@@ -40,10 +41,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   
   void _initRepository() {
     try {
-      // Try to get the repository from the provider first
       _repository = Provider.of<CustomerRepository>(context, listen: false);
     } catch (e) {
-      // If provider not found, create a local instance
       _repository = CustomerRepositoryImpl();
     }
   }
@@ -76,35 +75,56 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
     
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Customer Details'),
+        title: Text(
+          'Customer Details',
+          style: GoogleFonts.poppins(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: colorScheme.onSurface,
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft),
+          icon: Icon(LucideIcons.arrowLeft, size: 20.sp),
           onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
-            icon: const Icon(LucideIcons.edit2),
+            icon: Icon(LucideIcons.edit2, size: 20.sp),
             onPressed: _customer != null ? () => _editCustomer() : null,
             tooltip: 'Edit Customer',
           ),
         ],
       ),
-      body: _buildContent(isDarkMode),
+      body: _buildContent(colorScheme),
       floatingActionButton: _customer != null ? FloatingActionButton.extended(
         onPressed: () => context.push('/sales/add', extra: {'customer': _customer}),
         backgroundColor: AppTheme.mkbhdRed,
         foregroundColor: Colors.white,
-        icon: const Icon(LucideIcons.shoppingCart),
-        label: const Text('New Sale'),
+        icon: Icon(LucideIcons.shoppingCart, size: 20.sp),
+        label: Text(
+          'New Sale',
+          style: GoogleFonts.poppins(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
       ) : null,
     );
   }
   
-  Widget _buildContent(bool isDarkMode) {
+  Widget _buildContent(ColorScheme colorScheme) {
     if (_isLoading) {
       return const Center(child: LoadingWidget());
     }
@@ -114,24 +134,34 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               LucideIcons.alertTriangle,
-              size: 48,
+              size: 48.sp,
               color: Colors.orange,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Text(
               _errorMessage ?? 'An error occurred while loading customer details',
               textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 16.sp,
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _fetchCustomer,
-              icon: const Icon(LucideIcons.refreshCw),
-              label: const Text('Retry'),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: AppTheme.mkbhdRed,
+            SizedBox(height: 24.h),
+            SizedBox(
+              height: 48.h,
+              child: FilledButton.icon(
+                onPressed: _fetchCustomer,
+                icon: Icon(LucideIcons.refreshCw, size: 20.sp),
+                label: Text('Retry'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppTheme.mkbhdRed,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                ),
               ),
             ),
           ],
@@ -140,80 +170,113 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     }
     
     if (_customer == null) {
-      return const Center(
-        child: Text('Customer not found'),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              LucideIcons.userX,
+              size: 64.sp,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'Customer not found',
+              style: GoogleFonts.poppins(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'The customer you are looking for does not exist.',
+              style: GoogleFonts.poppins(
+                fontSize: 14.sp,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
       );
     }
     
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Customer header with avatar
           Container(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
               color: AppTheme.mkbhdRed.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(
+                color: AppTheme.mkbhdRed.withOpacity(0.3),
+                width: 1,
+              ),
             ),
             child: Row(
               children: [
                 CircleAvatar(
-                  radius: 32,
+                  radius: 32.r,
                   backgroundColor: AppTheme.mkbhdRed.withOpacity(0.3),
                   child: Text(
                     _customer!.initials,
-                    style: const TextStyle(
-                      fontSize: 24,
+                    style: GoogleFonts.poppins(
+                      fontSize: 24.sp,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.mkbhdRed,
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         _customer!.name,
-                        style: const TextStyle(
-                          fontSize: 20,
+                        style: GoogleFonts.poppins(
+                          fontSize: 20.sp,
                           fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             LucideIcons.phone,
-                            size: 16,
+                            size: 16.sp,
                             color: AppTheme.mkbhdRed,
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4.w),
                           Text(
                             _customer!.phoneNumber,
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14.sp,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
                       ),
                       if (_customer!.email != null) ...[
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4.h),
                         Row(
                           children: [
-                            const Icon(
+                            Icon(
                               LucideIcons.mail,
-                              size: 16,
+                              size: 16.sp,
                               color: AppTheme.mkbhdRed,
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: 4.w),
                             Text(
                               _customer!.email!,
-                              style: TextStyle(
-                                color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14.sp,
+                                color: colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -226,7 +289,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
             ),
           ),
           
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           
           // Purchase summary cards
           Row(
@@ -239,7 +302,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   color: AppTheme.mkbhdRed,
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
               Expanded(
                 child: _buildInfoCard(
                   label: 'Purchase Count',
@@ -251,7 +314,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
             ],
           ),
           
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           
           Row(
             children: [
@@ -263,7 +326,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   color: Colors.green,
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
               Expanded(
                 child: _buildInfoCard(
                   label: 'Customer Since',
@@ -275,100 +338,180 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
             ],
           ),
           
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           
           // Customer details section
-          Card(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(
-                color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade300,
+          Container(
+            padding: EdgeInsets.all(20.w),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(
+                color: colorScheme.outline.withOpacity(0.1),
                 width: 1,
               ),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Customer Details',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Customer Details',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
                   ),
-                  const SizedBox(height: 16),
-                  
-                  _buildDetailRow('Name', _customer!.name),
-                  _buildDetailRow('Phone', _customer!.phoneNumber),
-                  if (_customer!.email != null)
-                    _buildDetailRow('Email', _customer!.email!),
-                  if (_customer!.address != null)
-                    _buildDetailRow('Address', _customer!.address!),
-                ],
-              ),
+                ),
+                SizedBox(height: 16.h),
+                
+                _buildDetailRow('Name', _customer!.name, colorScheme),
+                _buildDetailRow('Phone', _customer!.phoneNumber, colorScheme),
+                if (_customer!.email != null)
+                  _buildDetailRow('Email', _customer!.email!, colorScheme),
+                if (_customer!.address != null)
+                  _buildDetailRow('Address', _customer!.address!, colorScheme),
+              ],
             ),
           ),
           
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           
           // Recent purchases section
-          const Text(
-            'Recent Purchases',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+          Container(
+            padding: EdgeInsets.all(20.w),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(
+                color: colorScheme.outline.withOpacity(0.1),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Recent Purchases',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                _buildRecentPurchases(colorScheme),
+              ],
             ),
           ),
-          const SizedBox(height: 16),
-          _buildRecentPurchases(),
           
-          const SizedBox(height: 24),
+          SizedBox(height: 32.h),
           
-          // Action buttons
-          Row(
-            children: [
-              Expanded(
-                child: CustomButton(
-                  text: 'View All Purchases',
-                  icon: LucideIcons.shoppingBag,
-                  onPressed: () => context.push('/customers/${_customer!.id}/purchases'),
-                  backgroundColor: Colors.white,
+          // Action buttons - centered and rounded
+          Center(
+            child: Column(
+              children: [
+                // View All Purchases button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56.h,
+                  child: FilledButton.icon(
+                    onPressed: () => _showPurchasesInfo(),
+                    icon: Icon(LucideIcons.shoppingBag, size: 20.sp),
+                    label: Text(
+                      'View All Purchases',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.mkbhdRed,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: CustomButton(
-                  text: 'Delete Customer',
-                  icon: LucideIcons.trash2,
-                  onPressed: () => _showDeleteConfirmation(),
-                  backgroundColor: Colors.red,
+                
+                SizedBox(height: 16.h),
+                
+                // Edit Customer button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56.h,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _editCustomer(),
+                    icon: Icon(LucideIcons.edit2, size: 20.sp),
+                    label: Text(
+                      'Edit Customer',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: AppTheme.mkbhdRed),
+                      foregroundColor: AppTheme.mkbhdRed,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                
+                SizedBox(height: 16.h),
+                
+                // Delete Customer button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56.h,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showDeleteConfirmation(),
+                    icon: Icon(LucideIcons.trash2, size: 20.sp),
+                    label: Text(
+                      'Delete Customer',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.red),
+                      foregroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
         ],
       ),
     );
   }
-  
+
   Widget _buildInfoCard({
     required String label,
     required String value,
     required IconData icon,
     required Color color,
   }) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
     
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey.shade800 : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: colorScheme.outline.withOpacity(0.1),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -383,7 +526,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
                   shape: BoxShape.circle,
@@ -391,24 +534,27 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 child: Icon(
                   icon,
                   color: color,
-                  size: 20,
+                  size: 20.sp,
                 ),
               ),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14.sp,
+                    color: colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 18,
+            style: GoogleFonts.poppins(
+              fontSize: 18.sp,
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -418,28 +564,30 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     );
   }
   
-  Widget _buildDetailRow(String label, String value) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+  Widget _buildDetailRow(String label, String value, ColorScheme colorScheme) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
+      padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 100,
+            width: 100.w,
             child: Text(
               label,
-              style: TextStyle(
-                color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
+              style: GoogleFonts.poppins(
+                fontSize: 14.sp,
+                color: colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
+              style: GoogleFonts.poppins(
+                fontSize: 14.sp,
                 fontWeight: FontWeight.w500,
+                color: colorScheme.onSurface,
               ),
             ),
           ),
@@ -448,71 +596,138 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     );
   }
   
-  Widget _buildRecentPurchases() {
+  Widget _buildRecentPurchases(ColorScheme colorScheme) {
     // In a real app, you would fetch and display real purchase data
     // Here we're using mock data for demonstration
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: Theme.of(context).brightness == Brightness.dark 
-              ? Colors.grey.shade700 
-              : Colors.grey.shade300,
-          width: 1,
-        ),
-      ),
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: 3, // Showing only 3 most recent purchases
-        separatorBuilder: (context, index) => const Divider(),
-        itemBuilder: (context, index) {
-          // Mock purchase data
-          final dates = [
-            DateTime.now().subtract(const Duration(days: 2)),
-            DateTime.now().subtract(const Duration(days: 10)),
-            DateTime.now().subtract(const Duration(days: 25)),
-          ];
-          
-          final amounts = [25000.0, 35000.0, 48000.0];
-          final itemCounts = [3, 5, 2];
-          
-          return ListTile(
-            title: Text('Purchase #${1000 + index}'),
-            subtitle: Text('${itemCounts[index]} items'),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  'TSh ${NumberFormat("#,###").format(amounts[index])}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: AppTheme.mkbhdRed,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  DateFormat('MMM d, yyyy').format(dates[index]),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
+    return Column(
+      children: List.generate(3, (index) {
+        // Mock purchase data
+        final dates = [
+          DateTime.now().subtract(const Duration(days: 2)),
+          DateTime.now().subtract(const Duration(days: 10)),
+          DateTime.now().subtract(const Duration(days: 25)),
+        ];
+        
+        final amounts = [25000.0, 35000.0, 48000.0];
+        final itemCounts = [3, 5, 2];
+        
+        return Container(
+          margin: EdgeInsets.only(bottom: index < 2 ? 12.h : 0),
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: colorScheme.outline.withOpacity(0.1),
+              width: 1,
             ),
-            onTap: () => context.push('/sales/${1000 + index}'),
-          );
-        },
-      ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: AppTheme.mkbhdRed.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Icon(
+                  LucideIcons.shoppingBag,
+                  size: 16.sp,
+                  color: AppTheme.mkbhdRed,
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Purchase #${1000 + index}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      '${itemCounts[index]} items',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.sp,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'TSh ${NumberFormat("#,###").format(amounts[index])}',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14.sp,
+                      color: AppTheme.mkbhdRed,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    DateFormat('MMM d, yyyy').format(dates[index]),
+                    style: GoogleFonts.poppins(
+                      fontSize: 12.sp,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
   
   void _editCustomer() {
-    // Navigate to edit customer screen
-    context.push('/customers/edit/${_customer!.id}');
+    // Navigate to add customer screen in edit mode
+    context.push('/customers/add', extra: {'customer': _customer});
+  }
+  
+  void _showPurchasesInfo() {
+    // Show info about purchases since the detailed view route doesn't exist yet
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Customer Purchases'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Customer: ${_customer!.name}'),
+            SizedBox(height: 8.h),
+            Text('Total Purchases: ${_customer!.formattedTotalPurchases}'),
+            SizedBox(height: 8.h),
+            Text('Purchase Count: ${_customer!.purchaseCount}'),
+            SizedBox(height: 8.h),
+            Text('Last Purchase: ${_customer!.formattedLastPurchaseDate}'),
+            SizedBox(height: 16.h),
+            Text(
+              'Detailed purchase history view will be implemented in future updates.',
+              style: GoogleFonts.poppins(
+                fontStyle: FontStyle.italic,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
   
   void _showDeleteConfirmation() {

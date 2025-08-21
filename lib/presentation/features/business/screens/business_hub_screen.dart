@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lottie/lottie.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class BusinessHubScreen extends StatelessWidget {
   const BusinessHubScreen({super.key});
@@ -12,7 +16,7 @@ class BusinessHubScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Business Hub',
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 18.sp,
             fontWeight: FontWeight.w700,
             color: Theme.of(context).colorScheme.onSurface,
@@ -23,7 +27,7 @@ class BusinessHubScreen extends StatelessWidget {
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: Icon(
-            Icons.arrow_back_ios,
+            LucideIcons.arrowLeft,
             color: Theme.of(context).colorScheme.onSurface,
             size: 20.sp,
           ),
@@ -43,7 +47,7 @@ class BusinessHubScreen extends StatelessWidget {
             // Quick insights
             Text(
               'Quick Insights',
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w700,
                 color: Theme.of(context).colorScheme.onSurface,
@@ -56,7 +60,7 @@ class BusinessHubScreen extends StatelessWidget {
             // Business features section
             Text(
               'Business Management',
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w700,
                 color: Theme.of(context).colorScheme.onSurface,
@@ -69,7 +73,7 @@ class BusinessHubScreen extends StatelessWidget {
             // Reports and analytics
             Text(
               'Reports & Analytics',
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w700,
                 color: Theme.of(context).colorScheme.onSurface,
@@ -102,7 +106,7 @@ class BusinessHubScreen extends StatelessWidget {
           value: '\$1,245',
           trend: '+12%',
           isPositive: true,
-          icon: Icons.attach_money_rounded,
+          icon: LucideIcons.dollarSign,
           color: primaryBlue,
         ),
         _InsightCard(
@@ -110,7 +114,7 @@ class BusinessHubScreen extends StatelessWidget {
           value: '24',
           trend: '+5',
           isPositive: true,
-          icon: Icons.shopping_bag_outlined,
+          icon: LucideIcons.shoppingBag,
           color: secondaryBlue,
         ),
         _InsightCard(
@@ -118,7 +122,7 @@ class BusinessHubScreen extends StatelessWidget {
           value: '7',
           trend: '-2',
           isPositive: true,
-          icon: Icons.inventory_2_outlined,
+          icon: LucideIcons.package,
           color: tertiaryBlue,
         ),
         _InsightCard(
@@ -126,7 +130,7 @@ class BusinessHubScreen extends StatelessWidget {
           value: '\$52',
           trend: '-3%',
           isPositive: false,
-          icon: Icons.receipt_long_outlined,
+          icon: LucideIcons.receipt,
           color: primaryBlue.withOpacity(0.8),
         ),
       ],
@@ -149,42 +153,42 @@ class BusinessHubScreen extends StatelessWidget {
         _FeatureCard(
           title: 'Inventory',
           description: 'Manage your products',
-          icon: Icons.inventory,
+          icon: LucideIcons.package2,
           onTap: () => context.push('/inventory'),
           color: primaryBlue,
         ),
         _FeatureCard(
           title: 'Orders',
           description: 'Track & fulfill orders',
-          icon: Icons.receipt_long,
+          icon: LucideIcons.receipt,
           onTap: () => context.push('/orders'),
           color: secondaryBlue,
         ),
         _FeatureCard(
           title: 'Storage',
           description: 'Manage locations & stock',
-          icon: Icons.warehouse,
+          icon: LucideIcons.warehouse,
           onTap: () => context.push('/business/storage'),
           color: tertiaryBlue,
         ),
         _FeatureCard(
           title: 'Damaged Products',
           description: 'Track damaged inventory',
-          icon: Icons.inventory_2,
+          icon: LucideIcons.packageX,
           onTap: () => context.push('/business/damaged'),
           color: primaryBlue.withOpacity(0.8),
         ),
         _FeatureCard(
           title: 'Employees',
           description: 'Manage staff & roles',
-          icon: Icons.people,
+          icon: LucideIcons.users,
           onTap: () => context.push('/employees'),
           color: secondaryBlue.withOpacity(0.8),
         ),
         _FeatureCard(
           title: 'Deleted Items',
           description: 'Recover deleted products',
-          icon: Icons.delete_outline,
+          icon: LucideIcons.trash2,
           onTap: () => context.push('/business/deleted'),
           color: tertiaryBlue.withOpacity(0.8),
         ),
@@ -208,28 +212,28 @@ class BusinessHubScreen extends StatelessWidget {
         _FeatureCard(
           title: 'Sales Analytics',
           description: 'View sales performance',
-          icon: Icons.analytics,
+          icon: LucideIcons.barChart3,
           onTap: () => context.push('/business/analytics'),
           color: primaryBlue,
         ),
         _FeatureCard(
           title: 'Financial Reports',
           description: 'Revenue & expenses',
-          icon: Icons.bar_chart,
+          icon: LucideIcons.trendingUp,
           onTap: () => context.push('/reports/financials'),
           color: secondaryBlue,
         ),
         _FeatureCard(
           title: 'Customer Insights',
           description: 'Customer behavior & trends',
-          icon: Icons.people_alt_outlined,
+          icon: LucideIcons.userCheck,
           onTap: () => context.push('/reports/customers'),
           color: tertiaryBlue,
         ),
         _FeatureCard(
           title: 'Export Data',
           description: 'Download reports as CSV',
-          icon: Icons.download,
+          icon: LucideIcons.download,
           onTap: () => context.push('/reports/export'),
           color: primaryBlue.withOpacity(0.8),
         ),
@@ -271,7 +275,7 @@ class _BusinessOverview extends StatelessWidget {
                 child: Center(
                   child: Text(
                     'DS',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
                       fontSize: 22.sp,
@@ -286,7 +290,7 @@ class _BusinessOverview extends StatelessWidget {
                   children: [
                     Text(
                       'Dukalipa Shop',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w700,
                         fontSize: 18.sp,
                         color: Theme.of(context).colorScheme.onSurface,
@@ -295,7 +299,7 @@ class _BusinessOverview extends StatelessWidget {
                     SizedBox(height: 4.h),
                     Text(
                       'Electronics & Accessories',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
@@ -312,7 +316,7 @@ class _BusinessOverview extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(
-                  Icons.settings_rounded,
+                  LucideIcons.settings,
                   color: Theme.of(context).colorScheme.primary,
                   size: 20.sp,
                 ),
@@ -334,7 +338,7 @@ class _BusinessOverview extends StatelessWidget {
                   child: _StatItem(
                     value: '348',
                     label: 'Total Products',
-                    icon: Icons.inventory_2_rounded,
+                    icon: LucideIcons.package2,
                     onTap: () {},
                   ),
                 ),
@@ -347,7 +351,7 @@ class _BusinessOverview extends StatelessWidget {
                   child: _StatItem(
                     value: '125',
                     label: 'Active Orders',
-                    icon: Icons.shopping_bag_rounded,
+                    icon: LucideIcons.shoppingBag,
                     onTap: () {},
                   ),
                 ),
@@ -360,7 +364,7 @@ class _BusinessOverview extends StatelessWidget {
                   child: _StatItem(
                     value: '\$12.4k',
                     label: 'Monthly Revenue',
-                    icon: Icons.payments_rounded,
+                    icon: LucideIcons.creditCard,
                     onTap: () {},
                   ),
                 ),
@@ -418,7 +422,7 @@ class _StatItem extends StatelessWidget {
                   Flexible(
                     child: Text(
                       label,
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                         fontSize: 11.sp,
                         fontWeight: FontWeight.w500,
@@ -499,14 +503,14 @@ class _InsightCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      isPositive ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                      isPositive ? LucideIcons.trendingUp : LucideIcons.trendingDown,
                       color: trendColor,
                       size: 10.sp, // Reduced size
                     ),
                     SizedBox(width: 2.w),
                     Text(
                       trend,
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 10.sp, // Reduced size
                         color: trendColor,
                         fontWeight: FontWeight.w600,
@@ -521,7 +525,7 @@ class _InsightCard extends StatelessWidget {
           Flexible(
             child: Text(
               title,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                 fontSize: 12.sp, // Reduced size
                 fontWeight: FontWeight.w500,
@@ -535,7 +539,7 @@ class _InsightCard extends StatelessWidget {
           Flexible(
             child: Text(
               value,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 18.sp, // Reduced size
                 fontWeight: FontWeight.w700,
                 color: Theme.of(context).colorScheme.onSurface,
@@ -602,7 +606,7 @@ class _FeatureCard extends StatelessWidget {
                 Flexible(
                   child: Text(
                     title,
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w600,
                       fontSize: 14.sp, // Reduced size
                       color: Theme.of(context).colorScheme.onSurface,
@@ -616,7 +620,7 @@ class _FeatureCard extends StatelessWidget {
                 Flexible(
                   child: Text(
                     description,
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                       fontSize: 11.sp, // Reduced size
                       fontWeight: FontWeight.w500,

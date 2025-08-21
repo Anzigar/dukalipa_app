@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:dukalipa_app/core/theme/dukalipa_colors.dart';
@@ -132,9 +133,9 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
                           color: Colors.black.withOpacity(0.5),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Text(
+                        child:  Text(
                           'Scan Barcode',
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -214,7 +215,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
                             const SizedBox(width: 8),
                             Text(
                               'Align barcode within frame',
-                              style: TextStyle(
+                              style: GoogleFonts.poppins(
                                 color: Colors.white.withOpacity(0.8),
                                 fontSize: 14,
                               ),
@@ -298,7 +299,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
             const SizedBox(height: 4),
             Text(
               label,
-              style: const TextStyle(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 12,
               ),
@@ -526,9 +527,9 @@ class _BarcodeResultSheet extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           
-          const Text(
+          Text(
             'Barcode Scanned',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -550,10 +551,9 @@ class _BarcodeResultSheet extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   barcode,
-                  style: const TextStyle(
+                  style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    fontFamily: 'monospace',
                   ),
                 ),
               ],
@@ -582,16 +582,54 @@ class _BarcodeResultSheet extends StatelessWidget {
                     color: Colors.transparent,
                     child: InkWell(
                       onTap: () {
-                        Navigator.pop(context);
+                        Navigator.pop(context, barcode);
                         context.push('/inventory/search?barcode=$barcode');
                       },
                       borderRadius: BorderRadius.circular(16),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                         child: Center(
                           child: Text(
                             'Search Product',
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                // Search customer button
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.blue.withOpacity(0.9),
+                        Colors.blue,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pop(context, barcode);
+                        context.push('/customers?search=$barcode');
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child:  Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Center(
+                          child: Text(
+                            'Search Customer',
+                            style: GoogleFonts.poppins(
                               color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -607,7 +645,7 @@ class _BarcodeResultSheet extends StatelessWidget {
                 // Add to sale button
                 OutlinedButton(
                   onPressed: () {
-                    Navigator.pop(context);
+                    Navigator.pop(context, barcode);
                     context.push('/sales/new?barcode=$barcode');
                   },
                   style: OutlinedButton.styleFrom(
@@ -628,6 +666,22 @@ class _BarcodeResultSheet extends StatelessWidget {
                     minimumSize: const Size(double.infinity, 52),
                   ),
                   child: const Text('Scan Again'),
+                ),
+                const SizedBox(height: 12),
+                
+                // Use barcode directly button
+                OutlinedButton(
+                  onPressed: () {
+                    Navigator.pop(context, barcode);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 52),
+                    side: BorderSide(color: Colors.grey),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text('Use Barcode Value'),
                 ),
               ],
             ),

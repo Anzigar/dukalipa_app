@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_theme.dart';
 
@@ -128,7 +129,7 @@ class CustomTextField extends StatelessWidget {
       onFieldSubmitted: onFieldSubmitted,
       autofocus: autofocus,
       enabled: enabled,
-      style: TextStyle(
+      style: GoogleFonts.poppins(
         color: isDarkMode ? Colors.white : Colors.black87,
       ),
     );

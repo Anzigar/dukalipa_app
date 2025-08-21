@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 
 class Material3SearchBar extends StatelessWidget {
@@ -87,13 +88,13 @@ class Material3SearchBar extends StatelessWidget {
         padding ?? const EdgeInsets.symmetric(horizontal: 16),
       ),
       textStyle: WidgetStateProperty.all(
-        TextStyle(
+        GoogleFonts.poppins(
           fontSize: 16,
           color: colorScheme.onSurface,
         ),
       ),
       hintStyle: WidgetStateProperty.all(
-        TextStyle(
+        GoogleFonts.poppins(
           fontSize: 16,
           color: colorScheme.onSurfaceVariant,
         ),

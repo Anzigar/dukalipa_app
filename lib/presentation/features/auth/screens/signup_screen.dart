@@ -99,7 +99,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   CustomTextField(
                     controller: _nameController,
                     labelText: 'Full Name',
-                    hintText: 'John Doe',
+                    hintText: 'Ansigar Erasm',
                     keyboardType: TextInputType.name,
                     textCapitalization: TextCapitalization.words,
                     prefixIcon: LucideIcons.user,

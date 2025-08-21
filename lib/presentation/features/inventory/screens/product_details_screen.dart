@@ -146,7 +146,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       side: BorderSide(color: colorScheme.primary, width: 1.5),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(50),
                       ),
                     ),
                   ),
@@ -162,7 +162,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       foregroundColor: colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(50),
                       ),
                     ),
                   ),

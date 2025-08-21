@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../data/services/inventory_service.dart';
@@ -178,14 +180,20 @@ class _StorageManagementScreenState extends State<StorageManagementScreen> with 
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         elevation: 0,
-        icon: const Icon(Icons.add_rounded),
-        label: Text(_tabController.index == 0 
-            ? 'Add Location' 
-            : _tabController.index == 1 
-                ? 'Manage Stock' 
-                : 'New Transfer'),
+        icon: Icon(LucideIcons.plus),
+        label: Text(
+          _tabController.index == 0 
+              ? 'Add Location' 
+              : _tabController.index == 1 
+                  ? 'Manage Stock' 
+                  : 'New Transfer',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+            fontSize: 14.sp,
+          ),
+        ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(50),
         ),
       ),
     );

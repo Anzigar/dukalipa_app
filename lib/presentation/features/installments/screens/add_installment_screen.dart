@@ -1,6 +1,7 @@
 import 'package:dukalipa_app/presentation/common/widgets/custom_button.dart';
 import 'package:dukalipa_app/presentation/common/widgets/custom_text_field.dart';
 import 'package:dukalipa_app/presentation/common/widgets/custom_snack_bar.dart';
+import 'package:dukalipa_app/presentation/features/inventory/repositories/inventory_repository.dart' as inventory_impl;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -11,10 +12,10 @@ import '../../../../core/theme/app_theme.dart';
 import '../repositories/installment_repository.dart'; 
 import '../repositories/installment_repository_impl.dart' as impl;
 import '../../clients/models/client_model.dart';
-import '../../inventory/models/product_model.dart';
-import '../../inventory/repositories/inventory_repository.dart';
 import '../../clients/repositories/client_repository.dart';
 import '../../clients/repositories/client_repository_impl.dart' as client_impl;
+import '../../inventory/models/product_model.dart';
+import '../../inventory/repositories/inventory_repository.dart';
 
 class AddInstallmentScreen extends StatefulWidget {
   const AddInstallmentScreen({Key? key}) : super(key: key);
@@ -70,7 +71,7 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
       // If providers not available, create local instances
       _installmentRepository = impl.InstallmentRepositoryImpl();
       _clientRepository = client_impl.ClientRepositoryImpl();
-      _inventoryRepository = InventoryRepositoryImpl();
+      _inventoryRepository = inventory_impl.InventoryRepositoryImpl();
     }
   }
 
@@ -200,7 +201,7 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
       0, (sum, product) => sum + product.sellingPrice
     );
     
-    _totalAmountController.text = total.toString();
+    _totalAmountController.text = total.toStringAsFixed(2);
   }
 
   Future<void> _selectStartDate() async {
@@ -223,6 +224,18 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.mkbhdRed,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+              ),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.mkbhdRed,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
               ),
             ),
           ),
@@ -261,6 +274,18 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.mkbhdRed,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+              ),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.mkbhdRed,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
               ),
             ),
           ),
@@ -813,9 +838,7 @@ class _AddInstallmentScreenState extends State<AddInstallmentScreen> {
                   'Price: TSh ${NumberFormat('#,###').format(product.sellingPrice)}',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Theme.of(context).brightness == Brightness.dark 
-                        ? Colors.grey.shade400 
-                        : Colors.grey.shade700,
+                    color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
                   ),
                 ),
               ],

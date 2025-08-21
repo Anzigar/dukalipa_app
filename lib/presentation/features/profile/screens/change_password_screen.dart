@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/providers/auth_provider.dart';
 import '../../../common/widgets/custom_text_field.dart';
+import '../../../common/widgets/custom_button.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -112,7 +115,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          Icons.lock_outline,
+                          LucideIcons.lock,
                           color: Theme.of(context).colorScheme.primary,
                           size: 24,
                         ),
@@ -122,9 +125,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Security Update',
-                              style: TextStyle(
+                              style: GoogleFonts.poppins(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -132,7 +135,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             const SizedBox(height: 4),
                             Text(
                               'Choose a strong password to protect your account',
-                              style: TextStyle(
+                              style: GoogleFonts.poppins(
                                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                 fontSize: 14,
                               ),
@@ -146,7 +149,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   CustomTextField(
                     controller: _currentPasswordController,
                     labelText: 'Current Password',
-                    prefixIcon: Icons.lock_outline,
+                    prefixIcon: LucideIcons.lock,
                     obscureText: _obscureCurrentPassword,
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -170,7 +173,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   CustomTextField(
                     controller: _newPasswordController,
                     labelText: 'New Password',
-                    prefixIcon: Icons.lock_outline,
+                    prefixIcon: LucideIcons.lock,
                     obscureText: _obscureNewPassword,
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -197,7 +200,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   CustomTextField(
                     controller: _confirmPasswordController,
                     labelText: 'Confirm New Password',
-                    prefixIcon: Icons.lock_outline,
+                    prefixIcon: LucideIcons.lock,
                     obscureText: _obscureConfirmPassword,
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -244,15 +247,15 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          Icons.security,
+                          LucideIcons.shield,
                           color: Theme.of(context).colorScheme.primary,
                           size: 20,
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Text(
+                      Text(
                         'Password Strength',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -293,40 +296,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             ),
             const SizedBox(height: 32),
             
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: _isLoading ? null : _changePassword,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Center(
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2.5,
-                              ),
-                            )
-                          : const Text(
-                              'Update Password',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                    ),
-                  ),
-                ),
-              ),
+            CustomButton(
+              text: 'Update Password',
+              onPressed: _changePassword,
+              isLoading: _isLoading,
+              icon: LucideIcons.lock,
+              fullWidth: true,
             ),
           ],
         ),

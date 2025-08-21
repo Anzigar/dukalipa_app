@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/providers/auth_provider.dart';
 import '../../../common/widgets/custom_text_field.dart';
+import '../../../common/widgets/custom_button.dart';
 import '../viewmodels/edit_profile_viewmodel.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -129,7 +132,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   onPressed: viewModel.isSaving ? null : _saveProfile,
                   child: Text(
                     'Save',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.w600,
                     ),
@@ -189,17 +192,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               const SizedBox(height: 16),
                               Text(
                                 'Profile Photo',
-                                style: TextStyle(
-                                  fontSize: 16,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16.sp,
                                   fontWeight: FontWeight.w600,
                                   color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
                               Text(
                                 'Tap to change your profile photo',
-                                style: TextStyle(
-                                  fontSize: 14,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14.sp,
                                   color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                 ),
                               ),
@@ -292,40 +295,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         const SizedBox(height: 32),
 
                         // Save Button
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: viewModel.isSaving ? null : _saveProfile,
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                child: Center(
-                                  child: viewModel.isSaving
-                                      ? const SizedBox(
-                                          width: 24,
-                                          height: 24,
-                                          child: CircularProgressIndicator(
-                                            color: Colors.white,
-                                            strokeWidth: 2.5,
-                                          ),
-                                        )
-                                      : const Text(
-                                          'Save Changes',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                ),
-                              ),
-                            ),
-                          ),
+                        CustomButton(
+                          text: 'Save Changes',
+                          onPressed: () => _saveProfile(),
+                          isLoading: viewModel.isSaving,
+                          fullWidth: true,
+                          icon: Icons.save,
                         ),
                       ],
                     ),
@@ -349,8 +324,8 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
       child: Text(
         title,
-        style: TextStyle(
-          fontSize: 13,
+        style: GoogleFonts.poppins(
+          fontSize: 13.sp,
           fontWeight: FontWeight.w400,
           color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
           letterSpacing: 0.3,

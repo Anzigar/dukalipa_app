@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../core/providers/theme_provider.dart';
+import '../../../common/widgets/custom_button.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -24,12 +28,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFF2F2F7),
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        elevation: 0,
+        title: const Text('Settings'),
+        leading: IconButton(
+          icon: Icon(
+            LucideIcons.arrowLeft,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          onPressed: () => context.pop(),
+        ),
+      ),
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(isDark),
-            Expanded(
-              child: ListView(
+        child: ListView(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 children: [
                   SizedBox(height: 20.h),
@@ -156,41 +168,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildSignOutButton(isDark),
                   SizedBox(height: 40.h),
                 ],
-              ),
-            ),
-          ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(bool isDark) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF000000) : Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: isDark ? const Color(0xFF38383A) : const Color(0xFFE5E5EA),
-            width: 0.5,
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          Text(
-            'Settings',
-            style: TextStyle(
-              fontSize: 34.sp,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black,
-              fontFamily: 'Montserrat',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildSection({
     required String title,
@@ -204,11 +186,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           padding: EdgeInsets.only(left: 16.w, bottom: 8.h),
           child: Text(
             title.toUpperCase(),
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 13.sp,
               fontWeight: FontWeight.w600,
               color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6D6D70),
-              fontFamily: 'Montserrat',
               letterSpacing: 0.5,
             ),
           ),
@@ -259,20 +240,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Text(
                   'Theme',
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w500,
                     color: isDark ? Colors.white : Colors.black,
-                    fontFamily: 'Montserrat',
-                  ),
+                                      ),
                 ),
                 Text(
                   _getThemeDisplayName(themeProvider.themeMode),
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontSize: 14.sp,
                     color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6D6D70),
-                    fontFamily: 'Montserrat',
-                  ),
+                                      ),
                 ),
               ],
             ),
@@ -312,20 +291,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w500,
                     color: isDark ? Colors.white : Colors.black,
-                    fontFamily: 'Montserrat',
-                  ),
+                                      ),
                 ),
                 Text(
                   subtitle,
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontSize: 14.sp,
                     color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6D6D70),
-                    fontFamily: 'Montserrat',
-                  ),
+                                      ),
                 ),
               ],
             ),
@@ -382,20 +359,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w500,
                       color: isDark ? Colors.white : Colors.black,
-                      fontFamily: 'Montserrat',
-                    ),
+                                          ),
                   ),
                   Text(
                     subtitle,
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 14.sp,
                       color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6D6D70),
-                      fontFamily: 'Montserrat',
-                    ),
+                                          ),
                   ),
                 ],
               ),
@@ -415,40 +390,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildSignOutButton(bool isDark) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(12.r),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12.r),
-          onTap: () => _showSignOutDialog(context, isDark),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.logout,
-                  color: const Color(0xFFFF3B30),
-                  size: 20.sp,
-                ),
-                SizedBox(width: 8.w),
-                Text(
-                  'Sign Out',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFFFF3B30),
-                    fontFamily: 'Montserrat',
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+      child: CustomButton(
+        text: 'Sign Out',
+        onPressed: () => _showSignOutDialog(context, isDark),
+        icon: LucideIcons.logOut,
+        backgroundColor: Colors.transparent,
+        textColor: const Color(0xFFFF3B30),
+        borderColor: const Color(0xFFFF3B30),
+        isOutlined: true,
+        fullWidth: true,
       ),
     );
   }
@@ -469,7 +419,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       SnackBar(
         content: Text(
           'This feature is coming soon!',
-          style: TextStyle(fontFamily: 'Montserrat'),
+          style: GoogleFonts.poppins(),
         ),
         backgroundColor: const Color(0xFF007AFF),
       ),
@@ -487,31 +437,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           title: Text(
             'Sign Out',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 18.sp,
               fontWeight: FontWeight.w600,
               color: isDark ? Colors.white : Colors.black,
-              fontFamily: 'Montserrat',
-            ),
+                          ),
           ),
           content: Text(
             'Are you sure you want to sign out?',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 16.sp,
               color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6D6D70),
-              fontFamily: 'Montserrat',
-            ),
+                          ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'Cancel',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 16.sp,
                   color: const Color(0xFF007AFF),
-                  fontFamily: 'Montserrat',
-                ),
+                                  ),
               ),
             ),
             TextButton(
@@ -522,12 +469,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
               child: Text(
                 'Sign Out',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFFFF3B30),
-                  fontFamily: 'Montserrat',
-                ),
+                                  ),
               ),
             ),
           ],

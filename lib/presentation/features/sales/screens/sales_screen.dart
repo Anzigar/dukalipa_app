@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
@@ -77,7 +78,7 @@ class _SalesScreenState extends State<SalesScreen> {
           appBar: AppBar(
             title: Text(
               'Sales',
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w700,
                 color: colorScheme.onSurface,
@@ -154,7 +155,7 @@ class _SalesScreenState extends State<SalesScreen> {
               SizedBox(height: 24.h),
               Text(
                 'Start your sales',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
                   color: colorScheme.onSurface,
@@ -164,7 +165,7 @@ class _SalesScreenState extends State<SalesScreen> {
               Text(
                 'Record your first sale to get started with sales management.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 14.sp,
                   color: colorScheme.onSurface.withOpacity(0.6),
                   fontWeight: FontWeight.w500,
@@ -186,7 +187,7 @@ class _SalesScreenState extends State<SalesScreen> {
                 icon: Icon(Icons.add_rounded, size: 18.sp),
                 label: Text(
                   'Add Sale',
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
                     fontSize: 14.sp,
                   ),
@@ -220,7 +221,7 @@ class _SalesScreenState extends State<SalesScreen> {
             SizedBox(height: 16.h),
             Text(
               'Error: ${salesProvider.errorMessage}',
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 16.sp,
                 color: colorScheme.onSurface,
               ),
@@ -294,14 +295,14 @@ class _SalesScreenState extends State<SalesScreen> {
       child: TextField(
         controller: _searchController,
         onChanged: (value) => setState(() {}),
-        style: TextStyle(
+        style: GoogleFonts.poppins(
           fontSize: 16.sp,
           fontWeight: FontWeight.w400,
           color: colorScheme.onSurfaceVariant,
         ),
         decoration: InputDecoration(
           hintText: 'Search sales...',
-          hintStyle: TextStyle(
+          hintStyle: GoogleFonts.poppins(
             color: colorScheme.onSurfaceVariant,
             fontSize: 16.sp,
             fontWeight: FontWeight.w400,
@@ -360,7 +361,7 @@ class _SalesScreenState extends State<SalesScreen> {
                 ),
                 child: Text(
                   option,
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     color: isSelected 
                         ? Colors.white
                         : colorScheme.onSurface,
@@ -407,7 +408,7 @@ class _SalesScreenState extends State<SalesScreen> {
                 children: [
                   Text(
                     'Sale #${sale.id}',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
                       fontSize: 16.sp,
                       color: colorScheme.onSurface,
@@ -419,7 +420,7 @@ class _SalesScreenState extends State<SalesScreen> {
               SizedBox(height: 8.h),
               Text(
                 sale.customerName ?? 'Walk-in Customer',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 14.sp,
                   color: colorScheme.onSurface.withOpacity(0.6),
                 ),
@@ -430,7 +431,7 @@ class _SalesScreenState extends State<SalesScreen> {
                 children: [
                   Text(
                     '\$${sale.totalAmount.toStringAsFixed(2)}',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
                       fontSize: 18.sp,
                       color: Colors.green,
@@ -438,7 +439,7 @@ class _SalesScreenState extends State<SalesScreen> {
                   ),
                   Text(
                     _formatDate(sale.dateTime),
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 12.sp,
                       color: colorScheme.onSurface.withOpacity(0.5),
                     ),
@@ -482,7 +483,7 @@ class _SalesScreenState extends State<SalesScreen> {
       ),
       child: Text(
         status.toUpperCase(),
-        style: TextStyle(
+        style: GoogleFonts.poppins(
           fontSize: 10.sp,
           fontWeight: FontWeight.bold,
           color: textColor,

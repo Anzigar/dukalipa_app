@@ -38,7 +38,7 @@ class AuthProvider extends ChangeNotifier {
       // Mock user profile for testing
       _userProfile = UserProfile(
         id: '1',
-        name: 'John Doe',
+        name: 'Ansigar Erasm',
         email: email,
         phone: '+1234567890',
         shopName: 'Demo Shop',

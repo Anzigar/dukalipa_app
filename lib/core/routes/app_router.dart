@@ -11,10 +11,14 @@ import '../../presentation/features/business/screens/business_analytics_screen.d
 import '../../presentation/features/business/screens/business_hub_screen.dart';
 import '../../presentation/features/business/screens/storage_management_screen.dart';
 import '../../presentation/features/clients/screens/customers_screen.dart';
+import '../../presentation/features/clients/screens/add_customer_screen.dart';
+import '../../presentation/features/clients/screens/customer_detail_screen.dart';
+import '../../presentation/features/clients/models/customer_model.dart';
 import '../../presentation/features/damaged/screens/damaged_products_screen.dart';
 import '../../presentation/features/deleted/screens/deleted_items_screen.dart';
 import '../../presentation/features/expenses/screens/expenses_screen.dart';
 import '../../presentation/features/installments/screens/installments_screen.dart';
+import '../../presentation/features/installments/screens/add_installment_screen.dart';
 import '../../presentation/features/returns/screens/returns_screen.dart';
 import '../../presentation/features/home/screens/home_screen.dart';
 import '../../presentation/features/home/screens/activity_screen.dart';
@@ -310,11 +314,48 @@ class AppRouter {
         },
       ),
       
+      // Add customer route
+      GoRoute(
+        path: '/customers/add',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to AddCustomerScreen');
+          return const AddCustomerScreen();
+        },
+      ),
+      
+      // Customer detail route
+      GoRoute(
+        path: '/customers/:id',
+        builder: (context, state) {
+          final customerId = state.pathParameters['id']!;
+          debugPrint('✅ Navigating to CustomerDetailScreen with ID: $customerId');
+          return CustomerDetailScreen(customerId: customerId);
+        },
+      ),
+      
+      // Edit customer route - redirect to add customer with edit mode
+      GoRoute(
+        path: '/customers/edit/:id',
+        redirect: (context, state) {
+          final customerId = state.pathParameters['id']!;
+          return '/customers/$customerId';
+        },
+      ),
+      
       GoRoute(
         path: '/installments',
         builder: (context, state) {
           debugPrint('✅ Navigating to InstallmentsScreen');
           return const InstallmentsScreen();
+        },
+      ),
+      
+      // Add the missing route for add installment screen
+      GoRoute(
+        path: '/installments/add',
+        builder: (context, state) {
+          debugPrint('✅ Navigating to AddInstallmentScreen');
+          return const AddInstallmentScreen();
         },
       ),
       
@@ -386,81 +427,49 @@ class AppRouter {
       debugPrint('❌ Attempted path: ${state.matchedLocation}');
       debugPrint('❌ Full location: ${state.uri}');
       
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Page Not Found'),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.go('/home'),
-          ),
-        ),
+      // Redirect to home instead of showing error page
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.go('/home');
+      });
+      
+      return const Scaffold(
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Colors.grey,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Page Not Found',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Path: ${state.matchedLocation}',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => context.go('/home'),
-                child: const Text('Go to Home'),
-              ),
-            ],
-          ),
+          child: CircularProgressIndicator(),
         ),
       );
     },
   );
 }
   
-    
-    
-    // DEVELOPMENT MODE: Bypass authentication
-    // If trying to access the root, redirect straight to home
   
-    
-    // PRODUCTION MODE (uncomment when ready to connect backend):
-    /*
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final bool isLoggedIn = authProvider.isLoggedIn;
-    
-    // Splash screen is accessible to all
-    final isSplash = state.matchedLocation == '/';
-    
-    // These routes don't require authentication
-    final noAuthRequired = isSplash || 
-                         state.matchedLocation == '/login' || 
-                         state.matchedLocation == '/signup';
-    
-    // If user is not logged in and trying to access protected route, redirect to login
-    if (!isLoggedIn && !noAuthRequired) {
-      return '/login';
-    }
-    
-    // If user is logged in and trying to access auth routes, redirect to home
-    if (isLoggedIn && noAuthRequired) {
-      return '/home';
-    }
-    
-    // No redirection needed
-    return null;
-    */
+  
+  // DEVELOPMENT MODE: Bypass authentication
+  // If trying to access the root, redirect straight to home
+  
+  
+  // PRODUCTION MODE (uncomment when ready to connect backend):
+  /*
+  final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  final bool isLoggedIn = authProvider.isLoggedIn;
+  
+  // Splash screen is accessible to all
+  final isSplash = state.matchedLocation == '/';
+  
+  // These routes don't require authentication
+  final noAuthRequired = isSplash || 
+                       state.matchedLocation == '/login' || 
+                       state.matchedLocation == '/signup';
+  
+  // If user is not logged in and trying to access protected route, redirect to login
+  if (!isLoggedIn && !noAuthRequired) {
+    return '/login';
+  }
+  
+  // If user is logged in and trying to access auth routes, redirect to home
+  if (isLoggedIn && noAuthRequired) {
+    return '/home';
+  }
+  
+  // No redirection needed
+  return null;
+  */

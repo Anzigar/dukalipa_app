@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -144,14 +145,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
       child: TextField(
         controller: _searchController,
         onChanged: _onSearch,
-        style: TextStyle(
+        style: GoogleFonts.poppins(
           fontSize: 16.sp,
           fontWeight: FontWeight.w400,
           color: colorScheme.onSurfaceVariant,
         ),
         decoration: InputDecoration(
           hintText: 'Search products...',
-          hintStyle: TextStyle(
+          hintStyle: GoogleFonts.poppins(
             color: colorScheme.onSurfaceVariant,
             fontSize: 16.sp,
             fontWeight: FontWeight.w400,
@@ -224,7 +225,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
           ),
           child: Text(
             label,
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               color: isSelected 
                   ? Colors.white
                   : colorScheme.onSurface,
@@ -295,7 +296,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             SizedBox(height: 24.h),
             Text(
               title,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w700,
                 color: colorScheme.onSurface,
@@ -305,7 +306,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 14.sp,
                 color: colorScheme.onSurface.withOpacity(0.6),
                 fontWeight: FontWeight.w500,
@@ -328,7 +329,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 icon: Icon(Icons.add_rounded, size: 18.sp),
                 label: Text(
                   'Add Product',
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
                     fontSize: 14.sp,
                   ),
@@ -365,7 +366,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             SizedBox(height: 24.h),
             Text(
               'Failed to load products',
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w700,
                 color: colorScheme.onSurface,
@@ -375,7 +376,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             Text(
               'There was an error loading your inventory.\nPlease check your connection and try again.',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 14.sp,
                 color: colorScheme.onSurface.withOpacity(0.6),
                 fontWeight: FontWeight.w500,
@@ -397,7 +398,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
               icon: Icon(Icons.refresh_rounded, size: 20.sp),
               label: Text(
                 'Try Again',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   fontSize: 16.sp,
                 ),
@@ -442,7 +443,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
           isSpecificShopType 
               ? '${widget.shopType} Inventory'
               : l10n.inventory,
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 18.sp,
             fontWeight: FontWeight.w700,
             color: colorScheme.onSurface,

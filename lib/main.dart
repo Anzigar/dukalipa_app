@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app/router/app_router.dart'; // This exports the core router
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -151,8 +152,8 @@ class MyApp extends StatelessWidget {
                   debugShowCheckedModeBanner: false,
                   routerConfig: AppRouter.router, // Use AppRouter.router for routing configuration
                   theme: AppTheme.getLightTheme().copyWith(
-                    textTheme: AppTheme.getLightTheme().textTheme.apply(
-                      fontFamily: 'Montserrat',
+                    textTheme: GoogleFonts.poppinsTextTheme(
+                      AppTheme.getLightTheme().textTheme,
                     ),
                     pageTransitionsTheme: const PageTransitionsTheme(
                       builders: {
@@ -162,8 +163,8 @@ class MyApp extends StatelessWidget {
                     ),
                   ),
                   darkTheme: AppTheme.getDarkTheme().copyWith(
-                    textTheme: AppTheme.getDarkTheme().textTheme.apply(
-                      fontFamily: 'Montserrat',
+                    textTheme: GoogleFonts.poppinsTextTheme(
+                      AppTheme.getDarkTheme().textTheme,
                     ),
                     pageTransitionsTheme: const PageTransitionsTheme(
                       builders: {

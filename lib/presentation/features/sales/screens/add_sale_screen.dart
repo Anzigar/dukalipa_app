@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -610,7 +611,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
             children: [
               Text(
                 'Please confirm all sale details:',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 16),
               ),
               const SizedBox(height: 16),
               
@@ -623,7 +624,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
               // Payment Details
               Text(
                 'Payment Information:',
-                style: TextStyle(fontWeight: FontWeight.w600, color: AppTheme.mkbhdRed),
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: AppTheme.mkbhdRed),
               ),
               const SizedBox(height: 8),
               
@@ -644,7 +645,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
               // VAT Information
               Text(
                 'VAT & Charges:',
-                style: TextStyle(fontWeight: FontWeight.w600, color: AppTheme.mkbhdRed),
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: AppTheme.mkbhdRed),
               ),
               const SizedBox(height: 8),
               
@@ -689,7 +690,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
                         _applyVAT 
                           ? 'VAT will be included in this sale'
                           : 'No VAT applied to this sale',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                           color: _applyVAT ? Colors.blue.shade700 : Colors.orange.shade700,
@@ -705,7 +706,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+            child: Text('Cancel', style: GoogleFonts.poppins(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -735,7 +736,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
             width: 100,
             child: Text(
               label,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: isTotal ? 14 : 12,
                 fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
                 color: isSubtotal ? Colors.grey : null,
@@ -746,7 +747,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
           Expanded(
             child: Text(
               value,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: isTotal ? 14 : 12,
                 fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
                 color: valueColor ?? (isTotal ? AppTheme.mkbhdRed : (isSubtotal ? Colors.grey : null)),
@@ -806,7 +807,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
                 }
               });
             },
-            child: Text('Skip', style: TextStyle(color: Colors.grey)),
+            child: Text('Skip', style: GoogleFonts.poppins(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -890,8 +891,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
             ),
             child: Text(
               receiptContent,
-              style: TextStyle(
-                fontFamily: 'Courier',
+              style: GoogleFonts.poppins(
                 fontSize: 12,
                 color: Colors.black87,
               ),
@@ -1067,7 +1067,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
               const SizedBox(height: 24),
               Text(
                 'Processing Sale...',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: colorScheme.onSurface,
@@ -1078,7 +1078,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                 _salesType == 'Field Sales Agent' && !_isPaymentComplete
                     ? 'Adding to Madeni tracking'
                     : 'Finalizing transaction details',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 14,
                   color: colorScheme.onSurfaceVariant,
                 ),
@@ -1167,7 +1167,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                 onPressed: () => context.pop(),
                 style: IconButton.styleFrom(
                   backgroundColor: colorScheme.surfaceVariant.withOpacity(0.5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
                 ),
               ),
               Expanded(
@@ -1175,7 +1175,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                   children: [
                     Text(
                       _getStepTitle(),
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
                         color: colorScheme.onSurface,
@@ -1184,7 +1184,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                     const SizedBox(height: 4),
                     Text(
                       _getStepDescription(),
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -1202,7 +1202,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                 ),
                 child: Text(
                   '${_currentStep + 1} of 3',
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.mkbhdRed,
@@ -1281,12 +1281,12 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     side: BorderSide(color: colorScheme.outline),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(50),
                     ),
                   ),
                   child: Text(
                     'Back',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: colorScheme.onSurface,
@@ -1316,7 +1316,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                   children: [
                     Text(
                       _currentStep == 2 ? 'Complete Sale' : 'Continue',
-                      style: const TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -1424,7 +1424,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                       children: [
                         Text(
                           'Payment Reminder',
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w600,
                             fontSize: 13, // Reduced from 14 to 13
                             color: AppTheme.mkbhdRed,
@@ -1433,7 +1433,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                         const SizedBox(height: 4),
                         Text(
                           'Field sales must be paid by 8:00 PM today. Unpaid sales will be tracked in Madeni.',
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             fontSize: 12, // Reduced from 13 to 12
                             color: AppTheme.mkbhdRed.withOpacity(0.8),
                           ),
@@ -1546,7 +1546,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                         children: [
                           Text(
                             'Delivery Information',
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w600,
                               fontSize: 13, // Reduced from 14 to 13
                               color: AppTheme.mkbhdRed,
@@ -1555,7 +1555,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                           const SizedBox(height: 4),
                           Text(
                             'Delivery cost for $_selectedRegion varies based on distance, transport method, and product quantity.',
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 11, // Reduced from 13 to 11
                               color: AppTheme.mkbhdRed.withOpacity(0.8),
                             ),
@@ -1581,7 +1581,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
       children: [
         Text(
           title,
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.w600,
             color: Theme.of(context).colorScheme.onSurface,
@@ -1590,7 +1590,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
         const SizedBox(height: 4),
         Text(
           subtitle,
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 14,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
@@ -1639,7 +1639,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
             const SizedBox(height: 10), // Reduced from 12 to 10
             Text(
               title,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 15, // Reduced from 16 to 15
                 fontWeight: FontWeight.w600,
                 color: isSelected ? Colors.white : colorScheme.onSurface,
@@ -1648,7 +1648,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 12,
                 color: isSelected ? Colors.white.withOpacity(0.8) : colorScheme.onSurfaceVariant,
               ),
@@ -1673,7 +1673,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines,
-      style: TextStyle(
+      style: GoogleFonts.poppins(
         fontSize: 16,
         color: colorScheme.onSurface,
       ),
@@ -1695,8 +1695,8 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
         ),
         filled: true,
         fillColor: colorScheme.surface,
-        labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withOpacity(0.6)),
+        labelStyle: GoogleFonts.poppins(color: colorScheme.onSurfaceVariant),
+        hintStyle: GoogleFonts.poppins(color: colorScheme.onSurfaceVariant.withOpacity(0.6)),
       ),
     );
   }
@@ -1727,7 +1727,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
           children: [
             Text(
               region,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
                 fontSize: 13, // Reduced from 14 to 13
                 color: isSelected ? Colors.white : colorScheme.onSurface,
@@ -1736,7 +1736,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
             const SizedBox(height: 4),
             Text(
               charge == 0 ? 'FREE' : 'Varies',
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 11, // Reduced from 12 to 11
                 color: isSelected ? Colors.white.withOpacity(0.8) : colorScheme.onSurfaceVariant,
               ),
@@ -1809,7 +1809,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                       children: [
                         Text(
                           title,
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: isSelected ? AppTheme.mkbhdRed : colorScheme.onSurface,
@@ -1818,7 +1818,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                         const SizedBox(height: 2),
                         Text(
                           subtitle,
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             fontSize: 13,
                             color: isSelected ? AppTheme.mkbhdRed.withOpacity(0.8) : colorScheme.onSurfaceVariant,
                           ),
@@ -1845,7 +1845,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                   const SizedBox(height: 8),
                   Text(
                     'Select Payment Method:',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: colorScheme.onSurface,
@@ -1871,7 +1871,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                           ),
                           child: Text(
                             method,
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                               color: isMethodSelected ? Colors.white : colorScheme.onSurface,
@@ -1914,7 +1914,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
             children: [
               Text(
                 'Product Search',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: colorScheme.onSurface,
@@ -1923,21 +1923,21 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
               const SizedBox(height: 8),
               Text(
                 'Search and add products to your cart',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 14,
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 15.sp, 
                   color: colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w400,
                 ),
                 decoration: InputDecoration(
                   hintText: 'Type product name to search...',
-                  hintStyle: TextStyle(
+                  hintStyle: GoogleFonts.poppins(
                     color: colorScheme.onSurfaceVariant.withOpacity(0.7),
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w400,
@@ -1991,7 +1991,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                 const SizedBox(width: 12),
                 Text(
                   'Searching products...',
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -2039,7 +2039,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                   SizedBox(height: 16.h),
                   Text(
                     'No products found',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
                       color: colorScheme.onSurfaceVariant,
@@ -2048,7 +2048,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                   SizedBox(height: 8.h),
                   Text(
                     'Try searching with different keywords',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 14.sp,
                       color: colorScheme.onSurfaceVariant.withOpacity(0.7),
                     ),
@@ -2084,7 +2084,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                           const SizedBox(width: 8),
                           Text(
                             'Shopping Cart',
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: colorScheme.onSurface,
@@ -2099,7 +2099,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                             ),
                             child: Text(
                               '${_items.length} items',
-                              style: TextStyle(
+                              style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
                                 color: AppTheme.mkbhdRed,
@@ -2154,14 +2154,14 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                     children: [
                       Text(
                         'Subtotal',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                       Text(
                         '${_items.length} ${_items.length == 1 ? 'item' : 'items'}',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: colorScheme.onSurfaceVariant,
                         ),
@@ -2171,7 +2171,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                 ),
                 Text(
                   'TZS ${_subtotal.toStringAsFixed(0)}',
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.mkbhdRed,
@@ -2230,7 +2230,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                     children: [
                       Text(
                         product.name,
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: colorScheme.onSurface,
@@ -2241,7 +2241,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                       const SizedBox(height: 4),
                       Text(
                         'TZS ${product.sellingPrice.toStringAsFixed(0)}',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: AppTheme.mkbhdRed,
@@ -2297,7 +2297,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
             SizedBox(height: 24.h),
             Text(
               'Your cart is empty',
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 20.sp,
                 fontWeight: FontWeight.w600,
                 color: colorScheme.onSurface,
@@ -2306,7 +2306,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
             SizedBox(height: 8.h),
             Text(
               'Search for products above to add them to your cart',
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 14.sp,
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -2363,7 +2363,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                     children: [
                       Text(
                         item.productName,
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                           color: colorScheme.onSurface,
@@ -2372,7 +2372,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                       const SizedBox(height: 4),
                       Text(
                         'Base: TZS ${item.price.toStringAsFixed(0)}',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           color: colorScheme.onSurfaceVariant,
                           fontSize: 12,
                         ),
@@ -2419,7 +2419,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                 children: [
                   Text(
                     'Selling Price',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: colorScheme.onSurfaceVariant,
@@ -2448,7 +2448,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
                     keyboardType: TextInputType.number,
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: colorScheme.onSurface,
@@ -2487,7 +2487,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                     children: [
                       Text(
                         'Quantity',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: colorScheme.onSurfaceVariant,
@@ -2530,7 +2530,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                               child: Center(
                                 child: Text(
                                   '${item.quantity}',
-                                  style: TextStyle(
+                                  style: GoogleFonts.poppins(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                     color: colorScheme.onSurface,
@@ -2573,7 +2573,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                     children: [
                       Text(
                         'Item Total',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: colorScheme.onSurfaceVariant,
@@ -2589,7 +2589,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                         ),
                         child: Text(
                           'TZS ${(adjustedPrice * item.quantity).toStringAsFixed(0)}',
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                             color: AppTheme.mkbhdRed,
@@ -2629,14 +2629,14 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                       const SizedBox(width: 8),
                       Text(
                         'VAT (Optional)',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'VAT is optional and at seller discretion. Please confirm whether to apply VAT to this sale.',
-                    style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
+                    style: GoogleFonts.poppins(color: colorScheme.onSurfaceVariant, fontSize: 12),
                   ),
                   const SizedBox(height: 16),
                   Container(
@@ -2659,7 +2659,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                             _applyVAT 
                               ? 'VAT (${_vatPercentage.toStringAsFixed(0)}%) will be applied to this sale'
                               : 'No VAT will be applied to this sale',
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                               color: (_applyVAT ? Colors.blue : Colors.orange).shade700,
@@ -2685,7 +2685,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                       if (_applyVAT)
                         Text(
                           'TZS ${_vatAmount.toStringAsFixed(0)}',
-                          style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.mkbhdRed),
+                          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: AppTheme.mkbhdRed),
                         ),
                     ],
                   ),
@@ -2709,7 +2709,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                       const SizedBox(width: 8),
                       Text(
                         'Special Offers',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -2835,7 +2835,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                               const SizedBox(width: 8),
                               Text(
                                 'Accessory: $_selectedAccessory - TZS ${_accessoryPrice.toStringAsFixed(0)}',
-                                style: TextStyle(
+                                style: GoogleFonts.poppins(
                                   color: Colors.blue.shade700,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
@@ -2868,7 +2868,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                               Text('Free Delivery'),
                               Text(
                                 'Waive TZS ${_deliveryCharge.toStringAsFixed(0)} delivery charge',
-                                style: TextStyle(
+                                style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   color: colorScheme.onSurfaceVariant,
                                 ),
@@ -2899,7 +2899,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                       const SizedBox(width: 8),
                       Text(
                         'Payment Details',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -2923,14 +2923,14 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                             children: [
                               Text(
                                 'Selected Payment Method:',
-                                style: TextStyle(
+                                style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   color: AppTheme.mkbhdRed.withOpacity(0.8),
                                 ),
                               ),
                               Text(
                                 '${_selectedPaymentMethod ?? "None"} (${_salesType})',
-                                style: TextStyle(
+                                style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w600,
                                   color: AppTheme.mkbhdRed,
                                 ),
@@ -2964,7 +2964,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                                 fit: FlexFit.loose,
                                 child: Text(
                                   '1 $currency = ${_exchangeRates[currency]!.toStringAsFixed(0)} TZS',
-                                  style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                                  style: GoogleFonts.poppins(fontSize: 12, color: colorScheme.onSurfaceVariant),
                                   textAlign: TextAlign.end,
                                 ),
                               ),
@@ -3029,9 +3029,9 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                           foregroundColor: Theme.of(context).colorScheme.onPrimary,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
                         ),
-                        child: Text('Exact', style: TextStyle(color: Colors.white, fontSize: 12)),
+                        child: Text('Exact', style: GoogleFonts.poppins(color: Colors.white, fontSize: 12)),
                       ),
                     ],
                   ),
@@ -3058,7 +3058,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                               const SizedBox(width: 8),
                               Text(
                                 _isPaymentComplete ? 'Payment Complete' : 'Payment Incomplete',
-                                style: TextStyle(
+                                style: GoogleFonts.poppins(
                                   color: _isPaymentComplete ? Colors.green : Colors.orange,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -3068,16 +3068,16 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                           const SizedBox(height: 8),
                           Text(
                             'Total Due: ${_currencySymbol} ${_totalInSelectedCurrency.toStringAsFixed(0)}',
-                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                            style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
                           ),
                           Text(
                             'Amount Paid: ${_currencySymbol} ${_paidAmount.toStringAsFixed(0)}',
-                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                            style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
                           ),
                           if (_isPaymentComplete) ...[
                             Text(
                               'Change: ${_currencySymbol} ${_changeAmount.toStringAsFixed(0)}',
-                              style: TextStyle(
+                              style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 color: Colors.green,
                                 fontWeight: FontWeight.w600,
@@ -3086,7 +3086,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                           ] else ...[
                             Text(
                               'Remaining: ${_currencySymbol} ${(_totalInSelectedCurrency - _paidAmount).toStringAsFixed(0)}',
-                              style: TextStyle(
+                              style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 color: Colors.orange,
                                 fontWeight: FontWeight.w600,
@@ -3113,7 +3113,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                 children: [
                   Text(
                     'Notes (Optional)',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
@@ -3145,7 +3145,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                       const SizedBox(width: 8),
                       Text(
                         'Required Before Completing Sale',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.red,
@@ -3165,7 +3165,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                       const SizedBox(width: 8),
                       Text(
                         'VAT Decision: ${_applyVAT ? "Apply VAT" : "No VAT"}',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: _applyVAT ? Colors.green : Colors.orange,
                         ),
@@ -3185,7 +3185,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                       const SizedBox(width: 8),
                       Text(
                         'Payment Method: ${_selectedPaymentMethod ?? "Not Selected"}',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: _selectedPaymentMethod != null ? Colors.green : Colors.grey,
                         ),
@@ -3205,7 +3205,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                       const SizedBox(width: 8),
                       Text(
                         'Amount Paid: ${_paidAmount > 0 ? "${_currencySymbol} ${_paidAmount.toStringAsFixed(0)}" : "Not Entered"}',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: _paidAmount > 0 ? Colors.green : Colors.grey,
                         ),
@@ -3222,7 +3222,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                         Expanded(
                           child: Text(
                             'Payment incomplete. Remaining: ${_currencySymbol} ${(_totalInSelectedCurrency - _paidAmount).toStringAsFixed(0)}',
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 12,
                               color: Colors.orange,
                               fontWeight: FontWeight.w500,
@@ -3249,7 +3249,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
                 children: [
                   Text(
                     'Sale Summary',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const Divider(),
                   
@@ -3297,7 +3297,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
         children: [
           Text(
             label,
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: isTotal ? 16 : 14,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
               color: isSubtext ? Colors.grey : null,
@@ -3308,7 +3308,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
               if (originalPrice != null) ...[
                 Text(
                   originalPrice,
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: Colors.grey,
                     decoration: TextDecoration.lineThrough,
@@ -3318,7 +3318,7 @@ ${_noteController.text.isNotEmpty ? 'Note: ${_noteController.text}' : ''}
               ],
               Text(
                 value,
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: isTotal ? 16 : 14,
                   fontWeight: isTotal ? FontWeight.bold : FontWeight.w600,
                   color: isTotal ? AppTheme.mkbhdRed : (isSubtext ? Colors.grey : null),

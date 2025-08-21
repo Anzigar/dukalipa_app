@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -104,7 +105,7 @@ class AnimatedEmptyState extends StatelessWidget {
     VoidCallback? onButtonPressed,
   }) {
     return AnimatedEmptyState(
-      lottieAsset: 'assets/animations/Tags.json',
+      lottieAsset: 'assets/animations/Empty_box.json',
       title: title ?? 'No Installment Plans',
       message: message ?? 'Create installment plans to offer flexible payment options.',
       buttonText: buttonText ?? 'Create Plan',
@@ -238,17 +239,18 @@ class AnimatedEmptyState extends StatelessWidget {
                 style: FilledButton.styleFrom(
                   backgroundColor: AppTheme.mkbhdRed,
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 16.h),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.r),
+                    borderRadius: BorderRadius.circular(30.r),
                   ),
                   elevation: 0,
+                  minimumSize: Size(0, 44.h),
                 ),
-                icon: Icon(LucideIcons.plus, size: 20.sp),
+                icon: Icon(LucideIcons.plus, size: 18.sp),
                 label: Text(
                   buttonText!,
-                  style: TextStyle(
-                    fontSize: 16.sp,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

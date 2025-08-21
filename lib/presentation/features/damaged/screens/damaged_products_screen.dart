@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -8,9 +9,9 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../data/services/damaged_products_service.dart';
 import '../providers/damaged_products_provider.dart';
-import '../../../common/widgets/custom_search_bar.dart';
+import '../../../common/widgets/material3_search_bar.dart';
 import '../../../common/widgets/shimmer_loading.dart';
-import '../../../common/widgets/empty_state.dart';
+import '../../../common/widgets/animated_empty_state.dart';
 import '../../../../core/di/service_locator.dart';
 
 class DamagedProductsScreen extends StatefulWidget {
@@ -120,6 +121,18 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.mkbhdRed,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+              ),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.mkbhdRed,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
               ),
             ),
           ),
@@ -144,6 +157,8 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        elevation: 0,
         title: const Text('Damaged Products'),
         actions: [
           IconButton(
@@ -172,7 +187,7 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
                   Chip(
                     label: Text(
                       '${DateFormat('MMM d').format(_startDate!)} - ${DateFormat('MMM d, yyyy').format(_endDate!)}',
-                      style: const TextStyle(fontSize: 12),
+                      style: GoogleFonts.poppins(fontSize: 12),
                     ),
                     deleteIcon: const Icon(LucideIcons.x, size: 16),
                     onDeleted: () {
@@ -184,7 +199,7 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
                     },
                     backgroundColor: AppTheme.mkbhdRed.withOpacity(0.1),
                     deleteIconColor: AppTheme.mkbhdRed,
-                    labelStyle: const TextStyle(color: AppTheme.mkbhdRed),
+                    labelStyle: GoogleFonts.poppins(color: AppTheme.mkbhdRed),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -193,13 +208,13 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
               ),
             ),
           
-          // Search bar
+          // Search bar - Material 3 expressive rounded design
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: CustomSearchBar(
+            child: Material3SearchBar(
               controller: _searchController,
-              hintText: 'Search damaged products',
-              onSearch: _onSearch,
+              hintText: 'Search damaged products...',
+              onChanged: _onSearch,
             ),
           ),
           
@@ -218,9 +233,9 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                       Text(
                         'Total Damaged Items',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: AppTheme.mkbhdLightGrey,
                         ),
@@ -228,7 +243,7 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
                       const SizedBox(height: 4),
                       Text(
                         '${_damagedProducts.length}',
-                        style: const TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
@@ -238,9 +253,9 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const Text(
+                      Text(
                         'Total Loss',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: AppTheme.mkbhdLightGrey,
                         ),
@@ -248,7 +263,7 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
                       const SizedBox(height: 4),
                       Text(
                         'TSh ${NumberFormat('#,###').format(_totalLoss)}',
-                        style: const TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: AppTheme.mkbhdRed,
@@ -266,16 +281,18 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        onPressed: () => context.push('/settings/damaged/report'),
-        icon: const Icon(LucideIcons.plus),
-        label: const Text('Report Damaged'),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-      ),
+      floatingActionButton: !_isLoading && _damagedProducts.isNotEmpty 
+          ? FloatingActionButton.extended(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              onPressed: () => context.push('/settings/damaged/report'),
+              icon: const Icon(LucideIcons.plus),
+              label: const Text('Report Damaged'),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+            )
+          : null,
     );
   }
   
@@ -322,10 +339,9 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
     }
     
     if (_damagedProducts.isEmpty) {
-      return EmptyState(
-        icon: LucideIcons.packageX,
+      return AnimatedEmptyState.damaged(
         title: 'No Damaged Products Found',
-        message: 'Report damaged products to track inventory losses',
+        message: 'Report damaged products to track inventory losses and maintain accurate records.',
         buttonText: 'Report Damaged',
         onButtonPressed: () => context.push('/settings/damaged/report'),
       );
@@ -416,7 +432,7 @@ class DamagedProductCard extends StatelessWidget {
                   children: [
                     Text(
                       product.productName,
-                      style: const TextStyle(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
@@ -424,7 +440,7 @@ class DamagedProductCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       'Quantity: ${product.quantity}',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         color: isDarkMode 
                             ? Colors.grey.shade400 
                             : Colors.grey.shade700,
@@ -433,7 +449,7 @@ class DamagedProductCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       'Reported: ${DateFormat('MMM d, yyyy').format(product.dateDiscovered)}',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: isDarkMode 
                             ? Colors.grey.shade400 
@@ -449,7 +465,7 @@ class DamagedProductCard extends StatelessWidget {
                 children: [
                   Text(
                     'TSh ${NumberFormat('#,###').format(product.estimatedLoss)}',
-                    style: const TextStyle(
+                    style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                       color: Colors.red,
@@ -465,9 +481,9 @@ class DamagedProductCard extends StatelessWidget {
                       color: Colors.red.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: const Text(
+                    child:  Text(
                       'Loss',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Colors.red,
                         fontWeight: FontWeight.w500,

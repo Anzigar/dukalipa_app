@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 enum SnackBarType {
@@ -75,7 +76,7 @@ class CustomSnackBar {
               Expanded(
                 child: Text(
                   message,
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     color: textColor,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -91,10 +92,13 @@ class CustomSnackBar {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
                   ),
                   child: Text(
                     actionLabel,
-                    style: const TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),

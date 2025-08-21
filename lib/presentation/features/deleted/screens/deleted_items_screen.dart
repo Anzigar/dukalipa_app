@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../common/widgets/shimmer_loading.dart';
+import '../../../common/widgets/material3_search_bar.dart';
 
 class DeletedItemsScreen extends StatefulWidget {
   const DeletedItemsScreen({super.key});
@@ -18,6 +21,7 @@ class _DeletedItemsScreenState extends State<DeletedItemsScreen> {
   final Set<String> _selectedItems = {};
   final TextEditingController _searchController = TextEditingController();
   String? _selectedFilter;
+  String _searchQuery = '';
   
   @override
   void initState() {
@@ -50,7 +54,7 @@ class _DeletedItemsScreenState extends State<DeletedItemsScreen> {
           category: 'Smartphones',
           price: 999.99,
           deletedAt: DateTime.now().subtract(const Duration(days: 1)),
-          deletedBy: 'John Doe',
+          deletedBy: 'Ansigar Erasm',
           reason: 'Product discontinued',
         ),
         DeletedItem(
@@ -91,45 +95,17 @@ class _DeletedItemsScreenState extends State<DeletedItemsScreen> {
                 // Search bar
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(24), // Fully rounded like Material3
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Search deleted items',
-                        hintStyle: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: 0.5,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          size: 20,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 16,
-                        ),
-                      ),
-                      onChanged: (value) {
-                        setState(() {});
-                      },
+                  child: Material3SearchBar(
+                    controller: _searchController,
+                    hintText: 'Search deleted items',
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
+                    leading: Icon(
+                      LucideIcons.search,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -137,7 +113,7 @@ class _DeletedItemsScreenState extends State<DeletedItemsScreen> {
                 // Items list
                 Expanded(
                   child: _deletedItems.isEmpty
-                      ? const Center(
+                      ?  Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -149,7 +125,7 @@ class _DeletedItemsScreenState extends State<DeletedItemsScreen> {
                               SizedBox(height: 16),
                               Text(
                                 'No Deleted Items',
-                                style: TextStyle(
+                                style: GoogleFonts.poppins(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -157,7 +133,7 @@ class _DeletedItemsScreenState extends State<DeletedItemsScreen> {
                               SizedBox(height: 8),
                               Text(
                                 'There are no deleted items to display.',
-                                style: TextStyle(color: Colors.grey),
+                                style: GoogleFonts.poppins(color: Colors.grey),
                               ),
                             ],
                           ),
@@ -196,7 +172,7 @@ class _DeletedItemsScreenState extends State<DeletedItemsScreen> {
                                   ),
                                   title: Text(
                                     item.name,
-                                    style: const TextStyle(
+                                    style: GoogleFonts.poppins(
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -210,7 +186,7 @@ class _DeletedItemsScreenState extends State<DeletedItemsScreen> {
                                   ),
                                   trailing: Text(
                                     '\$${item.price.toStringAsFixed(2)}',
-                                    style: const TextStyle(
+                                    style: GoogleFonts.poppins(
                                       fontWeight: FontWeight.bold,
                                       color: AppTheme.mkbhdRed,
                                     ),

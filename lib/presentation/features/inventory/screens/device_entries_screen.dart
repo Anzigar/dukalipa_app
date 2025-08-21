@@ -382,7 +382,7 @@ class _DeviceEntriesScreenState extends State<DeviceEntriesScreen> {
                         side: BorderSide(color: colorScheme.outline),
                         foregroundColor: colorScheme.onSurface,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(50),
                         ),
                       ),
                     ),
@@ -476,15 +476,15 @@ class _DeviceEntriesScreenState extends State<DeviceEntriesScreen> {
                           hintText: 'Enter or scan serial number',
                           prefixIcon: Icon(LucideIcons.hash, size: 20),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(50),
                             borderSide: BorderSide(color: colorScheme.outline),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(50),
                             borderSide: BorderSide(color: colorScheme.outline),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(50),
                             borderSide: BorderSide(color: colorScheme.primary, width: 2),
                           ),
                           filled: true,
@@ -501,7 +501,7 @@ class _DeviceEntriesScreenState extends State<DeviceEntriesScreen> {
                         foregroundColor: colorScheme.onSecondaryContainer,
                         padding: const EdgeInsets.all(16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(50),
                         ),
                       ),
                       child: _isScanning 

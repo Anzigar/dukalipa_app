@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart'; 
@@ -113,6 +114,36 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
       initialDateRange: initialDateRange,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: Theme.of(context).colorScheme.primary,
+              onPrimary: Colors.white,
+              surface: Theme.of(context).colorScheme.surface,
+              onSurface: Theme.of(context).colorScheme.onSurface,
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+              ),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     
     if (dateRange != null) {
@@ -138,7 +169,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
       appBar: AppBar(
         title: Text(
           'Expenses',
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 18.sp,
             fontWeight: FontWeight.w700,
             color: colorScheme.onSurface,
@@ -186,7 +217,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
         icon: Icon(LucideIcons.plus, size: 20.sp),
         label: Text(
           'Add Expense',
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 14.sp,
             fontWeight: FontWeight.w600,
           ),
@@ -212,14 +243,14 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
       child: TextField(
         controller: _searchController,
         onChanged: _onSearch,
-        style: TextStyle(
+        style: GoogleFonts.poppins(
           fontSize: 16.sp,
           fontWeight: FontWeight.w400,
           color: colorScheme.onSurfaceVariant,
         ),
         decoration: InputDecoration(
           hintText: 'Search expenses...',
-          hintStyle: TextStyle(
+          hintStyle: GoogleFonts.poppins(
             color: colorScheme.onSurfaceVariant.withOpacity(0.6),
             fontSize: 16.sp,
           ),
@@ -270,7 +301,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
             child: FilterChip(
               label: Text(
                 category,
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w500,
                   color: isSelected ? Colors.white : colorScheme.onSurfaceVariant,
@@ -313,7 +344,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
           SizedBox(height: 16.h),
           Text(
             'Error loading expenses',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 18.sp,
               fontWeight: FontWeight.w600,
             ),
@@ -321,7 +352,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
           SizedBox(height: 8.h),
           Text(
             'Please try again later',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 14.sp,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -414,7 +445,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
                         children: [
                           Text(
                             expense.title,
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
                               color: colorScheme.onSurface,
@@ -423,7 +454,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
                           SizedBox(height: 2.h),
                           Text(
                             expense.category,
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 12.sp,
                               color: colorScheme.onSurfaceVariant,
                             ),
@@ -436,7 +467,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
                       children: [
                         Text(
                           'TZS ${NumberFormat('#,###').format(expense.amount)}',
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w700,
                             color: Colors.red,
@@ -445,7 +476,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
                         SizedBox(height: 2.h),
                         Text(
                           DateFormat('MMM d, yyyy').format(expense.date),
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             fontSize: 12.sp,
                             color: colorScheme.onSurfaceVariant,
                           ),
@@ -458,7 +489,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
                   SizedBox(height: 12.h),
                   Text(
                     expense.description!,
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 14.sp,
                       color: colorScheme.onSurfaceVariant,
                     ),

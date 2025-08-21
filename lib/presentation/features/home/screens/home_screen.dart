@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart'; // Add this import
 import 'package:lottie/lottie.dart';
 import 'package:dukalipa_app/core/providers/auth_provider.dart';
@@ -184,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     children: [
                                       Text(
                                         _getGreeting(),
-                                        style: TextStyle(
+                                        style: GoogleFonts.poppins(
                                           fontSize: 15,
                                           color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                           fontWeight: FontWeight.w400,
@@ -193,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                       const SizedBox(height: 2),
                                       Text(
                                         profile?.name ?? 'Shop Owner',
-                                        style: TextStyle(
+                                        style: GoogleFonts.poppins(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w700,
                                           color: Theme.of(context).colorScheme.onSurface,
@@ -362,7 +363,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             profile?.name?.isNotEmpty == true 
                 ? profile!.name![0].toUpperCase() 
                 : 'U',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               color: Theme.of(context).colorScheme.onPrimary,
               fontWeight: FontWeight.w600,
               fontSize: 16.sp,
@@ -408,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       Expanded(
                         child: Text(
                           'Search products, sales, customers...',
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             color: Theme.of(context).colorScheme.onSurfaceVariant,
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w400,
@@ -476,7 +477,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   children: [
                     Text(
                       'Today\'s Revenue',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w500,
@@ -491,7 +492,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       ),
                       child: Text(
                         '+15%',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w600,
                           fontSize: 12.sp,
@@ -504,7 +505,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 // Main amount - iOS typography
                 Text(
                   'TSh 245,000',
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 28.sp,
                     fontWeight: FontWeight.w700,
@@ -515,7 +516,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 // Comparison text
                 Text(
                   'vs TSh 213,000 yesterday',
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w400,
@@ -575,7 +576,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           // Main value - clean and prominent
           Text(
             value,
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               color: Theme.of(context).colorScheme.onSurface,
               fontSize: 16.sp,
               fontWeight: FontWeight.w700,
@@ -586,7 +587,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           // Label
           Text(
             label,
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
               fontSize: 12.sp,
               fontWeight: FontWeight.w500,
@@ -595,7 +596,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           // Subtitle
           Text(
             subtitle,
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
               fontSize: 10.sp,
               fontWeight: FontWeight.w400,
@@ -619,7 +620,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             children: [
               Text(
                 'Business Overview',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
                   color: Theme.of(context).colorScheme.onSurface,
@@ -730,7 +731,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   Flexible(
                     child: Text(
                       value,
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w700,
                         color: Theme.of(context).colorScheme.onSurface,
@@ -744,7 +745,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   Flexible(
                     child: Text(
                       title,
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                         fontSize: 11.sp,
                         fontWeight: FontWeight.w500,
@@ -756,7 +757,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   Flexible(
                     child: Text(
                       subtitle,
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                         fontSize: 10.sp,
                         fontWeight: FontWeight.w400,
@@ -787,7 +788,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 children: [
                   Text(
                     'Recent Activity',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.w700,
                       color: Theme.of(context).colorScheme.onSurface,
@@ -801,7 +802,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     ),
                     child: Text(
                       'See all',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         color: Theme.of(context).colorScheme.primary,
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
@@ -934,7 +935,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           SizedBox(height: 16.h),
           Text(
             'No Recent Activity',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
               color: Theme.of(context).colorScheme.onSurface,
@@ -944,7 +945,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           SizedBox(height: 6.h),
           Text(
             'Activities will appear here\nonce you start using the app',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 13.sp,
               fontWeight: FontWeight.w400,
               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
@@ -1069,7 +1070,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               children: [
                 Text(
                   title,
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
                     fontSize: 14.sp,
                     color: Theme.of(context).colorScheme.onSurface,
@@ -1078,7 +1079,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 SizedBox(height: 2.h),
                 Text(
                   subtitle,
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w400,
@@ -1089,7 +1090,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           ),
           Text(
             time,
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
               fontSize: 12.sp,
               fontWeight: FontWeight.w400,
@@ -1151,7 +1152,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   SizedBox(height: 20.h),
                   Text(
                     'Quick Actions',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.w700,
                       color: Theme.of(context).colorScheme.onSurface,
@@ -1278,7 +1279,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             SizedBox(height: 8.h),
             Text(
               label,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
                 color: Theme.of(context).colorScheme.onSurface,

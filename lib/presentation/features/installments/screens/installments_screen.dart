@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lottie/lottie.dart';
+import '../../../common/widgets/shimmer_loading.dart';
+import '../../../common/widgets/custom_snack_bar.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../models/installment_model.dart';
@@ -55,9 +59,8 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
   Future<void> _fetchInstallments() async {
     setState(() {
       _isLoading = true;
-      _hasError = false;
     });
-    
+
     try {
       final installments = await _repository.getInstallments(
         search: _searchController.text,
@@ -65,7 +68,7 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
         startDate: _startDate,
         endDate: _endDate,
       );
-      
+
       if (mounted) {
         setState(() {
           _installments = installments;
@@ -76,9 +79,8 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _hasError = true;
-          _errorMessage = e.toString();
         });
+        CustomSnackBar.showError(context: context, message: e.toString());
       }
     }
   }
@@ -105,6 +107,36 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
       initialDateRange: initialDateRange,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: Theme.of(context).colorScheme.primary,
+              onPrimary: Colors.white,
+              surface: Theme.of(context).colorScheme.surface,
+              onSurface: Theme.of(context).colorScheme.onSurface,
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+              ),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     
     if (dateRange != null) {
@@ -126,7 +158,7 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
       appBar: AppBar(
         title: Text(
           'Installments',
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 18.sp,
             fontWeight: FontWeight.w700,
             color: colorScheme.onSurface,
@@ -174,7 +206,7 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
         icon: Icon(LucideIcons.plus, size: 20.sp),
         label: Text(
           'New Plan',
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 14.sp,
             fontWeight: FontWeight.w600,
           ),
@@ -243,14 +275,14 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
           ),
         ),
         textStyle: WidgetStateProperty.all(
-          TextStyle(
+          GoogleFonts.poppins(
             fontSize: 16.sp,
             fontWeight: FontWeight.w400,
             color: colorScheme.onSurface,
           ),
         ),
         hintStyle: WidgetStateProperty.all(
-          TextStyle(
+          GoogleFonts.poppins(
             fontSize: 16.sp,
             fontWeight: FontWeight.w400,
             color: colorScheme.onSurfaceVariant.withOpacity(0.6),
@@ -283,7 +315,7 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
             child: ChoiceChip(
               label: Text(
                 status,
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -297,13 +329,13 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
               labelStyle: WidgetStateTextStyle.resolveWith(
                 (Set<WidgetState> states) {
                   if (states.contains(WidgetState.selected)) {
-                    return TextStyle(
+                    return GoogleFonts.poppins(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
                       color: colorScheme.onSecondaryContainer,
                     );
                   }
-                  return TextStyle(
+                  return GoogleFonts.poppins(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                     color: colorScheme.onSurfaceVariant,
@@ -330,10 +362,9 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
   }
 
   Widget _buildLoadingState() {
-    return Center(
-      child: AnimatedLoadingState.general(
-        message: 'Loading installments...',
-      ),
+    return ListView.builder(
+      itemCount: 5,
+      itemBuilder: (context, index) => const TransactionCardShimmer(),
     );
   }
 
@@ -350,7 +381,7 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
           SizedBox(height: 16.h),
           Text(
             'Error loading installments',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 18.sp,
               fontWeight: FontWeight.w600,
             ),
@@ -358,7 +389,7 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
           SizedBox(height: 8.h),
           Text(
             _errorMessage ?? 'Please try again later',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 14.sp,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -380,11 +411,45 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
   }
 
   Widget _buildEmptyState() {
-    return AnimatedEmptyState.installments(
-      title: 'No Installment Plans',
-      message: 'Create installment plans to offer flexible payment options to your customers.',
-      buttonText: 'Create Plan',
-      onButtonPressed: () => context.push('/installments/add'),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Lottie.asset(
+            'assets/animations/Empty_box.json',
+            width: 200,
+            height: 200,
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'No Installment Plans',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Create installment plans to offer flexible payment options to your customers.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 24),
+          FilledButton.icon(
+            onPressed: () => context.push('/installments/add'),
+            icon: const Icon(LucideIcons.plus),
+            label: const Text('Create Plan'),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.mkbhdRed,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -436,7 +501,7 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
                         children: [
                           Text(
                             installment.clientName,
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
                               color: colorScheme.onSurface,
@@ -446,7 +511,7 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
                             SizedBox(height: 4.h),
                             Text(
                               installment.notes!,
-                              style: TextStyle(
+                              style: GoogleFonts.poppins(
                                 fontSize: 14.sp,
                                 color: colorScheme.onSurfaceVariant,
                               ),
@@ -466,7 +531,7 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
                       ),
                       child: Text(
                         _getStatusText(installment),
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
                           color: _getStatusColor(installment),
@@ -512,7 +577,7 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
                     SizedBox(width: 4.w),
                     Text(
                       'Due: ${DateFormat('MMM d, yyyy').format(installment.dueDate)}',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 12.sp,
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -520,7 +585,7 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
                     const Spacer(),
                     Text(
                       '${installment.payments.length} payments made',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w500,
                         color: colorScheme.onSurfaceVariant,
@@ -542,7 +607,7 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 12.sp,
             color: Colors.grey.shade600,
           ),
@@ -550,7 +615,7 @@ class _InstallmentsScreenState extends State<InstallmentsScreen> {
         SizedBox(height: 4.h),
         Text(
           value,
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 14.sp,
             fontWeight: FontWeight.bold,
             color: valueColor,

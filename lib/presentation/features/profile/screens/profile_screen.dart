@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/providers/auth_provider.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../viewmodels/profile_viewmodel.dart';
 import '../../../common/widgets/shimmer_loading.dart';
+import '../../../common/widgets/custom_button.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -17,6 +21,9 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   late ProfileViewModel _viewModel;
+  bool _notificationsEnabled = true;
+  bool _biometricEnabled = false;
+  bool _autoBackup = true;
   
   @override
   void initState() {
@@ -53,7 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(
               'Cancel',
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+              style: GoogleFonts.poppins(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
             ),
           ),
           TextButton(
@@ -136,7 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   children: [
                                     Text(
                                       profile?.name ?? 'User Name',
-                                      style: TextStyle(
+                                      style: GoogleFonts.poppins(
                                         fontSize: 20.sp,
                                         fontWeight: FontWeight.w600,
                                         color: Theme.of(context).colorScheme.onSurface,
@@ -145,7 +152,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     SizedBox(height: 2.h),
                                     Text(
                                       profile?.email ?? 'user@email.com',
-                                      style: TextStyle(
+                                      style: GoogleFonts.poppins(
                                         fontSize: 14.sp,
                                         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                       ),
@@ -274,6 +281,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         SizedBox(height: 30.h),
 
+                        // Preferences Section
+                        _IOSSectionHeader(title: 'PREFERENCES'),
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 16.w),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: Column(
+                            children: [
+                              _buildThemeSelector(context),
+                              _buildSwitchTile(
+                                context: context,
+                                title: 'Notifications',
+                                subtitle: 'Receive push notifications',
+                                value: _notificationsEnabled,
+                                onChanged: (value) {
+                                  setState(() => _notificationsEnabled = value);
+                                },
+                                isFirst: false,
+                                isLast: false,
+                              ),
+                              _buildSwitchTile(
+                                context: context,
+                                title: 'Biometric Authentication',
+                                subtitle: 'Use fingerprint or face ID',
+                                value: _biometricEnabled,
+                                onChanged: (value) {
+                                  setState(() => _biometricEnabled = value);
+                                },
+                                isFirst: false,
+                                isLast: false,
+                              ),
+                              _buildSwitchTile(
+                                context: context,
+                                title: 'Auto Backup',
+                                subtitle: 'Automatically backup data',
+                                value: _autoBackup,
+                                onChanged: (value) {
+                                  setState(() => _autoBackup = value);
+                                },
+                                isFirst: false,
+                                isLast: true,
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 30.h),
+
                         // Account Settings Section
                         _IOSSectionHeader(title: 'ACCOUNT'),
                         Container(
@@ -304,17 +360,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 onTap: () {
                                   debugPrint('🔍 Tapping Change Password');
                                   context.push('/profile/change-password');
-                                },
-                              ),
-                              _IOSActionTile(
-                                icon: Icons.settings_outlined,
-                                iconColor: Theme.of(context).colorScheme.primary,
-                                title: l10n.settings,
-                                isFirst: false,
-                                isLast: false,
-                                onTap: () {
-                                  debugPrint('🔍 Tapping Settings');
-                                  context.push('/settings');
                                 },
                               ),
                               _IOSActionTile(
@@ -418,17 +463,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         // Sign Out Section
                         Container(
                           margin: EdgeInsets.symmetric(horizontal: 16.w),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface,
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: _IOSActionTile(
-                            icon: Icons.logout,
-                            iconColor: Colors.red,
-                            title: 'Sign Out',
-                            isFirst: true,
-                            isLast: true,
-                            onTap: _logout,
+                          child: CustomButton(
+                            text: 'Sign Out',
+                            onPressed: _logout,
+                            icon: LucideIcons.logOut,
+                            backgroundColor: Colors.transparent,
+                            textColor: Colors.red,
+                            borderColor: Colors.red,
+                            isOutlined: true,
+                            fullWidth: true,
                           ),
                         ),
                         SizedBox(height: 30.h),
@@ -437,7 +480,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Center(
                           child: Text(
                             'Version 1.0.0',
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                               fontSize: 13.sp,
                               fontWeight: FontWeight.w400,
@@ -450,6 +493,235 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildThemeSelector(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        child: Row(
+          children: [
+            Container(
+              width: 28.w,
+              height: 28.w,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(14.r),
+              ),
+              child: Icon(
+                Icons.palette_outlined,
+                size: 16.sp,
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Theme',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w400,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  Text(
+                    _getThemeDisplayName(themeProvider.themeMode),
+                    style: GoogleFonts.poppins(
+                      fontSize: 13.sp,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            GestureDetector(
+              onTap: () => _showThemeDialog(context, themeProvider),
+              child: Icon(
+                Icons.chevron_right,
+                size: 18.sp,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSwitchTile({
+    required BuildContext context,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required bool isFirst,
+    required bool isLast,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: isLast ? BorderSide.none : BorderSide(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w400,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13.sp,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Switch.adaptive(
+              value: value,
+              onChanged: onChanged,
+              activeColor: Theme.of(context).colorScheme.primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getThemeDisplayName(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return 'Light';
+      case ThemeMode.dark:
+        return 'Dark';
+      case ThemeMode.system:
+        return 'System';
+    }
+  }
+
+  void _showThemeDialog(BuildContext context, ThemeProvider themeProvider) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14.r),
+          ),
+          title: Text(
+            'Choose Theme',
+            style: GoogleFonts.poppins(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildThemeOption(
+                context,
+                'Light',
+                ThemeMode.light,
+                themeProvider.themeMode,
+                () => themeProvider.setThemeMode(ThemeMode.light),
+              ),
+              _buildThemeOption(
+                context,
+                'Dark',
+                ThemeMode.dark,
+                themeProvider.themeMode,
+                () => themeProvider.setThemeMode(ThemeMode.dark),
+              ),
+              _buildThemeOption(
+                context,
+                'System',
+                ThemeMode.system,
+                themeProvider.themeMode,
+                () => themeProvider.setThemeMode(ThemeMode.system),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.poppins(
+                  fontSize: 16.sp,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildThemeOption(
+    BuildContext context,
+    String title,
+    ThemeMode mode,
+    ThemeMode currentMode,
+    VoidCallback onTap,
+  ) {
+    final isSelected = mode == currentMode;
+    return InkWell(
+      onTap: () {
+        onTap();
+        Navigator.of(context).pop();
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontSize: 16.sp,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Icons.check,
+                color: Theme.of(context).colorScheme.primary,
+                size: 20.sp,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -467,7 +739,7 @@ class _IOSSectionHeader extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 8.h),
       child: Text(
         title,
-        style: TextStyle(
+        style: GoogleFonts.poppins(
           fontSize: 13.sp,
           fontWeight: FontWeight.w400,
           color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
@@ -529,7 +801,7 @@ class _IOSListTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 13.sp,
                       color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                     ),
@@ -537,7 +809,7 @@ class _IOSListTile extends StatelessWidget {
                   SizedBox(height: 2.h),
                   Text(
                     subtitle,
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w400,
                       color: Theme.of(context).colorScheme.onSurface,
@@ -611,7 +883,7 @@ class _IOSActionTile extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w400,
                       color: Theme.of(context).colorScheme.onSurface,
