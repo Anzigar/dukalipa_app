@@ -19,7 +19,6 @@ dependencies:
   go_router: ^10.0.0
   
   # Network
-  dio: ^5.3.2
   connectivity_plus: ^4.0.2
   
   # UI
@@ -30,6 +29,10 @@ dependencies:
   intl: ^0.20.2
   lottie: ^2.7.0  # Add this line for Lottie animations
   
+  # Backend Services
+  appwrite: ^11.0.0
+  google_sign_in: ^5.4.4
+
   # Storage
   shared_preferences: ^2.5.3
   flutter_secure_storage: ^9.0.0
@@ -64,7 +67,7 @@ dependencies:
   table_calendar: ^3.0.0
   printing: ^5.14.2
   share_plus: ^11.0.0
-  mobile_scanner: ^3.5.5
+  mobile_scanner: ^7.0.1
   dynamic_color: ^1.6.4
 
 dev_dependencies:

@@ -12,6 +12,7 @@ import '../../../../core/providers/theme_provider.dart';
 import '../viewmodels/profile_viewmodel.dart';
 import '../../../common/widgets/shimmer_loading.dart';
 import '../../../common/widgets/custom_button.dart';
+import '../../../common/widgets/smooth_theme_toggle.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -115,58 +116,86 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: ListView(
                       padding: EdgeInsets.zero,
                       children: [
-                        // iOS-style Profile Header Section
+                        // Material 3 Expressive Profile Header Card
                         Container(
-                          color: Theme.of(context).colorScheme.surface,
-                          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-                          child: Row(
-                            children: [
-                              // Profile Avatar
-                              Container(
-                                width: 60.w,
-                                height: 60.w,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-                                ),
-                                child: Icon(
-                                  Icons.person,
-                                  size: 30.sp,
-                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
-                                ),
-                              ),
-                              SizedBox(width: 16.w),
-                              // Profile Info
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                          margin: EdgeInsets.symmetric(horizontal: 16.w),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                            borderRadius: BorderRadius.circular(28.r),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(28.r),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(28.r),
+                              onTap: () {
+                                debugPrint('🔍 Tapping Profile Header');
+                                context.push('/profile/edit');
+                              },
+                              child: Padding(
+                                padding: EdgeInsets.all(20.w),
+                                child: Row(
                                   children: [
-                                    Text(
-                                      profile?.name ?? 'User Name',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 20.sp,
-                                        fontWeight: FontWeight.w600,
-                                        color: Theme.of(context).colorScheme.onSurface,
+                                    // Profile Avatar - Material 3 style
+                                    Container(
+                                      width: 60.w,
+                                      height: 60.w,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Theme.of(context).colorScheme.primaryContainer,
+                                      ),
+                                      child: Icon(
+                                        LucideIcons.user,
+                                        size: 30.sp,
+                                        color: Theme.of(context).colorScheme.onPrimaryContainer,
                                       ),
                                     ),
-                                    SizedBox(height: 2.h),
-                                    Text(
-                                      profile?.email ?? 'user@email.com',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 14.sp,
-                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                    SizedBox(width: 16.w),
+                                    // Profile Info
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            profile?.name ?? 'User Name',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 20.sp,
+                                              fontWeight: FontWeight.w600,
+                                              color: Theme.of(context).colorScheme.onSurface,
+                                              letterSpacing: 0.1,
+                                            ),
+                                          ),
+                                          SizedBox(height: 4.h),
+                                          Text(
+                                            profile?.email ?? 'user@email.com',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 14.sp,
+                                              fontWeight: FontWeight.w400,
+                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                              letterSpacing: 0.25,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    // Edit arrow - Material 3 style
+                                    Container(
+                                      width: 24.w,
+                                      height: 24.w,
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(12.r),
+                                      ),
+                                      child: Icon(
+                                        LucideIcons.chevronRight,
+                                        size: 16.sp,
+                                        color: Theme.of(context).colorScheme.primary,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              // Edit arrow
-                              Icon(
-                                Icons.chevron_right,
-                                size: 20.sp,
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                         SizedBox(height: 20.h),
@@ -291,7 +320,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           child: Column(
                             children: [
-                              _buildThemeSelector(context),
+                              const SmoothThemeSwitch(
+                                title: 'Dark Mode',
+                                subtitle: 'Switch between light and dark theme',
+                              ),
                               _buildSwitchTile(
                                 context: context,
                                 title: 'Notifications',
@@ -389,8 +421,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Column(
                             children: [
                               _IOSActionTile(
-                                icon: Icons.help_outline,
-                                iconColor: Theme.of(context).colorScheme.primary,
+                                icon: LucideIcons.helpCircle,
+                                iconColor: AppTheme.mkbhdRed,
                                 title: 'Help & Support',
                                 isFirst: true,
                                 isLast: false,

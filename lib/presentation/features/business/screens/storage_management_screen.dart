@@ -4,7 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../data/services/inventory_service.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../../../data/services/appwrite_inventory_service.dart';
 import '../../../common/widgets/shimmer_loading.dart';
 import '../../inventory/models/product_model.dart';
 
@@ -22,7 +23,7 @@ class _StorageManagementScreenState extends State<StorageManagementScreen> with 
   Set<String> _selectedView = {'locations'}; // For segmented button
   
   // Inventory data
-  final InventoryService _inventoryService = InventoryService();
+  final AppwriteInventoryService _inventoryService = locator<AppwriteInventoryService>();
   List<ProductModel> _products = [];
   bool _isLoadingProducts = false;
   String? _inventoryError;
@@ -42,9 +43,9 @@ class _StorageManagementScreenState extends State<StorageManagementScreen> with 
     });
 
     try {
-      final products = await _inventoryService.getProducts();
+      final response = await _inventoryService.getProducts();
       setState(() {
-        _products = products;
+        _products = response;
         _isLoadingProducts = false;
       });
     } catch (e) {

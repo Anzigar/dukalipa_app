@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+import '../../../../data/services/appwrite_notification_service.dart';
 import '../models/notification_model.dart';
 
 abstract class NotificationRepository {
@@ -6,83 +6,56 @@ abstract class NotificationRepository {
   Future<void> markAsRead(String id);
   Future<void> markAllAsRead();
   Future<void> deleteNotification(String id);
+  Future<int> getUnreadCount();
 }
 
 class NotificationRepositoryImpl implements NotificationRepository {
-  late final Dio _dio;
+  final AppwriteNotificationService _notificationService;
 
-  NotificationRepositoryImpl() {
-    _dio = Dio(BaseOptions(
-      baseUrl: 'http://127.0.0.1:8000/api/v1',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ));
-  }
+  NotificationRepositoryImpl() : _notificationService = AppwriteNotificationService();
 
   @override
   Future<List<NotificationModel>> getNotifications() async {
     try {
-      final response = await _dio.get('/notifications');
-      final List<dynamic> data = response.data['notifications'];
-      return data.map((item) => NotificationModel.fromJson(item)).toList();
+      return await _notificationService.getNotifications();
     } catch (e) {
-      throw _handleError(e);
+      throw Exception('Failed to fetch notifications: ${e.toString()}');
     }
   }
 
   @override
   Future<void> markAsRead(String id) async {
     try {
-      await _dio.post(
-        '/notifications/$id/read',
-        data: {'is_read': true},
-      );
+      await _notificationService.markAsRead(id);
     } catch (e) {
-      throw _handleError(e);
+      throw Exception('Failed to mark notification as read: ${e.toString()}');
     }
   }
 
   @override
   Future<void> markAllAsRead() async {
     try {
-      await _dio.post('/notifications/read-all');
+      await _notificationService.markAllAsRead();
     } catch (e) {
-      throw _handleError(e);
+      throw Exception('Failed to mark all notifications as read: ${e.toString()}');
     }
   }
 
   @override
   Future<void> deleteNotification(String id) async {
     try {
-      await _dio.delete('/notifications/$id');
+      await _notificationService.deleteNotification(id);
     } catch (e) {
-      throw _handleError(e);
+      throw Exception('Failed to delete notification: ${e.toString()}');
     }
   }
 
-  Exception _handleError(dynamic e) {
-    if (e is DioException) {
-      switch (e.type) {
-        case DioExceptionType.connectionTimeout:
-        case DioExceptionType.receiveTimeout:
-        case DioExceptionType.connectionError:
-          return Exception('Network error. Please check your internet connection.');
-        case DioExceptionType.badResponse:
-          final statusCode = e.response?.statusCode;
-          if (statusCode == 404) {
-            return Exception('Notification not found.');
-          }
-          if (statusCode == 401 || statusCode == 403) {
-            return Exception('Authentication error. Please login again.');
-          }
-          return Exception('Server error: ${e.response?.statusMessage}');
-        default:
-          return Exception('An error occurred: ${e.message}');
-      }
+  @override
+  Future<int> getUnreadCount() async {
+    try {
+      return await _notificationService.getUnreadCount();
+    } catch (e) {
+      throw Exception('Failed to get unread count: ${e.toString()}');
     }
-    
-    return Exception('An error occurred: ${e.toString()}');
   }
 }

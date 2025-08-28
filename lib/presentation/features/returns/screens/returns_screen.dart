@@ -7,9 +7,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../data/services/returns_service.dart';
 import '../providers/returns_provider.dart';
-import '../../../common/widgets/custom_search_bar.dart';
+import '../../../common/widgets/material3_search_bar.dart';
 import '../../../common/widgets/shimmer_loading.dart';
 import '../../../common/widgets/empty_state.dart';
 import '../../../../core/di/service_locator.dart';
@@ -23,7 +22,7 @@ class ReturnsScreen extends StatefulWidget {
 
 class _ReturnsScreenState extends State<ReturnsScreen> {
   final TextEditingController _searchController = TextEditingController();
-  List<ReturnModel> _returns = [];
+  List<Map<String, dynamic>> _returns = [];
   bool _isLoading = true;
   bool _hasError = false;
   String? _errorMessage;
@@ -146,7 +145,7 @@ class _ReturnsScreenState extends State<ReturnsScreen> {
   
   // Calculate total amount of returns
   double get _totalReturnsAmount => 
-      _returns.fold(0, (total, returnItem) => total + returnItem.totalAmount);
+      _returns.fold(0.0, (total, returnItem) => total + (returnItem['totalAmount'] as num? ?? 0).toDouble());
   
   @override
   Widget build(BuildContext context) {
@@ -212,10 +211,10 @@ class _ReturnsScreenState extends State<ReturnsScreen> {
           // Search bar
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: CustomSearchBar(
+            child: Material3SearchBar(
               controller: _searchController,
-              hintText: l10n?.search ?? 'Search',
-              onSearch: _onSearch,
+              hintText: 'Search returns...',
+              onChanged: _onSearch,
             ),
           ),
           
@@ -443,9 +442,10 @@ class _ReturnsScreenState extends State<ReturnsScreen> {
     }
     
     // Group returns by date
-    final groupedReturns = <String, List<ReturnModel>>{};
+    final groupedReturns = <String, List<Map<String, dynamic>>>{};
     for (final returnItem in _returns) {
-      final key = DateFormat('MMMM yyyy').format(returnItem.dateTime);
+      final dateTime = DateTime.tryParse(returnItem['dateTime'] as String? ?? '') ?? DateTime.now();
+      final key = DateFormat('MMMM yyyy').format(dateTime);
       if (groupedReturns.containsKey(key)) {
         groupedReturns[key]!.add(returnItem);
       } else {
@@ -462,7 +462,7 @@ class _ReturnsScreenState extends State<ReturnsScreen> {
           final monthYear = groupedReturns.keys.elementAt(index);
           final returns = groupedReturns[monthYear]!;
           final totalForMonth = returns.fold<double>(
-            0, (sum, returnItem) => sum + returnItem.totalAmount
+            0.0, (sum, returnItem) => sum + (returnItem['totalAmount'] as num? ?? 0).toDouble()
           );
           
           return Column(
@@ -491,7 +491,7 @@ class _ReturnsScreenState extends State<ReturnsScreen> {
               ),
               ...returns.map((returnItem) => ReturnCard(
                 returnData: returnItem,
-                onTap: () => context.push('/returns/${returnItem.id}'),
+                onTap: () => context.push('/returns/${returnItem['id']}'),
               )),
               const Divider(),
             ],
@@ -503,7 +503,7 @@ class _ReturnsScreenState extends State<ReturnsScreen> {
 }
 
 class ReturnCard extends StatelessWidget {
-  final ReturnModel returnData;
+  final Map<String, dynamic> returnData;
   final VoidCallback onTap;
   
   const ReturnCard({
@@ -541,7 +541,7 @@ class ReturnCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Return #${returnData.id.split('-').last}',
+                    'Return #${(returnData['id'] as String? ?? '').split('-').last}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -561,7 +561,7 @@ class ReturnCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'Order #${returnData.originalSaleId.split('-').last}',
+                    'Order #${(returnData['originalSaleId'] as String? ?? '').split('-').last}',
                     style: TextStyle(
                       color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
                       fontSize: 14,
@@ -581,7 +581,7 @@ class ReturnCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    returnData.customerName,
+                    returnData['customerName'] as String? ?? 'Unknown Customer',
                     style: TextStyle(
                       color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
                       fontSize: 14,
@@ -602,7 +602,7 @@ class ReturnCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      'Reason: ${returnData.reason}',
+                      'Reason: ${returnData['reason'] as String? ?? 'Not specified'}',
                       style: TextStyle(
                         color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
                         fontSize: 14,
@@ -618,7 +618,7 @@ class ReturnCard extends StatelessWidget {
               
               // Return items summary
               Text(
-                'Returned Items (${returnData.items.length})',
+                'Returned Items (${(returnData['items'] as List? ?? []).length})',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
@@ -651,7 +651,7 @@ class ReturnCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            returnData.items.first.productName,
+                            ((returnData['items'] as List? ?? []).isNotEmpty ? (returnData['items'] as List).first['productName'] as String? : null) ?? 'Unknown Product',
                             style: const TextStyle(
                               fontWeight: FontWeight.w500,
                             ),
@@ -659,7 +659,7 @@ class ReturnCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            returnData.items.first.reason,
+                            ((returnData['items'] as List? ?? []).isNotEmpty ? (returnData['items'] as List).first['reason'] as String? : null) ?? 'No reason',
                             style: TextStyle(
                               fontSize: 12,
                               color: isDarkMode 
@@ -674,7 +674,7 @@ class ReturnCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'x${returnData.items.first.quantity}',
+                      'x${((returnData['items'] as List? ?? []).isNotEmpty ? (returnData['items'] as List).first['quantity'] as int? : null) ?? 0}',
                       style: const TextStyle(
                         fontWeight: FontWeight.w500,
                       ),
@@ -684,11 +684,11 @@ class ReturnCard extends StatelessWidget {
               ),
               
               // Show indication of more items
-              if (returnData.items.length > 1)
+              if ((returnData['items'] as List? ?? []).length > 1)
                 Padding(
                   padding: const EdgeInsets.only(top: 4.0),
                   child: Text(
-                    '+ ${returnData.items.length - 1} more items',
+                    '+ ${(returnData['items'] as List? ?? []).length - 1} more items',
                     style: TextStyle(
                       fontSize: 12,
                       color: isDarkMode 
@@ -716,7 +716,7 @@ class ReturnCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'TSh ${NumberFormat('#,###').format(returnData.totalAmount)}',
+                        'TSh ${NumberFormat('#,###').format((returnData['totalAmount'] as num? ?? 0).toDouble())}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -738,7 +738,7 @@ class ReturnCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        DateFormat('dd MMM yyyy').format(returnData.dateTime),
+                        DateFormat('dd MMM yyyy').format(DateTime.tryParse(returnData['dateTime'] as String? ?? '') ?? DateTime.now()),
                         style: TextStyle(
                           fontSize: 14,
                           color: isDarkMode 
@@ -797,7 +797,7 @@ class ReturnCard extends StatelessWidget {
   }
   
   Color _getStatusColor() {
-    switch (returnData.status.toLowerCase()) {
+    switch ((returnData['status'] as String? ?? '').toLowerCase()) {
       case 'approved':
         return Colors.green;
       case 'pending':
@@ -811,13 +811,14 @@ class ReturnCard extends StatelessWidget {
   
   String _getStatusText() {
     // Capitalize first letter
-    return returnData.status.isNotEmpty 
-        ? returnData.status[0].toUpperCase() + returnData.status.substring(1)
+    final status = returnData['status'] as String? ?? '';
+    return status.isNotEmpty 
+        ? status[0].toUpperCase() + status.substring(1)
         : '';
   }
   
   IconData _getStatusIcon() {
-    switch (returnData.status.toLowerCase()) {
+    switch ((returnData['status'] as String? ?? '').toLowerCase()) {
       case 'approved':
         return LucideIcons.checkCircle;
       case 'pending':

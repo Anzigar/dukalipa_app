@@ -109,7 +109,6 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         onPressed: () => context.push('/sales/add', extra: {'customer': _customer}),
         backgroundColor: AppTheme.mkbhdRed,
         foregroundColor: Colors.white,
-        icon: Icon(LucideIcons.shoppingCart, size: 20.sp),
         label: Text(
           'New Sale',
           style: GoogleFonts.poppins(
@@ -118,7 +117,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           ),
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(50.r), // More rounded, no icon
         ),
       ) : null,
     );
@@ -151,17 +150,16 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
             SizedBox(height: 24.h),
             SizedBox(
               height: 48.h,
-              child: FilledButton.icon(
+              child: FilledButton(
                 onPressed: _fetchCustomer,
-                icon: Icon(LucideIcons.refreshCw, size: 20.sp),
-                label: Text('Retry'),
                 style: FilledButton.styleFrom(
                   backgroundColor: AppTheme.mkbhdRed,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.r),
+                    borderRadius: BorderRadius.circular(50.r), // More rounded
                   ),
                 ),
+                child: Text('Retry'),
               ),
             ),
           ],
@@ -414,21 +412,20 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 SizedBox(
                   width: double.infinity,
                   height: 56.h,
-                  child: FilledButton.icon(
+                  child: FilledButton(
                     onPressed: () => _showPurchasesInfo(),
-                    icon: Icon(LucideIcons.shoppingBag, size: 20.sp),
-                    label: Text(
-                      'View All Purchases',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppTheme.mkbhdRed,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16.r),
+                        borderRadius: BorderRadius.circular(50.r), // More rounded, no icon
+                      ),
+                    ),
+                    child: Text(
+                      'View All Purchases',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -440,21 +437,20 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 SizedBox(
                   width: double.infinity,
                   height: 56.h,
-                  child: OutlinedButton.icon(
+                  child: OutlinedButton(
                     onPressed: () => _editCustomer(),
-                    icon: Icon(LucideIcons.edit2, size: 20.sp),
-                    label: Text(
-                      'Edit Customer',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: AppTheme.mkbhdRed),
                       foregroundColor: AppTheme.mkbhdRed,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16.r),
+                        borderRadius: BorderRadius.circular(50.r), // More rounded, no icon
+                      ),
+                    ),
+                    child: Text(
+                      'Edit Customer',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -466,21 +462,20 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 SizedBox(
                   width: double.infinity,
                   height: 56.h,
-                  child: OutlinedButton.icon(
+                  child: OutlinedButton(
                     onPressed: () => _showDeleteConfirmation(),
-                    icon: Icon(LucideIcons.trash2, size: 20.sp),
-                    label: Text(
-                      'Delete Customer',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: Colors.red),
                       foregroundColor: Colors.red,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16.r),
+                        borderRadius: BorderRadius.circular(50.r), // More rounded, no icon
+                      ),
+                    ),
+                    child: Text(
+                      'Delete Customer',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),

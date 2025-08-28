@@ -2,12 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'package:dukalipa_app/presentation/features/auth/repositories/auth_repository.dart';
 import '../../data/models/user_profile.dart';
 import '../services/session_service.dart';
+import '../services/appwrite_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   UserProfile? _userProfile;
   bool _isAuthenticated = false;
   bool _isLoading = false;
   final SessionService _sessionService = SessionService();
+  final AppwriteService _appwriteService = AppwriteService();
 
   AuthProvider(AuthRepository authRepository);
 
@@ -61,6 +63,50 @@ class AuthProvider extends ChangeNotifier {
       
       return true;
     } catch (e) {
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Google Sign-In method
+  Future<bool> signInWithGoogle() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final session = await _appwriteService.signInWithGoogle();
+      
+      if (session != null) {
+        // Get user profile from Appwrite
+        final user = await _appwriteService.getCurrentUser();
+        if (user != null) {
+          final userProfile = await _appwriteService.getUserProfile(user.$id);
+          
+          if (userProfile != null) {
+            _userProfile = userProfile;
+            _isAuthenticated = true;
+            
+            // Save session
+            await _sessionService.saveSession(
+              accessToken: session.$id,
+              refreshToken: 'google_refresh_${DateTime.now().millisecondsSinceEpoch}',
+              userProfile: _userProfile!,
+              rememberMe: true,
+              enableAutoLogin: true,
+            );
+            
+            return true;
+          }
+        }
+      }
+      
+      return false;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Google sign-in error: $e');
+      }
       return false;
     } finally {
       _isLoading = false;

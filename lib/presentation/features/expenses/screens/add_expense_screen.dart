@@ -8,7 +8,6 @@ import 'package:lucide_icons/lucide_icons.dart'; // Changed from phosphor_flutte
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../data/services/expenses_service.dart';
 import '../providers/expenses_provider.dart';
 import '../../../common/widgets/custom_button.dart';
 import '../../../common/widgets/custom_text_field.dart';
@@ -253,7 +252,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     value: _selectedCategory,
                     isExpanded: true,
                     hint: const Text('Select Category'),
-                    items: ExpenseCategories.all.map((category) {
+                    items: const ['Rent', 'Utilities', 'Salary', 'Inventory', 'Marketing', 'Maintenance', 'Transportation', 'Office Supplies', 'Taxes', 'Other'].map((category) {
                       return DropdownMenuItem<String>(
                         value: category,
                         child: Row(

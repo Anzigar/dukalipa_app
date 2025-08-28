@@ -1,32 +1,24 @@
-import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../utils/app_constants.dart';
-import '../network/dio_interceptors.dart';
-import '../network/api_client.dart';
+import '../services/appwrite_service.dart';
 import '../../data/services/local_storage_service.dart';
-import '../../data/services/inventory_service.dart';
-import '../../presentation/features/auth/repositories/auth_repository.dart';
+import '../../data/services/appwrite_inventory_service.dart';
+import '../../data/services/appwrite_sales_service.dart';
+import '../../data/services/appwrite_damaged_product_service.dart';
+import '../../data/services/appwrite_expense_service.dart';
+import '../../presentation/features/auth/repositories/appwrite_auth_repository.dart';
 import '../../presentation/features/inventory/repositories/inventory_repository.dart';
 import '../../presentation/features/home/repositories/analytics_repository.dart';
 import '../../presentation/features/sales/repositories/sales_repository.dart';
 import '../../presentation/features/notifications/repositories/notification_repository.dart';
 import '../../presentation/features/installments/repositories/installment_repository.dart';
-import '../../presentation/features/installments/repositories/installment_repository_impl.dart' as installment_impl;
 import '../../presentation/features/clients/repositories/client_repository.dart';
 import '../../presentation/features/clients/repositories/client_repository_impl.dart';
-import '../../data/services/product_service.dart';
-import '../../data/services/analytics_service.dart';
-import '../../data/services/sales_service.dart';
-import '../../data/services/returns_service.dart';
-import '../../data/services/deleted_sales_service.dart';
-import '../../data/services/damaged_products_service.dart';
 import '../../data/services/expenses_service.dart';
-import '../../data/services/recent_activity_service.dart';
+import '../../presentation/features/expenses/providers/expenses_provider.dart';
 import '../../presentation/features/damaged/providers/damaged_products_provider.dart';
 import '../../presentation/features/returns/providers/returns_provider.dart';
-import '../../presentation/features/expenses/providers/expenses_provider.dart';
 import '../../presentation/features/home/providers/recent_activity_provider.dart';
 
 final GetIt locator = GetIt.instance;
@@ -37,83 +29,43 @@ Future<void> setupServiceLocator() async {
   locator.registerSingleton<SharedPreferences>(sharedPreferences);
   
   // Core services
+  locator.registerSingleton<AppwriteService>(AppwriteService());
   locator.registerSingleton<LocalStorageService>(
     LocalStorageServiceImpl(locator<SharedPreferences>())
   );
   
-  // Network
-  final dio = Dio(
-    BaseOptions(
-      baseUrl: AppConstants.baseUrl,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ),
+  // Appwrite Services
+  locator.registerLazySingleton<AppwriteInventoryService>(
+    () => AppwriteInventoryService()
   );
   
-  // Add interceptors
-  dio.interceptors.add(LoggingInterceptor());
-  dio.interceptors.add(AuthInterceptor(locator<LocalStorageService>()));
-  
-  // Register Dio instance
-  locator.registerSingleton<Dio>(dio);
-  
-  // Register ApiClient with proper Dio instance
-  locator.registerLazySingleton<ApiClient>(() => ApiClient(
-    baseUrl: AppConstants.baseUrl,
-  ));
-  
-  // Data Services
-  locator.registerLazySingleton<InventoryService>(
-    () => InventoryService()
+  locator.registerLazySingleton<AppwriteSalesService>(
+    () => AppwriteSalesService()
   );
   
-  locator.registerLazySingleton<ProductService>(
-    () => ProductService()
+  locator.registerLazySingleton<AppwriteDamagedProductService>(
+    () => AppwriteDamagedProductService()
   );
   
-  locator.registerLazySingleton<AnalyticsService>(
-    () => AnalyticsService()
+  locator.registerLazySingleton<AppwriteExpenseService>(
+    () => AppwriteExpenseService()
   );
   
-  locator.registerLazySingleton<SalesService>(
-    () => SalesService()
-  );
-  
-  locator.registerLazySingleton<ReturnsService>(
-    () => ReturnsService()
-  );
-  
-  locator.registerLazySingleton<DeletedSalesService>(
-    () => DeletedSalesService()
-  );
-  
-  locator.registerLazySingleton<DamagedProductsService>(
-    () => DamagedProductsService()
-  );
-  
+  // Legacy Data Services
   locator.registerLazySingleton<ExpensesService>(
     () => ExpensesService()
   );
   
-  locator.registerLazySingleton<RecentActivityService>(
-    () => RecentActivityService()
+  // Auth Repository
+  locator.registerLazySingleton<AppwriteAuthRepository>(
+    () => AppwriteAuthRepository(locator<AppwriteService>())
   );
   
-  // Repositories
-  locator.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(locator<LocalStorageService>())
-  );
-  
-  // Use the new inventory repository implementation
+  // Repositories using Appwrite
   locator.registerLazySingleton<InventoryRepository>(
     () => InventoryRepositoryImpl()
   );
 
-  // Register analytics repository
   locator.registerLazySingleton<AnalyticsRepository>(
     () => AnalyticsRepositoryImpl()
   );
@@ -127,7 +79,7 @@ Future<void> setupServiceLocator() async {
   );
 
   locator.registerLazySingleton<InstallmentRepository>(
-    () => installment_impl.InstallmentRepositoryImpl()
+    () => InstallmentRepositoryImpl()
   );
 
   locator.registerLazySingleton<ClientRepository>(
@@ -135,19 +87,19 @@ Future<void> setupServiceLocator() async {
   );
 
   // Providers
-  locator.registerLazySingleton<DamagedProductsProvider>(
-    () => DamagedProductsProvider(locator<DamagedProductsService>())
-  );
-
-  locator.registerLazySingleton<ReturnsProvider>(
-    () => ReturnsProvider(locator<ReturnsService>())
-  );
-
   locator.registerLazySingleton<ExpensesProvider>(
     () => ExpensesProvider(locator<ExpensesService>())
   );
-
+  
+  locator.registerLazySingleton<DamagedProductsProvider>(
+    () => DamagedProductsProvider()
+  );
+  
+  locator.registerLazySingleton<ReturnsProvider>(
+    () => ReturnsProvider()
+  );
+  
   locator.registerLazySingleton<RecentActivityProvider>(
-    () => RecentActivityProvider(locator<RecentActivityService>())
+    () => RecentActivityProvider(locator<AnalyticsRepository>())
   );
 }

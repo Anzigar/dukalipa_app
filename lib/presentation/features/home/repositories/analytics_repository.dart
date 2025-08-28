@@ -1,4 +1,4 @@
-import '../../../../data/services/analytics_service.dart';
+import '../../../../data/services/appwrite_analytics_service.dart';
 import '../../../../data/models/analytics_model.dart';
 
 abstract class AnalyticsRepository {
@@ -44,10 +44,10 @@ abstract class AnalyticsRepository {
 }
 
 class AnalyticsRepositoryImpl implements AnalyticsRepository {
-  final AnalyticsService _analyticsService;
+  final AppwriteAnalyticsService _analyticsService;
 
   AnalyticsRepositoryImpl() 
-      : _analyticsService = AnalyticsService();
+      : _analyticsService = AppwriteAnalyticsService();
 
   @override
   Future<AnalyticsModel> getAnalytics({

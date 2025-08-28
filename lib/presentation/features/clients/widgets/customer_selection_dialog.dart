@@ -216,6 +216,13 @@ class _CustomerSelectionDialogState extends State<CustomerSelectionDialog> {
                               SizedBox(height: 16.h),
                               FilledButton(
                                 onPressed: _loadCustomers,
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppTheme.mkbhdRed,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(50.r), // M3 rounded
+                                  ),
+                                ),
                                 child: Text('Retry'),
                               ),
                             ],
@@ -253,14 +260,16 @@ class _CustomerSelectionDialogState extends State<CustomerSelectionDialog> {
                                   ),
                                   if (widget.allowNewCustomer) ...[
                                     SizedBox(height: 24.h),
-                                    FilledButton.icon(
+                                    FilledButton(
                                       onPressed: _addNewCustomer,
-                                      icon: Icon(LucideIcons.userPlus),
-                                      label: Text('Add Customer'),
                                       style: FilledButton.styleFrom(
                                         backgroundColor: AppTheme.mkbhdRed,
                                         foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(50.r), // M3 rounded, no icon
+                                        ),
                                       ),
+                                      child: Text('Add Customer'),
                                     ),
                                   ],
                                 ],
@@ -286,18 +295,17 @@ class _CustomerSelectionDialogState extends State<CustomerSelectionDialog> {
                 ),
                 child: SizedBox(
                   width: double.infinity,
-                  child: OutlinedButton.icon(
+                  child: OutlinedButton(
                     onPressed: _addNewCustomer,
-                    icon: Icon(LucideIcons.userPlus),
-                    label: Text('Add New Customer'),
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: AppTheme.mkbhdRed),
                       foregroundColor: AppTheme.mkbhdRed,
                       padding: EdgeInsets.symmetric(vertical: 16.h),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16.r),
+                        borderRadius: BorderRadius.circular(50.r), // M3 rounded, no icon
                       ),
                     ),
+                    child: Text('Add New Customer'),
                   ),
                 ),
               ),

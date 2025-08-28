@@ -1,26 +1,26 @@
 import 'package:flutter/foundation.dart';
-import '../../../../data/services/damaged_products_service.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../../../data/services/appwrite_damaged_product_service.dart';
 
 class DamagedProductsProvider with ChangeNotifier {
-  final DamagedProductsService _damagedProductsService;
+  final AppwriteDamagedProductService _damagedProductsService = locator<AppwriteDamagedProductService>();
 
-  DamagedProductsProvider(this._damagedProductsService);
-
-  List<DamagedProductModel> _damagedProducts = [];
+  List<Map<String, dynamic>> _damagedProducts = [];
   bool _isLoading = false;
   String? _error;
 
   // Getters
-  List<DamagedProductModel> get damagedProducts => _damagedProducts;
+  List<Map<String, dynamic>> get damagedProducts => _damagedProducts;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
   /// Load damaged products
   Future<void> loadDamagedProducts({
     bool refresh = false,
-    String? status,
-    String? damageType,
-    String? severity,
+    String? productName,
+    String? reason,
+    DateTime? startDate,
+    DateTime? endDate,
   }) async {
     if (refresh) {
       _damagedProducts.clear();
@@ -30,14 +30,14 @@ class DamagedProductsProvider with ChangeNotifier {
     _clearError();
 
     try {
-      // For now, we'll get individual damage reports
-      // In a real implementation, the service would return a list directly
-      // Since the current service structure is unclear, we'll keep the list empty
-      // and populate it when individual reports are fetched
+      final products = await _damagedProductsService.getDamagedProducts(
+        productName: productName,
+        reason: reason,
+        startDate: startDate,
+        endDate: endDate,
+      );
       
-      if (refresh) {
-        _damagedProducts = [];
-      }
+      _damagedProducts = products.map((item) => item.toJson()).toList();
     } catch (e) {
       _setError('Failed to load damaged products: $e');
     } finally {
@@ -46,16 +46,10 @@ class DamagedProductsProvider with ChangeNotifier {
   }
 
   /// Get a specific damage report by ID
-  Future<DamagedProductModel?> getDamageReport(String damageId) async {
+  Future<Map<String, dynamic>?> getDamageReport(String damageId) async {
     try {
-      final response = await _damagedProductsService.getDamageReport(damageId);
-      
-      if (response.success && response.data != null) {
-        return response.data!;
-      } else {
-        _setError(response.message ?? 'Failed to load damage report');
-        return null;
-      }
+      final product = await _damagedProductsService.getDamageReport(damageId);
+      return product.toJson();
     } catch (e) {
       _setError('Failed to load damage report: $e');
       return null;
@@ -67,46 +61,27 @@ class DamagedProductsProvider with ChangeNotifier {
     required String productId,
     required String productName,
     required int quantity,
-    required double originalPrice,
-    required double estimatedLoss,
-    required String damageType,
-    required String severity,
-    required String description,
-    String? location,
-    required String discoveredBy,
-    List<String>? images,
-    InsuranceClaimInfo? insuranceClaim,
-    String? actionTaken,
+    required double pricePerUnit,
+    required String reason,
+    String? notes,
+    String? imageUrl,
   }) async {
     _setLoading(true);
     _clearError();
 
     try {
-      final response = await _damagedProductsService.reportDamagedProduct(
+      await _damagedProductsService.reportDamagedProduct(
         productId: productId,
         productName: productName,
         quantity: quantity,
-        originalPrice: originalPrice,
-        estimatedLoss: estimatedLoss,
-        damageType: damageType,
-        severity: severity,
-        description: description,
-        location: location,
-        discoveredBy: discoveredBy,
-        images: images,
-        insuranceClaim: insuranceClaim,
-        actionTaken: actionTaken,
+        pricePerUnit: pricePerUnit,
+        reason: reason,
+        notes: notes,
+        imageUrl: imageUrl,
       );
 
-      if (response.success && response.data != null) {
-        // Add the new damaged product to the beginning of the list
-        _damagedProducts.insert(0, response.data!);
-        notifyListeners();
-        return true;
-      } else {
-        _setError(response.message ?? 'Failed to report damaged product');
-        return false;
-      }
+      await loadDamagedProducts(refresh: true);
+      return true;
     } catch (e) {
       _setError('Failed to report damaged product: $e');
       return false;
@@ -115,52 +90,17 @@ class DamagedProductsProvider with ChangeNotifier {
     }
   }
 
-  /// Update a damage report
-  Future<bool> updateDamageReport(
-    String damageId, {
-    int? quantity,
-    double? estimatedLoss,
-    String? damageType,
-    String? severity,
-    String? description,
-    String? location,
-    List<String>? images,
-    String? status,
-    InsuranceClaimInfo? insuranceClaim,
-    String? actionTaken,
-  }) async {
+  /// Delete a damage report
+  Future<bool> deleteDamageReport(String damageId) async {
     _setLoading(true);
     _clearError();
 
     try {
-      final response = await _damagedProductsService.updateDamageReport(
-        damageId,
-        quantity: quantity,
-        estimatedLoss: estimatedLoss,
-        damageType: damageType,
-        severity: severity,
-        description: description,
-        location: location,
-        images: images,
-        status: status,
-        insuranceClaim: insuranceClaim,
-        actionTaken: actionTaken,
-      );
-
-      if (response.success && response.data != null) {
-        // Update the product in the list
-        final index = _damagedProducts.indexWhere((product) => product.id == damageId);
-        if (index != -1) {
-          _damagedProducts[index] = response.data!;
-          notifyListeners();
-        }
-        return true;
-      } else {
-        _setError(response.message ?? 'Failed to update damage report');
-        return false;
-      }
+      await _damagedProductsService.deleteDamageReport(damageId);
+      await loadDamagedProducts(refresh: true);
+      return true;
     } catch (e) {
-      _setError('Failed to update damage report: $e');
+      _setError('Failed to delete damage report: $e');
       return false;
     } finally {
       _setLoading(false);
@@ -176,8 +116,10 @@ class DamagedProductsProvider with ChangeNotifier {
     }
 
     final filteredProducts = _damagedProducts.where((product) {
-      return product.productName.toLowerCase().contains(query.toLowerCase()) ||
-          product.description.toLowerCase().contains(query.toLowerCase());
+      final productName = product['productName'] as String? ?? '';
+      final description = product['description'] as String? ?? '';
+      return productName.toLowerCase().contains(query.toLowerCase()) ||
+          description.toLowerCase().contains(query.toLowerCase());
     }).toList();
 
     _damagedProducts = filteredProducts;
@@ -185,16 +127,16 @@ class DamagedProductsProvider with ChangeNotifier {
   }
 
   /// Get damaged products analytics
-  Future<Map<String, dynamic>?> getDamageAnalytics() async {
+  Future<Map<String, dynamic>?> getDamageAnalytics({
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
     try {
-      final response = await _damagedProductsService.getDamageAnalytics();
-
-      if (response.success && response.data != null) {
-        return response.data!;
-      } else {
-        _setError(response.message ?? 'Failed to load analytics');
-        return null;
-      }
+      final analytics = await _damagedProductsService.getDamageAnalytics(
+        startDate: startDate,
+        endDate: endDate,
+      );
+      return analytics;
     } catch (e) {
       _setError('Failed to load analytics: $e');
       return null;

@@ -150,173 +150,126 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-            width: 1,
+      backgroundColor: Theme.of(context).colorScheme.background,
+      appBar: AppBar(
+        title: Text(
+          widget.group != null ? 'Edit Group' : 'Create Group',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        child: Column(
-          children: [
-            // Handle bar
-            Container(
-              margin: EdgeInsets.only(top: 12.h),
-              height: 4.h,
-              width: 40.w,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(2.r),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        elevation: 0,
+        iconTheme: IconThemeData(
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.w),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Group Name
+              CustomTextField(
+                controller: _nameController,
+                labelText: 'Group Name*',
+                prefixIcon: LucideIcons.folder,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter group name';
+                  }
+                  return null;
+                },
               ),
-            ),
-            
-            // Header
-            Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Row(
+              
+              const SizedBox(height: 16),
+              
+              // Description
+              CustomTextField(
+                controller: _descriptionController,
+                labelText: 'Description*',
+                prefixIcon: LucideIcons.alignLeft,
+                maxLines: 3,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter description';
+                  }
+                  return null;
+                },
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Categories
+              Row(
                 children: [
                   Icon(
-                    Icons.folder_outlined,
+                    Icons.category_outlined,
                     color: Theme.of(context).colorScheme.primary,
-                    size: 24.sp,
+                    size: 20.sp,
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    widget.group != null ? 'Edit Group' : 'Create Group',
+                    'Categories*',
                     style: TextStyle(
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14.sp,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  const Spacer(),
-                  IconButton(
-                    icon: Icon(
-                      Icons.close,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
                 ],
               ),
-            ),
-            
-            Divider(height: 1.h, color: Theme.of(context).colorScheme.outline.withOpacity(0.3)),
-            
-            // Form content
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(16.w),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Group Name
-                      CustomTextField(
-                        controller: _nameController,
-                        labelText: 'Group Name*',
-                        prefixIcon: LucideIcons.folder,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter group name';
-                          }
-                          return null;
-                        },
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      // Description
-                      CustomTextField(
-                        controller: _descriptionController,
-                        labelText: 'Description*',
-                        prefixIcon: LucideIcons.alignLeft,
-                        maxLines: 3,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter description';
-                          }
-                          return null;
-                        },
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Categories
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.category_outlined,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 20.sp,
-                          ),
-                          SizedBox(width: 8.w),
-                          Text(
-                            'Categories*',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 14.sp,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 12.h),
-                      Wrap(
-                        spacing: 8.w,
-                        runSpacing: 8.h,
-                        children: _availableCategories.map((category) {
-                          final isSelected = _selectedCategories.contains(category);
-                          return FilterChip(
-                            label: Text(category),
-                            selected: isSelected,
-                            selectedColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                            checkmarkColor: Theme.of(context).colorScheme.primary,
-                            backgroundColor: Theme.of(context).colorScheme.surface,
-                            labelStyle: TextStyle(
-                              color: isSelected 
-                                  ? Theme.of(context).colorScheme.primary 
-                                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                              fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
-                              fontSize: 13.sp,
-                            ),
-                            side: BorderSide(
-                              color: isSelected 
-                                  ? Theme.of(context).colorScheme.primary 
-                                  : Theme.of(context).colorScheme.outline.withOpacity(0.5),
-                            ),
-                            onSelected: (selected) {
-                              setState(() {
-                                if (selected) {
-                                  _selectedCategories.add(category);
-                                } else {
-                                  _selectedCategories.remove(category);
-                                }
-                              });
-                            },
-                          );
-                        }).toList(),
-                      ),
-                      
-                      const SizedBox(height: 32),
-                      
-                      // Save Button
-                      CustomButton(
-                        text: widget.group != null ? 'Update Group' : 'Create Group',
-                        isLoading: _isLoading,
-                        onPressed: _saveGroup,
-                        icon: widget.group != null ? LucideIcons.save : LucideIcons.plus,
-                      ),
-                    ],
-                  ),
-                ),
+              SizedBox(height: 12.h),
+              Wrap(
+                spacing: 8.w,
+                runSpacing: 8.h,
+                children: _availableCategories.map((category) {
+                  final isSelected = _selectedCategories.contains(category);
+                  return FilterChip(
+                    label: Text(category),
+                    selected: isSelected,
+                    selectedColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                    checkmarkColor: Theme.of(context).colorScheme.primary,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    labelStyle: TextStyle(
+                      color: isSelected 
+                          ? Theme.of(context).colorScheme.primary 
+                          : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                      fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                      fontSize: 13.sp,
+                    ),
+                    side: BorderSide(
+                      color: isSelected 
+                          ? Theme.of(context).colorScheme.primary 
+                          : Theme.of(context).colorScheme.outline.withOpacity(0.5),
+                    ),
+                    onSelected: (selected) {
+                      setState(() {
+                        if (selected) {
+                          _selectedCategories.add(category);
+                        } else {
+                          _selectedCategories.remove(category);
+                        }
+                      });
+                    },
+                  );
+                }).toList(),
               ),
-            ),
-          ],
+              
+              const SizedBox(height: 32),
+              
+              // Save Button
+              CustomButton(
+                text: widget.group != null ? 'Update Group' : 'Create Group',
+                isLoading: _isLoading,
+                onPressed: _saveGroup,
+                icon: widget.group != null ? LucideIcons.save : LucideIcons.plus,
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -189,14 +189,16 @@ class _AddEditCustomerScreenState extends State<AddEditCustomerScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            ElevatedButton.icon(
+            ElevatedButton(
               onPressed: _fetchCustomer,
-              icon: const Icon(LucideIcons.refreshCw),
-              label: const Text('Retry'),
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
                 backgroundColor: AppTheme.mkbhdRed,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50), // More rounded, no icon
+                ),
               ),
+              child: const Text('Retry'),
             ),
           ],
         ),

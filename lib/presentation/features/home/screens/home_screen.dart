@@ -970,13 +970,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           return Column(
             children: [
               _buildIOSActivityItem(
-                icon: _getActivityIcon(activity.type),
-                title: activity.title,
-                subtitle: activity.subtitle.isNotEmpty 
-                    ? activity.subtitle 
-                    : _formatTimestamp(activity.timestamp),
-                time: _formatTimestamp(activity.timestamp),
-                color: _getActivityColor(activity.type),
+                icon: _getActivityIcon(activity['type'] as String? ?? 'default'),
+                title: activity['title'] as String? ?? 'No title',
+                subtitle: (activity['description'] as String? ?? '').isNotEmpty 
+                    ? activity['description'] as String? ?? '' 
+                    : _formatTimestamp(DateTime.tryParse(activity['timestamp']?.toString() ?? '') ?? DateTime.now()),
+                time: _formatTimestamp(DateTime.tryParse(activity['timestamp']?.toString() ?? '') ?? DateTime.now()),
+                color: _getActivityColor(activity['type'] as String? ?? 'default'),
                 isFirst: index == 0,
                 isLast: index == activitiesToShow.length - 1,
               ),

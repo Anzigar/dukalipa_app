@@ -394,12 +394,12 @@ class _ActivityScreenState extends State<ActivityScreen> {
                     width: 32.w,
                     height: 32.h,
                     decoration: BoxDecoration(
-                      color: _getActivityColor(activity.type).withOpacity(0.1),
+                      color: _getActivityColor(activity['type'] as String? ?? 'default').withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Icon(
-                      _getActivityIcon(activity.type),
-                      color: _getActivityColor(activity.type),
+                      _getActivityIcon(activity['type'] as String? ?? 'default'),
+                      color: _getActivityColor(activity['type'] as String? ?? 'default'),
                       size: 18.sp,
                     ),
                   ),
@@ -409,7 +409,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          activity.title,
+                          activity['title'] as String? ?? 'No title',
                           style: TextStyle(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
@@ -418,9 +418,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         ),
                         SizedBox(height: 2.h),
                         Text(
-                          activity.subtitle.isNotEmpty 
-                              ? activity.subtitle 
-                              : _formatTimestamp(activity.timestamp),
+                          (activity['description'] as String? ?? '').isNotEmpty 
+                              ? activity['description'] as String? ?? '' 
+                              : _formatTimestamp(DateTime.tryParse(activity['timestamp']?.toString() ?? '') ?? DateTime.now()),
                           style: TextStyle(
                             fontSize: 12.sp,
                             fontWeight: FontWeight.w400,
@@ -430,10 +430,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
                       ],
                     ),
                   ),
-                  if (activity.metadata?['amount'] != null) ...[
+                  if ((activity['metadata'] as Map<String, dynamic>?)?['amount'] != null) ...[
                     SizedBox(width: 8.w),
                     Text(
-                      '\$${(activity.metadata!['amount'] as num).toStringAsFixed(2)}',
+                      '\$${((activity['metadata'] as Map<String, dynamic>?)!['amount'] as num).toStringAsFixed(2)}',
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -443,7 +443,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   ],
                   SizedBox(width: 8.w),
                   Text(
-                    _formatTimestamp(activity.timestamp),
+                    _formatTimestamp(DateTime.tryParse(activity['timestamp']?.toString() ?? '') ?? DateTime.now()),
                     style: TextStyle(
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w400,

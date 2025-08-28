@@ -10,17 +10,9 @@ import '../models/product_model.dart';
 import '../models/device_entry_model.dart';
 import '../providers/inventory_provider.dart';
 import '../models/product_group_model.dart';
+import '../../../../core/services/barcode_scanner_service.dart';
 import 'create_group_screen.dart';
 import 'device_entries_screen.dart';
-
-// Simple implementations to avoid import errors
-class BarcodeScannerService {
-  static Future<String?> scanBarcode(BuildContext context) async {
-    // Simulate barcode scanning
-    await Future.delayed(const Duration(seconds: 1));
-    return '1234567890123';
-  }
-}
 
 class BarcodeScannerButton extends StatelessWidget {
   final Function(String) onScanned;
@@ -36,8 +28,8 @@ class BarcodeScannerButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(12),
+        color: Theme.of(context).colorScheme.primary,
+        shape: BoxShape.circle,
         border: Border.all(
           color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
           width: 1,
@@ -52,7 +44,7 @@ class BarcodeScannerButton extends StatelessWidget {
         },
         icon: Icon(
           LucideIcons.scan,
-          color: Theme.of(context).colorScheme.primary,
+          color: Colors.white,
           size: 20,
         ),
         tooltip: tooltip,
@@ -202,13 +194,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
   // Form controllers
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _barcodeController = TextEditingController();
   final _imeiController = TextEditingController();
   final _sellingPriceController = TextEditingController();
   final _costPriceController = TextEditingController();
   final _quantityController = TextEditingController();
   final _lowStockController = TextEditingController();
   final _customCategoryController = TextEditingController();
+  final _customColorController = TextEditingController();
   
   // Form state
   String? _selectedCategory;
@@ -222,6 +214,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   String? _selectedSize;
   String? _selectedStorage;
   bool _showCustomCategoryInput = false;
+  bool _showCustomColorInput = false;
   bool _isClassificationExpanded = false;
 
   // Simplified category structure with clear groupings
@@ -255,7 +248,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   final List<String> _colors = [
     'Black', 'White', 'Blue', 'Red', 'Gold', 'Silver', 'Gray', 
-    'Green', 'Purple', 'Pink', 'Rose Gold', 'Space Gray', 'Midnight'
+    'Green', 'Purple', 'Pink', 'Rose Gold', 'Space Gray', 'Midnight',
+    'Custom' // Add custom option
   ];
 
   final List<String> _sizes = [
@@ -284,7 +278,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   void _populateFormWithProduct(ProductModel product) {
     _nameController.text = product.name;
     _descriptionController.text = product.description ?? '';
-    _barcodeController.text = product.barcode ?? '';
+    // No need to populate barcode field as it will be generated from IMEI numbers
     _sellingPriceController.text = product.sellingPrice.toString();
     _costPriceController.text = product.costPrice.toString();
     _quantityController.text = product.quantity.toString();
@@ -302,7 +296,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
       
       // Set variant selections from first device entry
       final firstEntry = product.deviceEntries!.first;
-      _selectedColor = firstEntry.color;
+      final deviceColor = firstEntry.color;
+      // Check if the color is in our predefined list
+      if (_colors.contains(deviceColor)) {
+        _selectedColor = deviceColor;
+      } else {
+        // It's a custom color
+        _selectedColor = deviceColor;
+        _customColorController.text = deviceColor ?? '';
+        _showCustomColorInput = deviceColor != null && deviceColor.isNotEmpty;
+      }
       _selectedStorage = firstEntry.storage;
     }
   }
@@ -420,7 +423,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
       id: widget.product?.id ?? '',
       name: _nameController.text.isEmpty ? 'New Product' : _nameController.text,
       description: _descriptionController.text,
-      barcode: _barcodeController.text,
       sellingPrice: double.tryParse(_sellingPriceController.text) ?? 0.0,
       costPrice: double.tryParse(_costPriceController.text) ?? 0.0,
       quantity: quantity,
@@ -468,10 +470,31 @@ class _AddProductScreenState extends State<AddProductScreen> {
     try {
       final result = await BarcodeScannerService.scanBarcode(context);
       if (result != null && result.isNotEmpty) {
+        // Validate scanned IMEI format for electronic devices
+        if (_requiresIMEI && !_isValidIMEI(result)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Scanned code "$result" is not a valid IMEI (must be 15 digits)'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+          return;
+        }
+
         setState(() {
           if (!_imeiList.contains(result)) {
             _imeiList.add(result);
-            _imeiController.text = result;
+            _imeiController.text = result; // Set the scanned IMEI in the input field
+            
+            // Show success message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Scanned and added IMEI: $result'),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 2),
+              ),
+            );
           } else {
             // Show message if IMEI already exists
             ScaffoldMessenger.of(context).showSnackBar(
@@ -491,6 +514,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
         ),
       );
     }
+  }
+
+  bool _isValidIMEI(String imei) {
+    // IMEI should be exactly 15 digits
+    return imei.length == 15 && RegExp(r'^[0-9]{15}$').hasMatch(imei);
   }
 
   void _addIMEIManually() {
@@ -521,6 +549,18 @@ class _AddProductScreenState extends State<AddProductScreen> {
       return;
     }
 
+    // Validate IMEI format for electronic devices
+    if (_requiresIMEI && !_isValidIMEI(imei)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('IMEI must be exactly 15 digits'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
     if (_imeiList.contains(imei)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -539,7 +579,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     // Show success message
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Added IMEI/Serial: $imei (${_imeiList.length}/$currentQuantity)'),
+        content: Text('Added IMEI: $imei (${_imeiList.length}/$currentQuantity)'),
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 2),
       ),
@@ -724,13 +764,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
-    _barcodeController.dispose();
     _imeiController.dispose();
     _sellingPriceController.dispose();
     _costPriceController.dispose();
     _quantityController.dispose();
     _lowStockController.dispose();
     _customCategoryController.dispose();
+    _customColorController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -787,8 +827,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
       if (_imeiList.isNotEmpty && _deviceEntries.isEmpty) {
         finalDeviceEntries = _imeiList.map((imei) => DeviceEntryModel(
           serialNumber: imei,
-          imei: imei.length == 15 ? imei : null, // Only set IMEI if 15 digits
-          color: _selectedColor ?? 'Black',
+          imei: _isValidIMEI(imei) ? imei : null, // Only set IMEI if valid 15 digits
+          color: _selectedColor ?? (_customColorController.text.trim().isNotEmpty 
+              ? _customColorController.text.trim() : 'Black'),
           storage: _selectedStorage ?? '128GB',
           condition: 'New',
           notes: '',
@@ -801,11 +842,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
         ? _customCategoryController.text.trim()
         : _selectedCategory ?? 'Other';
       
+      // Generate barcode from IMEI numbers - use the first IMEI as main barcode
+      String productBarcode = '';
+      if (finalDeviceEntries != null && finalDeviceEntries.isNotEmpty) {
+        productBarcode = finalDeviceEntries.first.serialNumber ?? '';
+      } else if (_imeiList.isNotEmpty) {
+        productBarcode = _imeiList.first;
+      }
+      
       final product = ProductModel(
         id: widget.product?.id ?? '',
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
-        barcode: _barcodeController.text.trim(),
+        barcode: productBarcode,
         sellingPrice: double.parse(_sellingPriceController.text),
         costPrice: double.parse(_costPriceController.text),
         quantity: int.parse(_quantityController.text),
@@ -1010,7 +1059,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     
                     // Optional Classification Section (moved to end for better flow)
                     _buildOptionalClassificationSection(),
-                    const SizedBox(height: 100), // Space for FAB
+                    const SizedBox(height: 24), // Bottom spacing
                   ],
                 ),
               ),
@@ -1018,32 +1067,48 @@ class _AddProductScreenState extends State<AddProductScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _isLoading ? null : _saveProduct,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          border: Border(
+            top: BorderSide(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
         ),
-        icon: _isLoading
-            ? SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(context).colorScheme.onPrimary,
-                  ),
-                ),
-              )
-            : Icon(
-                Icons.save,
-                color: Theme.of(context).colorScheme.onPrimary,
+        child: SafeArea(
+          child: FilledButton(
+            onPressed: _isLoading ? null : _saveProduct,
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
               ),
-        label: Text(
-          widget.product != null ? 'Update' : 'Save',
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onPrimary,
-            fontWeight: FontWeight.w600,
+              minimumSize: const Size(double.infinity, 56),
+            ),
+            child: _isLoading
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    ),
+                  )
+                : Text(
+                    widget.product != null ? 'Update Product' : 'Save Product',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
           ),
         ),
       ),
@@ -1223,29 +1288,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
           hintText: 'Additional details about the product',
           prefixIcon: Icons.description_outlined,
           maxLines: 2,
-        ),
-        const SizedBox(height: 16),
-        
-        // Barcode (Third - for identification)
-        Row(
-          children: [
-            Expanded(
-              child: CustomTextField(
-                controller: _barcodeController,
-                labelText: 'Barcode (Optional)',
-                hintText: 'Scan or enter barcode',
-                prefixIcon: Icons.qr_code_outlined,
-                keyboardType: TextInputType.number,
-              ),
-            ),
-            const SizedBox(width: 12),
-            BarcodeScannerButton(
-              onScanned: (barcode) {
-                _barcodeController.text = barcode;
-              },
-              tooltip: 'Scan Barcode',
-            ),
-          ],
         ),
         
         // IMEI/Serial Number Section (only for detected electronic products)
@@ -1598,12 +1640,23 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     : 'Enter or scan IMEI/Serial',
                 prefixIcon: LucideIcons.hash,
                 enabled: _imeiList.length < quantity || quantity <= 0,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(15), // Limit to 15 digits for IMEI
+                ],
+                maxLength: 15, // Visual limit indicator
                 onChanged: (value) {
-                  // Auto-add when enter is pressed or field is complete
-                  if (value.length >= 10 && (_imeiList.length < quantity || quantity <= 0)) {
+                  // Auto-add when IMEI is complete (15 digits)
+                  if (value.length == 15 && (_imeiList.length < quantity || quantity <= 0)) {
                     _addIMEIManually();
                   }
                 },
+                validator: _requiresIMEI ? (value) {
+                  if (value != null && value.isNotEmpty && !_isValidIMEI(value)) {
+                    return 'IMEI must be exactly 15 digits';
+                  }
+                  return null;
+                } : null,
               ),
             ),
             const SizedBox(width: 8),
@@ -1612,15 +1665,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 color: (_imeiList.length >= quantity && quantity > 0)
                     ? Theme.of(context).colorScheme.surfaceVariant
                     : Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(12),
+                shape: BoxShape.circle,
               ),
               child: IconButton(
                 onPressed: (_imeiList.length >= quantity && quantity > 0) ? null : _scanIMEI,
                 icon: Icon(
                   LucideIcons.scan,
-                  color: (_imeiList.length >= quantity && quantity > 0)
-                      ? Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.4)
-                      : Theme.of(context).colorScheme.primary,
+                  color: Colors.white,
                 ),
                 tooltip: (_imeiList.length >= quantity && quantity > 0) 
                     ? 'Limit reached' 
@@ -1633,15 +1684,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 color: (_imeiList.length >= quantity && quantity > 0)
                     ? Theme.of(context).colorScheme.surfaceVariant
                     : Theme.of(context).colorScheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(12),
+                shape: BoxShape.circle,
               ),
               child: IconButton(
                 onPressed: (_imeiList.length >= quantity && quantity > 0) ? null : _addIMEIManually,
                 icon: Icon(
                   Icons.add,
-                  color: (_imeiList.length >= quantity && quantity > 0)
-                      ? Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.4)
-                      : Theme.of(context).colorScheme.secondary,
+                  color: Colors.white,
                 ),
                 tooltip: (_imeiList.length >= quantity && quantity > 0) 
                     ? 'Limit reached' 
@@ -1828,16 +1877,120 @@ class _AddProductScreenState extends State<AddProductScreen> {
         ),
         const SizedBox(height: 8),
         _buildDropdown(
-          value: _selectedColor,
-          items: _colors,
+          value: _selectedColor == 'Custom' ? null : _selectedColor,
+          items: _colors.where((color) => color != 'Custom').toList(),
           hint: 'Select Color',
           onChanged: (value) {
             setState(() {
               _selectedColor = value;
+              _showCustomColorInput = false;
             });
           },
           icon: LucideIcons.palette,
         ),
+        const SizedBox(height: 8),
+        // Auto-show custom color input if no color is selected
+        if (_selectedColor == null && !_showCustomColorInput)
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  LucideIcons.palette,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'No color selected - Add custom color below',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _showCustomColorInput = true;
+                    });
+                  },
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: Size.zero,
+                  ),
+                  child: Text(
+                    'Add',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          // Custom Color Toggle Button
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _showCustomColorInput = !_showCustomColorInput;
+                      if (_showCustomColorInput) {
+                        _selectedColor = null;
+                      }
+                    });
+                  },
+                  icon: Icon(
+                    _showCustomColorInput ? LucideIcons.x : LucideIcons.plus,
+                    size: 16,
+                  ),
+                  label: Text(
+                    _showCustomColorInput ? 'Cancel Custom Color' : 'Add Custom Color',
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    minimumSize: Size.zero,
+                    side: BorderSide(
+                      color: _showCustomColorInput 
+                          ? Theme.of(context).colorScheme.error.withOpacity(0.5)
+                          : Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        // Custom Color Input
+        if (_showCustomColorInput) ...[
+          const SizedBox(height: 8),
+          CustomTextField(
+            controller: _customColorController,
+            labelText: 'Custom Color',
+            hintText: 'Enter custom color (e.g., Coral, Navy Blue)',
+            prefixIcon: LucideIcons.palette,
+            onChanged: (value) {
+              setState(() {
+                _selectedColor = value.isNotEmpty ? value : null;
+              });
+            },
+          ),
+        ],
       ],
     );
   }
@@ -2010,9 +2163,14 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   const Spacer(),
                   ElevatedButton.icon(
                     onPressed: _navigateToDeviceEntries,
-                    icon: Icon(LucideIcons.plus, size: 16),
-                    label: Text('Manage Devices'),
+                    icon: Icon(LucideIcons.plus, size: 16, color: Colors.white),
+                    label: Text(
+                      'Manage Devices',
+                      style: TextStyle(color: Colors.white),
+                    ),
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       minimumSize: Size.zero,
                       elevation: 0,

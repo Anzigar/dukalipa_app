@@ -56,4 +56,18 @@ class CustomerModel {
       createdAt: DateTime.parse(json['created_at']),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'phone_number': phoneNumber,
+      'email': email,
+      'address': address,
+      'total_purchases': totalPurchases,
+      'purchase_count': purchaseCount,
+      'last_purchase_date': lastPurchaseDate.toIso8601String(),
+      'created_at': createdAt.toIso8601String(),
+    };
+  }
 }

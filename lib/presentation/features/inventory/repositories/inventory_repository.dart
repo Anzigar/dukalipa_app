@@ -1,6 +1,6 @@
 import 'dart:io';
 import '../models/product_model.dart';
-import '../../../../data/services/inventory_service.dart';
+import '../../../../data/services/appwrite_inventory_service.dart';
 
 abstract class InventoryRepository {
   Future<List<ProductModel>> getProducts({
@@ -25,10 +25,10 @@ abstract class InventoryRepository {
 }
 
 class InventoryRepositoryImpl implements InventoryRepository {
-  final InventoryService _inventoryService;
+  final AppwriteInventoryService _appwriteService;
 
   InventoryRepositoryImpl() 
-      : _inventoryService = InventoryService();
+      : _appwriteService = AppwriteInventoryService();
 
   @override
   Future<List<ProductModel>> getProducts({
@@ -39,7 +39,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     int? pageSize,
   }) async {
     try {
-      return await _inventoryService.getProducts(
+      return await _appwriteService.getProducts(
         search: search,
         category: category,
         supplier: supplier,
@@ -54,7 +54,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<ProductModel> getProductById(String productId) async {
     try {
-      return await _inventoryService.getProductById(productId);
+      return await _appwriteService.getProductById(productId);
     } catch (e) {
       throw Exception('Failed to get product: ${e.toString()}');
     }
@@ -63,7 +63,22 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<ProductModel> createProduct(ProductModel product, {File? imageFile}) async {
     try {
-      return await _inventoryService.createProduct(product.toJson());
+      final productData = {
+        'name': product.name,
+        'description': product.description,
+        'barcode': product.barcode,
+        'selling_price': product.sellingPrice,
+        'cost_price': product.costPrice,
+        'stock_quantity': product.quantity,
+        'low_stock_threshold': product.lowStockThreshold,
+        'reorder_level': product.reorderLevel,
+        'category': product.category,
+        'supplier': product.supplier,
+        'product_metadata': product.metadata,
+        'device_entries': product.deviceEntries?.map((e) => e.toJson()).toList(),
+      };
+      
+      return await _appwriteService.createProduct(productData, imageFile: imageFile);
     } catch (e) {
       throw Exception('Failed to create product: ${e.toString()}');
     }
@@ -72,7 +87,22 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<ProductModel> updateProduct(ProductModel product, {File? imageFile}) async {
     try {
-      return await _inventoryService.updateProduct(product.id, product.toJson());
+      final productData = {
+        'name': product.name,
+        'description': product.description,
+        'barcode': product.barcode,
+        'selling_price': product.sellingPrice,
+        'cost_price': product.costPrice,
+        'stock_quantity': product.quantity,
+        'low_stock_threshold': product.lowStockThreshold,
+        'reorder_level': product.reorderLevel,
+        'category': product.category,
+        'supplier': product.supplier,
+        'product_metadata': product.metadata,
+        'device_entries': product.deviceEntries?.map((e) => e.toJson()).toList(),
+      };
+      
+      return await _appwriteService.updateProduct(product.id, productData, imageFile: imageFile);
     } catch (e) {
       throw Exception('Failed to update product: ${e.toString()}');
     }
@@ -81,7 +111,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<void> deleteProduct(String productId) async {
     try {
-      await _inventoryService.deleteProduct(productId);
+      await _appwriteService.deleteProduct(productId);
     } catch (e) {
       throw Exception('Failed to delete product: ${e.toString()}');
     }
@@ -90,7 +120,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<List<String>> getCategories() async {
     try {
-      return await _inventoryService.getCategories();
+      return await _appwriteService.getCategories();
     } catch (e) {
       throw Exception('Failed to get categories: ${e.toString()}');
     }
@@ -99,7 +129,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<List<String>> getSuppliers() async {
     try {
-      return await _inventoryService.getSuppliers();
+      return await _appwriteService.getSuppliers();
     } catch (e) {
       throw Exception('Failed to get suppliers: ${e.toString()}');
     }
@@ -108,7 +138,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<int> getLowStockCount() async {
     try {
-      final lowStockProducts = await _inventoryService.getLowStockProducts();
+      final lowStockProducts = await _appwriteService.getLowStockProducts();
       return lowStockProducts.length;
     } catch (e) {
       throw Exception('Failed to get low stock count: ${e.toString()}');
@@ -118,7 +148,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<ProductModel?> getProductByBarcode(String barcode) async {
     try {
-      return await _inventoryService.getProductByBarcode(barcode);
+      return await _appwriteService.getProductByBarcode(barcode);
     } catch (e) {
       // Return null if product not found or API fails
       return null;
@@ -130,10 +160,8 @@ class InventoryRepositoryImpl implements InventoryRepository {
     try {
       final stockData = {
         'quantity': newQuantity,
-        'adjustment_type': reason ?? 'manual_update',
-        'notes': reason ?? 'Stock updated via app',
       };
-      return await _inventoryService.updateProductStock(productId, stockData);
+      return await _appwriteService.updateProductStock(productId, stockData);
     } catch (e) {
       throw Exception('Failed to update product stock: ${e.toString()}');
     }
@@ -142,7 +170,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<List<Map<String, dynamic>>> getDeviceEntries(String productId) async {
     try {
-      return await _inventoryService.getDeviceEntries(productId);
+      return await _appwriteService.getDeviceEntries(productId);
     } catch (e) {
       throw Exception('Failed to get device entries: ${e.toString()}');
     }
@@ -151,7 +179,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<void> addDeviceEntries(String productId, Map<String, dynamic> entriesData) async {
     try {
-      await _inventoryService.addDeviceEntries(productId, entriesData);
+      await _appwriteService.addDeviceEntries(productId, entriesData);
     } catch (e) {
       throw Exception('Failed to add device entries: ${e.toString()}');
     }

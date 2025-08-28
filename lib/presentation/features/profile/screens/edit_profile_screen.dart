@@ -300,7 +300,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           onPressed: () => _saveProfile(),
                           isLoading: viewModel.isSaving,
                           fullWidth: true,
-                          icon: Icons.save,
                         ),
                       ],
                     ),

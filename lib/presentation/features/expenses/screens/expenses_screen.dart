@@ -3,11 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart'; 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../data/services/expenses_service.dart';
 import '../providers/expenses_provider.dart';
+import '../models/expense_model.dart';
 import '../../../common/widgets/animated_empty_state.dart';
 import '../../../../core/di/service_locator.dart';
 
@@ -284,7 +283,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
 
   Widget _buildFilterChips() {
     final colorScheme = Theme.of(context).colorScheme;
-    final categories = ['All', 'Office', 'Marketing', 'Transport', 'Utilities', 'Other'];
+    final categories = ['All', 'Rent', 'Utilities', 'Salary', 'Inventory', 'Marketing', 'Other'];
     
     return Container(
       height: 40.h,
@@ -325,8 +324,21 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
 
   Widget _buildLoadingState() {
     return Center(
-      child: AnimatedLoadingState.general(
-        message: 'Loading expenses...',
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(
+            color: AppTheme.mkbhdRed,
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Loading expenses...',
+            style: GoogleFonts.poppins(
+              fontSize: 14.sp,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -362,7 +374,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
           FilledButton.icon(
             onPressed: _fetchExpenses,
             icon: Icon(LucideIcons.refreshCw, size: 20.sp),
-            label: Text('Retry'),
+            label: const Text('Retry'),
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.mkbhdRed,
               foregroundColor: Colors.white,
@@ -444,12 +456,14 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            expense.title,
+                            expense.description,
                             style: GoogleFonts.poppins(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
                               color: colorScheme.onSurface,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           SizedBox(height: 2.h),
                           Text(
@@ -466,7 +480,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          'TZS ${NumberFormat('#,###').format(expense.amount)}',
+                          expense.formattedAmount,
                           style: GoogleFonts.poppins(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w700,
@@ -475,7 +489,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
                         ),
                         SizedBox(height: 2.h),
                         Text(
-                          DateFormat('MMM d, yyyy').format(expense.date),
+                          expense.formattedDate,
                           style: GoogleFonts.poppins(
                             fontSize: 12.sp,
                             color: colorScheme.onSurfaceVariant,
@@ -485,16 +499,6 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
                     ),
                   ],
                 ),
-                if (expense.description != null && expense.description!.isNotEmpty) ...[
-                  SizedBox(height: 12.h),
-                  Text(
-                    expense.description!,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14.sp,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
@@ -505,14 +509,16 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
 
   Color _getCategoryColor(String category) {
     switch (category.toLowerCase()) {
-      case 'office':
+      case 'rent':
         return Colors.blue;
-      case 'marketing':
-        return Colors.green;
-      case 'transport':
-        return Colors.orange;
       case 'utilities':
+        return Colors.green;
+      case 'salary':
+        return Colors.orange;
+      case 'inventory':
         return Colors.purple;
+      case 'marketing':
+        return Colors.pink;
       default:
         return Colors.grey;
     }
@@ -520,14 +526,16 @@ class _ExpensesScreenState extends State<ExpensesScreen> with AutomaticKeepAlive
 
   IconData _getCategoryIcon(String category) {
     switch (category.toLowerCase()) {
-      case 'office':
-        return LucideIcons.building;
-      case 'marketing':
-        return LucideIcons.megaphone;
-      case 'transport':
-        return LucideIcons.car;
+      case 'rent':
+        return LucideIcons.home;
       case 'utilities':
         return LucideIcons.zap;
+      case 'salary':
+        return LucideIcons.users;
+      case 'inventory':
+        return LucideIcons.package;
+      case 'marketing':
+        return LucideIcons.megaphone;
       default:
         return LucideIcons.receipt;
     }

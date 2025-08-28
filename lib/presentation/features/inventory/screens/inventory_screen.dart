@@ -135,10 +135,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
       margin: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
       height: 48.h, // Increased height for Material3 design
       decoration: BoxDecoration(
-        color: colorScheme.surfaceVariant.withOpacity(0.8),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(24.r), // Fully rounded like Material3
         border: Border.all(
-          color: colorScheme.outline.withOpacity(0.3),
+          color: colorScheme.outline.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -219,7 +219,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             border: isSelected 
                 ? null 
                 : Border.all(
-                    color: colorScheme.outline.withOpacity(0.3),
+                    color: colorScheme.outline.withValues(alpha: 0.3),
                     width: 1,
                   ),
           ),
@@ -284,7 +284,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 width: 80.w,
                 height: 80.w,
                 decoration: BoxDecoration(
-                  color: colorScheme.primary.withOpacity(0.1),
+                  color: colorScheme.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -308,7 +308,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 14.sp,
-                color: colorScheme.onSurface.withOpacity(0.6),
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
                 fontWeight: FontWeight.w500,
                 height: 1.4,
               ),
@@ -354,7 +354,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
               width: 80.w,
               height: 80.w,
               decoration: BoxDecoration(
-                color: colorScheme.error.withOpacity(0.1),
+                color: colorScheme.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16.r),
               ),
               child: Icon(
@@ -378,7 +378,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 14.sp,
-                color: colorScheme.onSurface.withOpacity(0.6),
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
                 fontWeight: FontWeight.w500,
                 height: 1.4,
               ),

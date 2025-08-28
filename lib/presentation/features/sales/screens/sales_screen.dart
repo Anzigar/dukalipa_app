@@ -173,19 +173,18 @@ class _SalesScreenState extends State<SalesScreen> {
                 ),
               ),
               SizedBox(height: 32.h),
-              ElevatedButton.icon(
+              ElevatedButton(
                 onPressed: () => context.push('/sales/add'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colorScheme.primary,
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 24.w),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.r),
+                    borderRadius: BorderRadius.circular(50.r), // M3 rounded, no icon
                   ),
                   elevation: 0,
                 ),
-                icon: Icon(Icons.add_rounded, size: 18.sp),
-                label: Text(
+                child: Text(
                   'Add Sale',
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,

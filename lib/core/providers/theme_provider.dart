@@ -57,4 +57,9 @@ class ThemeProvider extends ChangeNotifier {
     await prefs.setString(AppConstants.themeKey, value);
     notifyListeners();
   }
+
+  /// Set theme mode with animated transition
+  Future<void> setThemeModeAnimated(ThemeMode mode) async {
+    return setThemeMode(mode);
+  }
 }

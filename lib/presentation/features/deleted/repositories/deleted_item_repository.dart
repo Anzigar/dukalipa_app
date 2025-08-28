@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:dio/dio.dart';
+import '../../../../data/services/appwrite_deleted_item_service.dart';
 import '../models/deleted_item_model.dart';
 
 abstract class DeletedItemRepository {
@@ -18,17 +18,9 @@ abstract class DeletedItemRepository {
 }
 
 class DeletedItemRepositoryImpl implements DeletedItemRepository {
-  late final Dio _dio;
+  final AppwriteDeletedItemService _deletedItemService;
 
-  DeletedItemRepositoryImpl() {
-    _dio = Dio(BaseOptions(
-      baseUrl: 'http://127.0.0.1:8000/api/v1',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ));
-  }
+  DeletedItemRepositoryImpl() : _deletedItemService = AppwriteDeletedItemService();
 
   @override
   Future<List<DeletedItemModel>> getDeletedItems({
@@ -38,68 +30,42 @@ class DeletedItemRepositoryImpl implements DeletedItemRepository {
     DateTime? endDate,
   }) async {
     try {
-      final queryParams = <String, dynamic>{};
-      
-      if (search != null && search.isNotEmpty) {
-        queryParams['search'] = search;
-      }
-      
-      if (itemType != null && itemType.isNotEmpty) {
-        queryParams['item_type'] = itemType;
-      }
-      
-      if (startDate != null) {
-        queryParams['start_date'] = formatDateForApi(startDate);
-      }
-      
-      if (endDate != null) {
-        queryParams['end_date'] = formatDateForApi(endDate);
-      }
-
-      final response = await _dio.get('/deleted-items', queryParameters: queryParams);
-      final List<dynamic> data = response.data['data'] ?? [];
-      return data.map((json) => DeletedItemModel.fromJson(json)).toList();
+      return await _deletedItemService.getDeletedItems(
+        search: search,
+        itemType: itemType,
+        startDate: startDate,
+        endDate: endDate,
+      );
     } catch (e) {
-      throw _handleError(e);
+      throw Exception('Failed to fetch deleted items: ${e.toString()}');
     }
   }
 
   @override
   Future<DeletedItemModel> getDeletedItemById(String id) async {
     try {
-      final response = await _dio.get('/deleted-items/$id');
-      return DeletedItemModel.fromJson(response.data['data']);
+      return await _deletedItemService.getDeletedItemById(id);
     } catch (e) {
-      throw _handleError(e);
+      throw Exception('Failed to fetch deleted item: ${e.toString()}');
     }
   }
 
   @override
   Future<void> restoreItem(String id) async {
     try {
-      await _dio.post('/deleted-items/$id/restore');
+      await _deletedItemService.restoreItem(id);
     } catch (e) {
-      throw _handleError(e);
+      throw Exception('Failed to restore item: ${e.toString()}');
     }
   }
 
   @override
   Future<void> permanentlyDeleteItem(String id) async {
     try {
-      await _dio.delete('/deleted-items/$id');
+      await _deletedItemService.permanentlyDeleteItem(id);
     } catch (e) {
-      throw _handleError(e);
+      throw Exception('Failed to permanently delete item: ${e.toString()}');
     }
   }
 
-  // Helper function to handle errors
-  Exception _handleError(dynamic error) {
-    // Add specific error handling logic here
-    return Exception('Failed to perform operation: ${error.toString()}');
-  }
-
-  // Helper function to format date for API
-  String formatDateForApi(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
 }

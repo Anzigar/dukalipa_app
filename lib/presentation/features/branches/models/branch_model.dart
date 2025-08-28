@@ -63,4 +63,20 @@ class BranchModel {
       isActive: json['is_active'] ?? true,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'location': location,
+      'phone_number': phoneNumber,
+      'email': email,
+      'manager_name': managerName,
+      'staff_count': staffCount,
+      'monthly_revenue': monthlyRevenue,
+      'monthly_expenses': monthlyExpenses,
+      'created_at': createdAt.toIso8601String(),
+      'is_active': isActive,
+    };
+  }
 }

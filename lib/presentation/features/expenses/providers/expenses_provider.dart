@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../../../data/services/expenses_service.dart';
+import '../../../../data/services/appwrite_expense_service.dart';
+import '../models/expense_model.dart';
 
 class ExpensesProvider with ChangeNotifier {
   final ExpensesService _expensesService;
@@ -288,13 +290,12 @@ class ExpensesProvider with ChangeNotifier {
     }
 
     final filteredExpenses = _expenses.where((expense) {
-      final description = expense.description?.toLowerCase() ?? '';
-      final vendorName = expense.vendor?.name.toLowerCase() ?? '';
+      final description = expense.description.toLowerCase();
+      final category = expense.category.toLowerCase();
       final queryLower = query.toLowerCase();
       
       return description.contains(queryLower) ||
-          vendorName.contains(queryLower) ||
-          expense.title.toLowerCase().contains(queryLower);
+          category.contains(queryLower);
     }).toList();
 
     _expenses = filteredExpenses;

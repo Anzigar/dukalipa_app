@@ -1,17 +1,12 @@
 import 'dart:async';
-
-import 'package:dio/dio.dart';
+import '../../../../data/services/appwrite_sales_service.dart';
 import '../models/sale_model.dart';
 import 'sales_repository.dart';
 
 class SalesRepositoryImpl implements SalesRepository {
-  final Dio _dio;
+  final AppwriteSalesService _salesService;
 
-  SalesRepositoryImpl() : _dio = Dio(BaseOptions(
-    baseUrl: 'http://127.0.0.1:8000/api/v1',
-    connectTimeout: const Duration(seconds: 5),
-    receiveTimeout: const Duration(seconds: 3),
-  ));
+  SalesRepositoryImpl() : _salesService = AppwriteSalesService();
 
   @override
   Future<List<SaleModel>> getSales({
@@ -23,35 +18,14 @@ class SalesRepositoryImpl implements SalesRepository {
     int? pageSize,
   }) async {
     try {
-      final queryParams = <String, dynamic>{};
-
-      if (search != null && search.isNotEmpty) {
-        queryParams['search'] = search;
-      }
-
-      if (startDate != null) {
-        queryParams['startDate'] = formatDateForApi(startDate);
-      }
-
-      if (endDate != null) {
-        queryParams['endDate'] = formatDateForApi(endDate);
-      }
-
-      if (status != null && status.isNotEmpty) {
-        queryParams['status'] = status;
-      }
-
-      if (page != null) {
-        queryParams['page'] = page;
-      }
-
-      if (pageSize != null) {
-        queryParams['pageSize'] = pageSize;
-      }
-
-      final response = await _dio.get('/sales', queryParameters: queryParams);
-      final List<dynamic> salesJson = response.data['data'] ?? [];
-      return salesJson.map((json) => SaleModel.fromJson(json)).toList();
+      return await _salesService.getSales(
+        search: search,
+        status: status,
+        startDate: startDate,
+        endDate: endDate,
+        page: page,
+        pageSize: pageSize,
+      );
     } catch (e) {
       throw _handleError(e);
     }
@@ -60,8 +34,7 @@ class SalesRepositoryImpl implements SalesRepository {
   @override
   Future<SaleModel?> getSaleById(String saleId) async {
     try {
-      final response = await _dio.get('/sales/$saleId');
-      return SaleModel.fromJson(response.data['data']);
+      return await _salesService.getSaleById(saleId);
     } catch (e) {
       // Return null if sale not found instead of throwing
       return null;
@@ -72,8 +45,7 @@ class SalesRepositoryImpl implements SalesRepository {
   Future<SaleModel> createSale(SaleModel sale) async {
     try {
       final data = sale.toJson();
-      final response = await _dio.post('/sales', data: data);
-      return SaleModel.fromJson(response.data['data']);
+      return await _salesService.createSale(data);
     } catch (e) {
       throw _handleError(e);
     }
@@ -83,8 +55,7 @@ class SalesRepositoryImpl implements SalesRepository {
   Future<SaleModel> updateSale(SaleModel sale) async {
     try {
       final data = sale.toJson();
-      final response = await _dio.patch('/sales/${sale.id}', data: data);
-      return SaleModel.fromJson(response.data['data']);
+      return await _salesService.updateSale(sale.id, data);
     } catch (e) {
       throw _handleError(e);
     }
@@ -93,7 +64,7 @@ class SalesRepositoryImpl implements SalesRepository {
   @override
   Future<void> deleteSale(String saleId) async {
     try {
-      await _dio.delete('/sales/$saleId');
+      await _salesService.deleteSale(saleId);
     } catch (e) {
       throw _handleError(e);
     }
@@ -103,7 +74,7 @@ class SalesRepositoryImpl implements SalesRepository {
   Future<double> getTotalRevenue({DateTime? startDate, DateTime? endDate}) async {
     try {
       final stats = await getSalesStats(startDate: startDate, endDate: endDate);
-      return stats['totalRevenue'] as double;
+      return stats['total_revenue'] as double;
     } catch (e) {
       throw _handleError(e);
     }
@@ -113,7 +84,7 @@ class SalesRepositoryImpl implements SalesRepository {
   Future<int> getSalesCount({DateTime? startDate, DateTime? endDate}) async {
     try {
       final stats = await getSalesStats(startDate: startDate, endDate: endDate);
-      return stats['totalSales'] as int;
+      return stats['total_sales'] as int;
     } catch (e) {
       throw _handleError(e);
     }
@@ -125,18 +96,10 @@ class SalesRepositoryImpl implements SalesRepository {
     DateTime? endDate,
   }) async {
     try {
-      final queryParams = <String, dynamic>{};
-      
-      if (startDate != null) {
-        queryParams['startDate'] = formatDateForApi(startDate);
-      }
-      
-      if (endDate != null) {
-        queryParams['endDate'] = formatDateForApi(endDate);
-      }
-      
-      final response = await _dio.get('/sales/statistics', queryParameters: queryParams);
-      return response.data['data'] ?? <String, dynamic>{};
+      return await _salesService.getSalesStatistics(
+        startDate: startDate,
+        endDate: endDate,
+      );
     } catch (e) {
       throw _handleError(e);
     }
@@ -148,9 +111,6 @@ class SalesRepositoryImpl implements SalesRepository {
   }
 
   Exception _handleError(dynamic error) {
-    if (error is DioException) {
-      return Exception('Failed to process sales operation: ${error.message}');
-    }
     if (error is Exception) {
       return Exception('Failed to process sales operation: ${error.toString()}');
     }

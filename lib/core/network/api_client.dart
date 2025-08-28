@@ -1,202 +1,146 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:dio/dio.dart';
+import 'package:appwrite/appwrite.dart';
+import 'package:appwrite/models.dart';
+import '../services/appwrite_service.dart';
 
-/// A simplified API client using Dio for HTTP requests
+/// API client using Appwrite for backend operations
 class ApiClient {
-  final String baseUrl;
-  final Dio _dio;
+  final AppwriteService _appwriteService;
+  late final Databases _databases;
+  late final Storage _storage;
 
-  ApiClient({
-    this.baseUrl = 'http://127.0.0.1:8000/api/v1',
-    Map<String, String>? defaultHeaders,
-  }) : _dio = Dio() {
-    // Configure Dio instance
-    _dio.options.baseUrl = baseUrl;
-    _dio.options.connectTimeout = const Duration(seconds: 30);
-    _dio.options.receiveTimeout = const Duration(seconds: 30);
-    _dio.options.headers = defaultHeaders ?? {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
-
-    // Add interceptors for logging and error handling
-    _dio.interceptors.add(LogInterceptor(
-      requestBody: true,
-      responseBody: true,
-      logPrint: (obj) => print('[DIO] $obj'),
-    ));
+  ApiClient() : _appwriteService = AppwriteService() {
+    _databases = _appwriteService.databases;
+    _storage = _appwriteService.storage;
   }
 
-  /// Performs a GET request
-  Future<dynamic> get(
-    String endpoint, {
-    Map<String, dynamic>? queryParameters,
-    Map<String, String>? headers,
+  /// Get documents from a collection
+  Future<DocumentList> getDocuments({
+    required String collectionId,
+    List<String>? queries,
   }) async {
     try {
-      final response = await _dio.get(
-        endpoint,
-        queryParameters: queryParameters,
-        options: Options(headers: headers),
+      return await _databases.listDocuments(
+        databaseId: 'shop_management_db',
+        collectionId: collectionId,
+        queries: queries ?? [],
       );
-      return _handleResponse(response);
     } catch (e) {
-      throw _handleError(e);
+      throw Exception('Failed to get documents: ${e.toString()}');
     }
   }
 
-  /// Performs a POST request
-  Future<Map<String, dynamic>> post(
-    String endpoint, {
-    Map<String, dynamic>? data,
-    Map<String, String>? headers,
+  /// Get a single document
+  Future<Document> getDocument({
+    required String collectionId,
+    required String documentId,
   }) async {
     try {
-      final response = await _dio.post(
-        endpoint,
+      return await _databases.getDocument(
+        databaseId: 'shop_management_db',
+        collectionId: collectionId,
+        documentId: documentId,
+      );
+    } catch (e) {
+      throw Exception('Failed to get document: ${e.toString()}');
+    }
+  }
+
+  /// Create a document
+  Future<Document> createDocument({
+    required String collectionId,
+    required String documentId,
+    required Map<String, dynamic> data,
+  }) async {
+    try {
+      return await _databases.createDocument(
+        databaseId: 'shop_management_db',
+        collectionId: collectionId,
+        documentId: documentId,
         data: data,
-        options: Options(headers: headers),
       );
-      return _handleResponse(response);
     } catch (e) {
-      throw _handleError(e);
+      throw Exception('Failed to create document: ${e.toString()}');
     }
   }
 
-  /// Performs a PUT request
-  Future<Map<String, dynamic>> put(
-    String endpoint, {
-    Map<String, dynamic>? data,
-    Map<String, String>? headers,
+  /// Update a document
+  Future<Document> updateDocument({
+    required String collectionId,
+    required String documentId,
+    required Map<String, dynamic> data,
   }) async {
     try {
-      final response = await _dio.put(
-        endpoint,
+      return await _databases.updateDocument(
+        databaseId: 'shop_management_db',
+        collectionId: collectionId,
+        documentId: documentId,
         data: data,
-        options: Options(headers: headers),
       );
-      return _handleResponse(response);
     } catch (e) {
-      throw _handleError(e);
+      throw Exception('Failed to update document: ${e.toString()}');
     }
   }
 
-  /// Performs a PATCH request
-  Future<Map<String, dynamic>> patch(
-    String endpoint, {
-    Map<String, dynamic>? data,
-    Map<String, String>? headers,
+  /// Delete a document
+  Future<void> deleteDocument({
+    required String collectionId,
+    required String documentId,
   }) async {
     try {
-      final response = await _dio.patch(
-        endpoint,
-        data: data,
-        options: Options(headers: headers),
+      await _databases.deleteDocument(
+        databaseId: 'shop_management_db',
+        collectionId: collectionId,
+        documentId: documentId,
       );
-      return _handleResponse(response);
     } catch (e) {
-      throw _handleError(e);
+      throw Exception('Failed to delete document: ${e.toString()}');
     }
   }
 
-  /// Performs a DELETE request
-  Future<Map<String, dynamic>> delete(
-    String endpoint, {
-    Map<String, dynamic>? queryParameters,
-    Map<String, String>? headers,
+  /// Upload a file to storage
+  Future<File> uploadFile({
+    required String bucketId,
+    required String fileId,
+    required InputFile file,
   }) async {
     try {
-      final response = await _dio.delete(
-        endpoint,
-        queryParameters: queryParameters,
-        options: Options(headers: headers),
+      return await _storage.createFile(
+        bucketId: bucketId,
+        fileId: fileId,
+        file: file,
       );
-      return _handleResponse(response);
     } catch (e) {
-      throw _handleError(e);
+      throw Exception('Failed to upload file: ${e.toString()}');
     }
   }
 
-  /// Uploads a file
-  Future<Map<String, dynamic>> uploadFile(
-    String endpoint,
-    File file, {
-    String fieldName = 'file',
-    Map<String, dynamic>? additionalData,
+  /// Get file preview URL
+  String getFilePreview({
+    required String bucketId,
+    required String fileId,
+    int? width,
+    int? height,
+  }) {
+    return _storage.getFilePreview(
+      bucketId: bucketId,
+      fileId: fileId,
+      width: width,
+      height: height,
+    ).toString();
+  }
+
+  /// Delete a file from storage
+  Future<void> deleteFile({
+    required String bucketId,
+    required String fileId,
   }) async {
     try {
-      final formData = FormData.fromMap({
-        fieldName: await MultipartFile.fromFile(
-          file.path,
-          filename: file.path.split('/').last,
-        ),
-        ...?additionalData,
-      });
-
-      final response = await _dio.post(
-        endpoint,
-        data: formData,
-        options: Options(
-          contentType: 'multipart/form-data',
-        ),
+      await _storage.deleteFile(
+        bucketId: bucketId,
+        fileId: fileId,
       );
-
-      return _handleResponse(response);
     } catch (e) {
-      throw _handleError(e);
+      throw Exception('Failed to delete file: ${e.toString()}');
     }
-  }
-
-  dynamic _handleResponse(Response response) {
-    if (response.statusCode != null &&
-        response.statusCode! >= 200 &&
-        response.statusCode! < 300) {
-      if (response.data == null) {
-        return {'data': null};
-      }
-
-      // Dio automatically handles JSON parsing
-      return response.data;
-    } else {
-      throw DioException(
-        requestOptions: response.requestOptions,
-        response: response,
-        message: 'HTTP ${response.statusCode}: ${response.statusMessage}',
-      );
-    }
-  }
-
-  Exception _handleError(dynamic error) {
-    if (error is DioException) {
-      switch (error.type) {
-        case DioExceptionType.connectionTimeout:
-        case DioExceptionType.sendTimeout:
-        case DioExceptionType.receiveTimeout:
-          return Exception('Connection timed out. Please check your internet connection and try again.');
-
-        case DioExceptionType.connectionError:
-          return Exception('No internet connection. Please check your network and try again.');
-
-        case DioExceptionType.badResponse:
-          final statusCode = error.response?.statusCode;
-          final message = error.response?.data?.toString() ?? error.message;
-          return Exception('Server error ($statusCode): $message');
-
-        case DioExceptionType.cancel:
-          return Exception('Request was cancelled.');
-
-        case DioExceptionType.unknown:
-        default:
-          return Exception('An unexpected error occurred: ${error.message}');
-      }
-    }
-
-    return Exception('An unexpected error occurred: ${error.toString()}');
-  }
-
-  /// Dispose the Dio instance
-  void dispose() {
-    _dio.close();
   }
 }

@@ -389,27 +389,21 @@ class _DeviceEntriesScreenState extends State<DeviceEntriesScreen> {
                   ),
                 if (_currentDeviceIndex > 0) const SizedBox(width: 16),
                 Expanded(
-                  child: FilledButton.icon(
+                  child: FilledButton(
                     onPressed: _currentDeviceIndex < widget.totalQuantity - 1 
                         ? _nextDevice 
                         : _finishDeviceEntries,
-                    icon: Icon(
-                      _currentDeviceIndex < widget.totalQuantity - 1 
-                          ? LucideIcons.chevronRight 
-                          : LucideIcons.check,
-                      size: 18,
-                    ),
-                    label: Text(_currentDeviceIndex < widget.totalQuantity - 1 
-                        ? 'Next' 
-                        : 'Finish'),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       backgroundColor: colorScheme.primary,
                       foregroundColor: colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(50), // More rounded
                       ),
                     ),
+                    child: Text(_currentDeviceIndex < widget.totalQuantity - 1 
+                        ? 'Next' 
+                        : 'Finish'),
                   ),
                 ),
               ],

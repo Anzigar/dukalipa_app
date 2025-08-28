@@ -1,18 +1,18 @@
 import 'package:flutter/foundation.dart';
-import '../../../../data/services/recent_activity_service.dart';
+import '../repositories/analytics_repository.dart';
 
 class RecentActivityProvider extends ChangeNotifier {
-  final RecentActivityService _activityService;
+  final AnalyticsRepository _analyticsRepository;
 
-  RecentActivityProvider(this._activityService);
+  RecentActivityProvider(this._analyticsRepository);
 
   // Recent activities data
-  List<RecentActivityItem> _recentActivities = [];
+  List<Map<String, dynamic>> _recentActivities = [];
   bool _isLoadingActivities = false;
   String? _activitiesError;
 
   // Getters
-  List<RecentActivityItem> get recentActivities => _recentActivities;
+  List<Map<String, dynamic>> get recentActivities => _recentActivities;
   bool get isLoadingActivities => _isLoadingActivities;
   String? get activitiesError => _activitiesError;
 
@@ -23,7 +23,9 @@ class RecentActivityProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _recentActivities = await _activityService.getRecentActivities(limit: limit);
+      // For now, just create mock activities
+      // In the future, this could fetch real activity data from the analytics repository
+      _recentActivities = _createMockActivities(limit);
       _activitiesError = null;
     } catch (e) {
       _activitiesError = 'Failed to load recent activities: $e';
@@ -34,6 +36,46 @@ class RecentActivityProvider extends ChangeNotifier {
       _isLoadingActivities = false;
       notifyListeners();
     }
+  }
+
+  /// Create mock activities for demonstration
+  List<Map<String, dynamic>> _createMockActivities(int limit) {
+    final activities = <Map<String, dynamic>>[
+      {
+        'id': '1',
+        'type': 'sale',
+        'title': 'New sale recorded',
+        'description': 'Sale of TSh 50,000 to John Doe',
+        'timestamp': DateTime.now().subtract(const Duration(minutes: 30)),
+        'icon': 'shopping_cart',
+      },
+      {
+        'id': '2',
+        'type': 'inventory',
+        'title': 'Low stock alert',
+        'description': 'iPhone 14 Pro Max running low (5 units left)',
+        'timestamp': DateTime.now().subtract(const Duration(hours: 2)),
+        'icon': 'alert_triangle',
+      },
+      {
+        'id': '3',
+        'type': 'return',
+        'title': 'Product returned',
+        'description': 'Samsung Galaxy S23 returned by customer',
+        'timestamp': DateTime.now().subtract(const Duration(hours: 4)),
+        'icon': 'rotate_ccw',
+      },
+      {
+        'id': '4',
+        'type': 'expense',
+        'title': 'New expense added',
+        'description': 'Office supplies - TSh 25,000',
+        'timestamp': DateTime.now().subtract(const Duration(days: 1)),
+        'icon': 'receipt',
+      },
+    ];
+    
+    return activities.take(limit).toList();
   }
 
   /// Refresh recent activities

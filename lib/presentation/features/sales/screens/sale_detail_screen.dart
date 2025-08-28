@@ -106,18 +106,17 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
-                      ElevatedButton.icon(
+                      ElevatedButton(
                         onPressed: _fetchSaleDetails,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Retry'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Theme.of(context).colorScheme.primary,
                           foregroundColor: Theme.of(context).colorScheme.onPrimary,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50),
+                            borderRadius: BorderRadius.circular(50), // M3 rounded, no icon
                           ),
                         ),
+                        child: const Text('Retry'),
                       ),
                     ],
                   ),

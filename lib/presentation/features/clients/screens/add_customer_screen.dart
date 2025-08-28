@@ -519,16 +519,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton.icon(
+                    child: OutlinedButton(
                       onPressed: () => context.pop(),
-                      icon: Icon(LucideIcons.x, size: 14.sp),
-                      label: Text(
-                        'Cancel',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: colorScheme.onSurface.withOpacity(0.7),
                         side: BorderSide(
@@ -537,23 +529,22 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                         ),
                         padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 12.w),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.0),
+                          borderRadius: BorderRadius.circular(50), // More rounded, no icon
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
                   ),
                   SizedBox(width: 12.w),
                   Expanded(
-                    child: OutlinedButton.icon(
+                    child: OutlinedButton(
                       onPressed: _checkExistingCustomer,
-                      icon: Icon(LucideIcons.search, size: 14.sp),
-                      label: Text(
-                        'Check Existing',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: colorScheme.primary,
                         side: BorderSide(
@@ -562,7 +553,14 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                         ),
                         padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 12.w),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.0),
+                          borderRadius: BorderRadius.circular(50), // More rounded, no icon
+                        ),
+                      ),
+                      child: Text(
+                        'Check Existing',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),

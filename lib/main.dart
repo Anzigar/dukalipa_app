@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,7 +14,7 @@ import 'core/providers/language_provider.dart';
 import 'core/providers/notification_provider.dart';
 import 'core/localization/app_localizations.dart';
 import 'core/utils/app_constants.dart';
-import 'presentation/features/auth/repositories/auth_repository.dart';
+import 'presentation/features/auth/repositories/appwrite_auth_repository.dart';
 import 'presentation/features/notifications/repositories/notification_repository.dart';
 import 'presentation/features/inventory/repositories/inventory_repository.dart';
 import 'presentation/features/inventory/providers/inventory_provider.dart';
@@ -98,7 +97,7 @@ class MyApp extends StatelessWidget {
             // Fix: Use service locator to get AuthRepository dependency and initialize
             ChangeNotifierProvider(
               create: (_) {
-                final authProvider = AuthProvider(locator<AuthRepository>());
+                final authProvider = AuthProvider(locator<AppwriteAuthRepository>());
                 // Initialize auth provider on app startup
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   authProvider.initialize();
@@ -174,6 +173,9 @@ class MyApp extends StatelessWidget {
                     ),
                   ),
                   themeMode: themeProvider.themeMode,
+                  // Enable smooth theme animations
+                  themeAnimationDuration: const Duration(milliseconds: 600),
+                  themeAnimationCurve: Curves.easeInOutCubicEmphasized,
                 locale: languageProvider.locale,
                 supportedLocales: const [
                   Locale('en', ''),

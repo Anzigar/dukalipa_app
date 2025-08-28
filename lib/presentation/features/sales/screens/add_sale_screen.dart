@@ -523,45 +523,6 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
       // Determine if sale should be marked as credit
       final isCredit = _salesType == 'Field Sales Agent' && !_isPaymentComplete;
       
-      // Create sale object for future API integration
-      // final sale = SaleModel.withCurrentTime(
-      //   id: DateTime.now().millisecondsSinceEpoch.toString(),
-      //   customerName: _customerNameController.text.isNotEmpty ? _customerNameController.text : null,
-      //   customerPhone: _customerPhoneController.text.isNotEmpty ? _customerPhoneController.text : null,
-      //   items: _items,
-      //   totalAmount: _totalInSelectedCurrency,
-      //   discount: 0.0,
-      //   status: isCredit ? 'pending' : 'completed',
-      //   paymentMethod: _selectedPaymentMethod,
-      //   dateTime: DateTime.now(),
-      //   note: _noteController.text.isNotEmpty ? _noteController.text : null,
-      // );
-      
-      // Create comprehensive sale data for future API integration
-      // final saleData = {
-      //   'sale': [sale object],
-      //   'customerType': _customerType,
-      //   'salesType': _salesType,
-      //   'isDelivery': _customerType == 'Delivery Customer',
-      //   'deliveryAddress': _deliveryAddressController.text,
-      //   'deliveryContact': _deliveryContactController.text,
-      //   'deliveryPhone': _deliveryPhoneController.text,
-      //   'deliveryRegion': _selectedRegion,
-      //   'deliveryCharge': _actualDeliveryCharge,
-      //   'hasFreeDelivery': _hasFreeDelivery,
-      //   'accessory': _selectedAccessory,
-      //   'hasFreeAccessory': _hasFreeAccessory,
-      //   'accessoryPrice': _accessoryPrice,
-      //   'vatApplied': _applyVAT,
-      //   'vatAmount': _vatAmount,
-      //   'currency': _selectedCurrency,
-      //   'exchangeRate': _exchangeRate,
-      //   'paidAmount': _paidAmount,
-      //   'remainingAmount': _totalInSelectedCurrency - _paidAmount,
-      //   'priceAdjustments': _productPriceAdjustments,
-      //   'isCredit': isCredit,
-      // };
-      
       // Simulate API call
       await Future.delayed(const Duration(seconds: 2));
       

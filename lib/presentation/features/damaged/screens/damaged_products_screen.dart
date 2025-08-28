@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../data/services/damaged_products_service.dart';
 import '../providers/damaged_products_provider.dart';
 import '../../../common/widgets/material3_search_bar.dart';
 import '../../../common/widgets/shimmer_loading.dart';
@@ -23,7 +22,7 @@ class DamagedProductsScreen extends StatefulWidget {
 
 class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
   final TextEditingController _searchController = TextEditingController();
-  List<DamagedProductModel> _damagedProducts = [];
+  List<Map<String, dynamic>> _damagedProducts = [];
   bool _isLoading = true;
   bool _hasError = false;
   String? _errorMessage;
@@ -151,7 +150,7 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
   }
   
   double get _totalLoss => 
-    _damagedProducts.fold(0, (total, product) => total + product.estimatedLoss);
+    _damagedProducts.fold(0.0, (total, product) => total + (product['estimatedLoss'] as num? ?? 0).toDouble());
   
   @override
   Widget build(BuildContext context) {
@@ -357,7 +356,7 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
           final product = _damagedProducts[index];
           return DamagedProductCard(
             product: product,
-            onTap: () => context.push('/settings/damaged/${product.id}'),
+            onTap: () => context.push('/settings/damaged/${product['id']}'),
           );
         },
       ),
@@ -366,7 +365,7 @@ class _DamagedProductsScreenState extends State<DamagedProductsScreen> {
 }
 
 class DamagedProductCard extends StatelessWidget {
-  final DamagedProductModel product;
+  final Map<String, dynamic> product;
   final VoidCallback onTap;
   
   const DamagedProductCard({
@@ -405,11 +404,11 @@ class DamagedProductCard extends StatelessWidget {
                   color: Colors.red.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: product.images.isNotEmpty
+                child: (product['imageUrl'] as String? ?? '').isNotEmpty
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
-                          product.images.first,
+                          product['imageUrl'] as String,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => const Icon(
                             LucideIcons.packageX,
@@ -431,7 +430,7 @@ class DamagedProductCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      product.productName,
+                      product['productName'] as String? ?? 'Unknown Product',
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -439,7 +438,7 @@ class DamagedProductCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Quantity: ${product.quantity}',
+                      'Quantity: ${product['quantity'] ?? 0}',
                       style: GoogleFonts.poppins(
                         color: isDarkMode 
                             ? Colors.grey.shade400 
@@ -448,7 +447,7 @@ class DamagedProductCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Reported: ${DateFormat('MMM d, yyyy').format(product.dateDiscovered)}',
+                      'Reported: ${DateFormat('MMM d, yyyy').format(DateTime.tryParse(product['reportedDate'] as String? ?? '') ?? DateTime.now())}',
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: isDarkMode 
@@ -464,7 +463,7 @@ class DamagedProductCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    'TSh ${NumberFormat('#,###').format(product.estimatedLoss)}',
+                    'TSh ${NumberFormat('#,###').format((product['pricePerUnit'] as num? ?? 0) * (product['quantity'] as num? ?? 0))}',
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
